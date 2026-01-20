@@ -6,10 +6,10 @@ export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
 }
 
 const sizeClasses: Record<NonNullable<HeadingProps["size"]>, string> = {
-  xl: "text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight",
-  lg: "text-2xl sm:text-3xl font-semibold",
-  md: "text-xl font-semibold",
-  sm: "text-lg font-semibold",
+  xl: "text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1]",
+  lg: "text-3xl sm:text-4xl font-bold tracking-tight",
+  md: "text-2xl font-bold tracking-tight",
+  sm: "text-xl font-bold tracking-tight",
 };
 
 export const Heading: React.FC<HeadingProps> = ({
@@ -20,11 +20,10 @@ export const Heading: React.FC<HeadingProps> = ({
 }) => {
   return (
     <Tag
-      className={`${sizeClasses[size]} text-slate-900 tracking-tight ${
+      className={`${sizeClasses[size]} text-slate-900 ${
         className ?? ""
       }`}
       {...props}
     />
   );
 };
-

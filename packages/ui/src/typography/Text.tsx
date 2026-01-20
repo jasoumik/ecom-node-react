@@ -9,10 +9,9 @@ export const Text: React.FC<TextProps> = ({
   variant = "default",
   ...props
 }) => {
-  const base = "text-sm sm:text-base leading-relaxed";
+  const base = "text-base sm:text-lg leading-relaxed";
   const color =
-    variant === "muted" ? "text-slate-500" : "text-slate-700";
+    variant === "muted" ? "text-slate-500" : "text-slate-600";
 
   return <p className={`${base} ${color} ${className ?? ""}`} {...props} />;
 };
-

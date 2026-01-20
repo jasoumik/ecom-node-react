@@ -11,14 +11,14 @@ export const Section: React.FC<SectionProps> = ({
   ...props
 }) => {
   const base =
-    "w-full px-4 py-10 sm:px-6 lg:px-8 flex justify-center bg-transparent";
+    "w-full px-4 py-16 sm:px-6 lg:px-8 flex justify-center bg-transparent";
   const inner =
-    "w-full max-w-6xl";
+    "w-full max-w-7xl"; // Increased max-width for more breathing room
   const variantClass =
     variant === "muted"
-      ? "bg-[#f9fafb]"
+      ? "bg-slate-50/50"
       : variant === "highlight"
-      ? "bg-gradient-to-b from-[#fff7f9] to-[#f3f4ff]"
+      ? "bg-gradient-to-br from-rose-50/50 via-white to-sky-50/50"
       : "";
 
   return (
@@ -27,4 +27,3 @@ export const Section: React.FC<SectionProps> = ({
     </section>
   );
 };
-

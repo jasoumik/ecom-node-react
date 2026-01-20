@@ -64,8 +64,15 @@ export type CallToActionContent = {
   secondaryText?: string;
 };
 
+export type Category = {
+  id: string;
+  name: string;
+  image: string;
+};
+
 export type LandingPageContent = {
   hero: HeroContent;
+  categories?: Category[]; // Added categories
   trustBadges: {
     title?: string;
     badges: TrustBadge[];
@@ -86,4 +93,3 @@ export type LandingPageContent = {
   };
   callToAction: CallToActionContent;
 };
-

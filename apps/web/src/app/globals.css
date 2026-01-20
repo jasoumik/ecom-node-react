@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
+/* Force class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -12,8 +16,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* We handle dark mode manually via class, so we can override system pref if needed */
+/* But we can also keep this for default variables */
 @media (prefers-color-scheme: dark) {
   :root {
+    /* We don't want to force these variables if we are using class strategy for everything else */
+    /* But keeping them doesn't hurt if we sync the class */
     --background: #0a0a0a;
     --foreground: #ededed;
   }

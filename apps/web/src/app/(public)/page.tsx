@@ -6,6 +6,7 @@ import {
   WhyChooseUsSection,
   TestimonialsSection,
   CallToActionSection,
+  CategoriesSection,
 } from "./landing";
 import type { LandingPageContent } from "./landing/types";
 
@@ -13,26 +14,24 @@ import type { LandingPageContent } from "./landing/types";
 export const revalidate = 300;
 
 async function getTenantContext() {
-  // TODO: implement real tenant resolution using headers/host in a shared util
   return { tenantSlug: "default" };
 }
 
 async function fetchLandingPageData(tenantSlug: string): Promise<LandingPageContent> {
-  const baseUrl = process.env.WEB_API_BASE_URL;
+  const envBaseUrl = process.env.WEB_API_BASE_URL;
+  console.log("WEB_API_BASE_URL:", envBaseUrl);
+  
+  // Use 127.0.0.1 to avoid localhost resolution issues
+  const baseUrl = "http://127.0.0.1:3000"; 
+  const url = `${baseUrl}/api/public/landing?tenant=${encodeURIComponent(tenantSlug)}`;
 
-  if (!baseUrl) {
-    console.error("WEB_API_BASE_URL is not configured; using fallback landing content.");
-    return getFallbackLandingPageContent();
-  }
+  console.log(`Fetching landing page from: ${url}`);
 
   try {
-    const res = await fetch(
-      `${baseUrl}/api/public/landing?tenant=${encodeURIComponent(tenantSlug)}`,
-      {
-        // Cache on the edge with ISR
-        next: { revalidate },
-      }
-    );
+    const res = await fetch(url, {
+      // Cache on the edge with ISR
+      next: { revalidate },
+    });
 
     if (!res.ok) {
       console.error("Failed to fetch landing page data", res.status, res.statusText);
@@ -49,74 +48,86 @@ async function fetchLandingPageData(tenantSlug: string): Promise<LandingPageCont
 function getFallbackLandingPageContent(): LandingPageContent {
   return {
     hero: {
-      headline: "Gentle care for moms and little ones",
+      headline: "Everything your baby needs, delivered.",
       subheadline:
-        "Baby-safe, dermatologist-tested essentials delivered with extra love.",
-      primaryCta: { label: "Shop now", href: "#" },
-      secondaryCta: { label: "Learn more", href: "#" },
+        "Prithibee is your one-stop shop for premium diapers, gentle wipes, and organic skincare. Trusted by 50,000+ parents.",
+      primaryCta: { label: "Shop All Products", href: "/products" },
+      secondaryCta: { label: "Bundle & Save", href: "/bundles" },
       image: {
-        src: "/next.svg",
-        alt: "Placeholder hero image",
-        width: 600,
-        height: 400,
+        src: "/prithibee.png",
+        alt: "Prithibee Shop Hero",
+        width: 800,
+        height: 600,
         priority: true,
       },
       stats: [
-        { label: "Happy parents", value: "10k+" },
-        { label: "Products tested", value: "150+" },
+        { label: "Products Available", value: "500+" },
+        { label: "Happy Parents", value: "50k+" },
       ],
     },
+    categories: [
+      { id: "diapers", name: "Diapers & Wipes", image: "https://picsum.photos/seed/diapers/800/800" },
+      { id: "skincare", name: "Skincare", image: "https://picsum.photos/seed/skincare/800/800" },
+      { id: "feeding", name: "Feeding", image: "https://picsum.photos/seed/feeding/800/800" },
+      { id: "clothing", name: "Clothing", image: "https://picsum.photos/seed/clothing/800/800" },
+    ],
     trustBadges: {
-      title: "Trusted by parents and experts",
+      title: "Only the best for your baby",
       badges: [
-        { id: "pediatrician", label: "Pediatrician approved" },
-        { id: "dermatologist", label: "Dermatologist tested" },
+        { id: "brands", label: "Top Global Brands" },
+        { id: "authentic", label: "100% Authentic" },
+        { id: "delivery", label: "Fast Delivery" },
+        { id: "return", label: "Easy Returns" },
       ],
     },
     featuredProducts: {
-      title: "Featured products",
-      subtitle: "Curated favorites for everyday care.",
+      title: "Trending Now",
+      subtitle: "Parents are loving these essentials this week.",
       products: [],
     },
     whyChooseUs: {
-      title: "Why parents choose us",
+      title: "The Prithibee Promise",
       reasons: [],
     },
     testimonials: {
-      title: "What parents are saying",
+      title: "Parents Love Prithibee",
       items: [],
     },
     callToAction: {
-      title: "Join our parenting circle",
-      subtitle: "Get expert tips and early access to new launches.",
-      primaryCta: { label: "Sign up", href: "#" },
-      secondaryText: "No spam. Unsubscribe anytime.",
+      title: "Start Your Journey with Prithibee",
+      subtitle: "Get 20% off your first order when you join our family.",
+      primaryCta: { label: "Shop Now", href: "/products" },
+      secondaryText: "Free shipping on orders over $50.",
     },
   };
 }
 
 async function fetchLandingSeoMetadata(tenantSlug: string) {
-  const baseUrl = process.env.WEB_API_BASE_URL;
-  if (!baseUrl) return null;
+  const baseUrl = "http://127.0.0.1:3000";
 
-  const res = await fetch(
-    `${baseUrl}/api/public/landing/seo?tenant=${encodeURIComponent(
-      tenantSlug
-    )}`,
-    {
-      next: { revalidate: 86400 },
-    }
-  );
+  try {
+    const res = await fetch(
+      `${baseUrl}/api/public/landing/seo?tenant=${encodeURIComponent(
+        tenantSlug
+      )}`,
+      {
+        next: { revalidate: 86400 },
+      }
+    );
 
-  if (!res.ok) return null;
+    if (!res.ok) return null;
 
-  return (await res.json()) as {
-    title: string;
-    description: string;
-    canonicalUrl?: string;
-    openGraphImageUrl?: string;
-    twitterImageUrl?: string;
-  };
+    return (await res.json()) as {
+      title: string;
+      description: string;
+      canonicalUrl?: string;
+      openGraphImageUrl?: string;
+      twitterImageUrl?: string;
+    };
+  } catch (error) {
+    console.error("Error fetching SEO metadata", error);
+    return null;
+  }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -125,8 +136,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (!seo) {
     return {
-      title: "Baby & Mother Care Products",
-      description: "Gentle, safe, and trusted products for moms and babies.",
+      title: "Prithibee | The Best Baby Shop",
+      description: "Shop diapers, wipes, skincare and more. Fast delivery.",
     };
   }
 
@@ -163,6 +174,7 @@ export default async function LandingPage() {
   return (
     <>
       <HeroSection {...data.hero} />
+      {data.categories && <CategoriesSection categories={data.categories} />}
       <TrustBadgesSection
         title={data.trustBadges.title}
         badges={data.trustBadges.badges}
