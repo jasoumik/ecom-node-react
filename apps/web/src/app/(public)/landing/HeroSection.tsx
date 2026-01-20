@@ -86,10 +86,10 @@ export function HeroSection(props: HeroContent) {
               {/* Floating Badge 1 */}
               <div className="absolute top-12 -left-6 z-30 bg-white p-4 rounded-2xl shadow-xl border border-slate-50 animate-bounce-slow hidden sm:block dark:bg-slate-800 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-xl dark:bg-green-900/30">🌿</div>
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-xl dark:bg-green-900/30">🏷️</div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900 dark:text-white">100% Organic</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Certified Cotton</div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">Top Brands</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">100% Authentic</div>
                   </div>
                 </div>
               </div>
@@ -97,10 +97,10 @@ export function HeroSection(props: HeroContent) {
               {/* Floating Badge 2 */}
               <div className="absolute bottom-20 -right-6 z-30 bg-white p-4 rounded-2xl shadow-xl border border-slate-50 animate-bounce-slow delay-700 hidden sm:block dark:bg-slate-800 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-xl dark:bg-yellow-900/30">👶</div>
+                  <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-xl dark:bg-yellow-900/30">🚚</div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900 dark:text-white">Safe for Baby</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Dermatologist Tested</div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">Fast Delivery</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Nationwide Shipping</div>
                   </div>
                 </div>
               </div>
