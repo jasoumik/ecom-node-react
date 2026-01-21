@@ -2,7 +2,7 @@ import type { HeroContent } from "./types";
 import { HeroLayout, Heading, Text, Button, ResponsiveImage } from "@repo/ui";
 
 export function HeroSection(props: HeroContent) {
-  const { headline, subheadline, primaryCta, secondaryCta, image, stats } = props;
+  const { headline, subheadline, primaryCta, image, stats } = props;
 
   return (
     <section className="relative w-full pt-12 pb-24 overflow-hidden bg-[#fff5f5] dark:bg-slate-950 transition-colors duration-300">
@@ -14,9 +14,9 @@ export function HeroSection(props: HeroContent) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
-          <div className="space-y-8 text-center lg:text-left">
+          <div className="space-y-8 text-center lg:text-left w-full">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-rose-100 text-rose-600 text-sm font-bold uppercase tracking-wider animate-fade-in-up dark:bg-slate-800 dark:border-slate-700 dark:text-rose-400">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
               #1 Choice for New Moms
@@ -31,14 +31,11 @@ export function HeroSection(props: HeroContent) {
             </Text>
             
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-4">
-              <Button className="px-10 py-5 text-lg rounded-full shadow-xl shadow-rose-500/20 bg-rose-500 text-white hover:bg-rose-600 hover:scale-105 transition-all duration-300 w-full sm:w-auto dark:shadow-rose-900/40">
-                {primaryCta.label}
-              </Button>
-              {secondaryCta && (
-                <Button variant="secondary" className="px-10 py-5 text-lg rounded-full bg-white border-2 border-rose-100 text-rose-600 hover:bg-rose-50 hover:border-rose-200 w-full sm:w-auto dark:bg-slate-800 dark:border-slate-700 dark:text-rose-300 dark:hover:bg-slate-700">
-                  {secondaryCta.label}
+              <a href={primaryCta.href} className="w-full sm:w-auto">
+                <Button className="px-10 py-5 text-lg rounded-xl shadow-xl shadow-rose-500/20 bg-rose-500 text-white hover:bg-rose-600 hover:scale-105 transition-all duration-300 w-full dark:shadow-rose-900/40">
+                  {primaryCta.label}
                 </Button>
-              )}
+              </a>
             </div>
 
             {/* Stats Row */}
@@ -64,7 +61,7 @@ export function HeroSection(props: HeroContent) {
           </div>
 
           {/* Hero Image with Floating Elements */}
-          <div className="relative lg:h-[700px] flex items-center justify-center">
+          <div className="relative lg:h-[700px] flex items-center justify-center w-full">
             <div className="relative w-full max-w-md lg:max-w-full aspect-[4/5] lg:aspect-auto lg:h-full">
               {/* Main Image Frame */}
               <div className="absolute inset-4 bg-white rounded-[3rem] shadow-2xl rotate-3 z-10 dark:bg-slate-800"></div>

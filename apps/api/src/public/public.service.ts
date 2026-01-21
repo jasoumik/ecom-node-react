@@ -1,8 +1,53 @@
 import { Injectable } from '@nestjs/common';
+import { CategoriesService } from '../categories/categories.service';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class PublicService {
-  getLandingPageData(tenant: string) {
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    private readonly productsService: ProductsService,
+  ) {}
+
+  async getLandingPageData(tenant: string) {
+    const categories = await this.categoriesService.findAll();
+    const displayCategories = categories.slice(0, 4).map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        image: cat.image || "https://picsum.photos/seed/default/800/800"
+    }));
+
+    const allProducts = await this.productsService.findAll();
+    // Take top 4 products, assuming they are ordered by creation or just take first 4
+    const featuredProducts = allProducts.slice(0, 4).map(p => {
+        let imageUrl = "https://picsum.photos/seed/default/800/800";
+        if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+            imageUrl = p.images[0];
+        } else if (p.images && typeof p.images === 'string') {
+             // Handle case where it might be a stringified JSON if not parsed by driver
+             try {
+                 const parsed = JSON.parse(p.images);
+                 if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+             } catch (e) {}
+        }
+
+        return {
+            id: p.id,
+            name: p.name,
+            price: `৳${p.price}`,
+            href: `/products/${p.id}`,
+            image: {
+                src: imageUrl,
+                alt: p.name,
+                width: 400,
+                height: 400,
+            },
+            tag: p.stock < 10 ? "Low Stock" : "New", // Simple logic for tag
+            rating: 5.0, // Placeholder as we don't have ratings table yet
+            reviewCount: 0,
+        };
+    });
+
     return {
       hero: {
         headline: "Everything your baby needs, delivered.",
@@ -17,16 +62,11 @@ export class PublicService {
           priority: true,
         },
         stats: [
-          { label: "Products Available", value: "500+" },
+          { label: "Products Available", value: `${allProducts.length}+` },
           { label: "Happy Parents", value: "50k+" },
         ],
       },
-      categories: [
-        { id: "diapers", name: "Diapers & Wipes", image: "https://picsum.photos/seed/diapers/800/800" },
-        { id: "skincare", name: "Skincare", image: "https://picsum.photos/seed/skincare/800/800" },
-        { id: "feeding", name: "Feeding", image: "https://picsum.photos/seed/feeding/800/800" },
-        { id: "clothing", name: "Clothing", image: "https://picsum.photos/seed/clothing/800/800" },
-      ],
+      categories: displayCategories,
       trustBadges: {
         title: "Only the best for your baby",
         badges: [
@@ -40,67 +80,7 @@ export class PublicService {
         title: "Trending Now",
         subtitle: "Parents are loving these essentials this week.",
         viewAllHref: "/products",
-        products: [
-          {
-            id: "1",
-            name: "Premium Soft Diapers (Pack of 80)",
-            price: "৳3,200",
-            href: "#",
-            image: {
-              src: "https://picsum.photos/seed/diaperpack/800/800",
-              alt: "Diapers",
-              width: 400,
-              height: 400,
-            },
-            tag: "Best Seller",
-            rating: 4.9,
-            reviewCount: 1240,
-          },
-          {
-            id: "2",
-            name: "Water-Based Baby Wipes",
-            price: "৳1,450",
-            href: "#",
-            image: {
-              src: "https://picsum.photos/seed/wipes/800/800",
-              alt: "Wipes",
-              width: 400,
-              height: 400,
-            },
-            tag: "Bundle Deal",
-            rating: 4.8,
-            reviewCount: 850,
-          },
-          {
-            id: "3",
-            name: "Organic Baby Lotion",
-            price: "৳1,800",
-            href: "#",
-            image: {
-              src: "https://picsum.photos/seed/lotion/800/800",
-              alt: "Lotion",
-              width: 400,
-              height: 400,
-            },
-            rating: 4.7,
-            reviewCount: 320,
-          },
-          {
-            id: "4",
-            name: "Silicone Feeding Set",
-            price: "৳2,800",
-            href: "#",
-            image: {
-              src: "https://picsum.photos/seed/feedingset/800/800",
-              alt: "Feeding Set",
-              width: 400,
-              height: 400,
-            },
-            tag: "New",
-            rating: 5.0,
-            reviewCount: 120,
-          },
-        ],
+        products: featuredProducts,
       },
       whyChooseUs: {
         title: "The Prithibee Promise",

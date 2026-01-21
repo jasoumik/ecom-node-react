@@ -21,7 +21,7 @@ export default function AdminProductsPage() {
   }, []);
 
   const fetchProducts = async () => {
-    const res = await fetch("http://localhost:3000/api/products");
+    const res = await fetch("http://127.0.0.1:3000/api/products");
     const data = await res.json();
     setProducts(data);
   };
@@ -29,7 +29,7 @@ export default function AdminProductsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     const imagesArray = newProduct.images.split(",").map(s => s.trim());
-    await fetch("http://localhost:3000/api/products", {
+    await fetch("http://127.0.0.1:3000/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...newProduct, images: imagesArray }),
@@ -39,7 +39,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`http://localhost:3000/api/products/${id}`, { method: "DELETE" });
+    await fetch(`http://127.0.0.1:3000/api/products/${id}`, { method: "DELETE" });
     fetchProducts();
   };
 

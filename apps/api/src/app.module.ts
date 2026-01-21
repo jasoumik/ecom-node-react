@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { PublicModule } from './public/public.module';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
+import { CategoriesModule } from './categories/categories.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 
@@ -13,6 +14,7 @@ import { DatabaseModule } from './database/database.module';
     PublicModule,
     UsersModule,
     ProductsModule,
+    CategoriesModule,
     AuthModule,
   ],
   controllers: [AppController],

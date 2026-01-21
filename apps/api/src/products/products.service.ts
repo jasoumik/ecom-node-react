@@ -11,6 +11,10 @@ export class ProductsService {
     return this.knex('products').select('*');
   }
 
+  async findByCategory(categoryId: string): Promise<any[]> {
+    return this.knex('products').where({ category_id: categoryId }).select('*');
+  }
+
   async findOne(id: string): Promise<any> {
     const product = await this.knex('products').where({ id }).first();
     if (!product) {
@@ -20,10 +24,9 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto): Promise<any> {
-    // Ensure images is JSON string if needed, but knex handles jsonb usually if passed as array
     const [product] = await this.knex('products').insert({
         ...createProductDto,
-        images: JSON.stringify(createProductDto.images) // Explicitly stringify for jsonb if needed, or let knex handle it
+        images: JSON.stringify(createProductDto.images)
     }).returning('*');
     return product;
   }
