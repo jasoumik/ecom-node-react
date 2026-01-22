@@ -37,7 +37,7 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -46,7 +46,7 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-12 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <Heading size="xl" className="font-serif text-slate-900 dark:text-white mb-4">Shop All Products</Heading>
+          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">Shop All Products</Heading>
           <Text className="text-slate-600 dark:text-slate-400">Discover our curated collection of premium baby essentials.</Text>
         </div>
 
@@ -66,8 +66,8 @@ export default function ProductsPage() {
                 }
 
                 return (
-                <div key={product.id} className="group cursor-pointer">
-                    <div className="relative aspect-square sm:aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-white mb-3 sm:mb-6 dark:bg-slate-800 shadow-sm hover:shadow-md transition-all">
+                <div key={product.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all">
+                    <div className="relative aspect-square sm:aspect-[3/4] overflow-hidden rounded-xl bg-[#f8f8f8] mb-3 dark:bg-slate-700">
                     <a href={`/products/${product.id}`} className="block w-full h-full">
                         <ResponsiveImage
                         src={imageUrl}
@@ -77,28 +77,32 @@ export default function ProductsPage() {
                         className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
                         />
                     </a>
-                    
-                    <div className="absolute inset-x-2 bottom-2 sm:inset-x-4 sm:bottom-4 translate-y-0 sm:translate-y-full sm:group-hover:translate-y-0 transition-transform duration-300 ease-out">
+                    </div>
+
+                    <div className="flex flex-col flex-grow space-y-2">
+                      <div className="space-y-1 text-center">
+                        <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
+                            <a href={`/products/${product.id}`}>{product.name}</a>
+                        </h3>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-1">
+                            <RatingStars rating={5} />
+                            <span className="hidden sm:inline">(12)</span>
+                            </div>
+                        </div>
+                        <div className="text-lg font-bold text-slate-900 dark:text-white text-center">
+                            ৳{product.price}
+                        </div>
+                      </div>
+
+                      <div className="mt-auto pt-2">
                         <Button 
-                        variant="secondary"
-                        className="w-full bg-white/90 backdrop-blur-md text-slate-900 hover:bg-slate-900 hover:text-white shadow-xl font-bold py-2 sm:py-4 rounded-lg sm:rounded-xl text-xs sm:text-sm dark:bg-slate-800/90 dark:text-white dark:hover:bg-white dark:hover:text-slate-900"
+                        variant="primary"
+                        className="w-full bg-sky-400 text-white hover:bg-sky-500 shadow-md font-bold py-2.5 rounded-2xl text-sm"
                         >
                         Add to Cart
                         </Button>
-                    </div>
-                    </div>
-                    
-                    <div className="space-y-1 sm:space-y-2 text-center">
-                    <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-serif group-hover:text-rose-500 transition-colors dark:text-white line-clamp-1">
-                        <a href={`/products/${product.id}`}>{product.name}</a>
-                    </h3>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                        <span className="font-bold text-slate-900 dark:text-white">৳{product.price}</span>
-                        <div className="flex items-center gap-1">
-                        <RatingStars rating={5} />
-                        <span className="hidden sm:inline">(12)</span>
-                        </div>
-                    </div>
+                      </div>
                     </div>
                 </div>
                 );

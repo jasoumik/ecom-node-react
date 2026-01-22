@@ -18,35 +18,36 @@ export function FeaturedProductsSection({
     <Section className="bg-white py-12 sm:py-24 dark:bg-slate-900 transition-colors duration-300">
       <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-10 sm:mb-16 max-w-7xl mx-auto px-4">
         <div className="space-y-4 max-w-2xl">
-          <div className="inline-block px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-bold uppercase tracking-widest dark:bg-rose-900/30 dark:text-rose-300">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white shadow-sm border border-sky-100 text-sky-600 text-sm font-bold uppercase tracking-wider animate-fade-in-up dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
+            <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
             New Arrivals
           </div>
-          <Heading size="lg" className="font-serif text-3xl sm:text-5xl text-slate-900 dark:text-white">{title}</Heading>
-          {subtitle && <Text variant="muted" className="text-base sm:text-lg dark:text-slate-400">{subtitle}</Text>}
+          <Heading size="lg" className="font-sans text-3xl sm:text-5xl text-slate-900 dark:text-white font-bold">{title}</Heading>
+          {subtitle && <Text variant="muted" className="text-base sm:text-lg dark:text-slate-400 font-medium">{subtitle}</Text>}
         </div>
         {viewAllHref && (
           <a href={viewAllHref} className="hidden sm:inline-block">
-            <Button variant="outline" className="rounded-full px-8 py-3 border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white transition-all font-bold dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-slate-900">
+            <Button variant="primary" className="rounded-2xl px-8 py-3 bg-sky-500 text-white hover:bg-sky-600 shadow-lg shadow-sky-500/30 w-full font-bold dark:bg-sky-600 dark:hover:bg-sky-500">
               Shop All Products
             </Button>
           </a>
         )}
       </div>
       
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 max-w-7xl mx-auto px-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 max-w-7xl mx-auto px-4">
         {products.map((product) => (
-          <div key={product.id} className="group cursor-pointer">
-            <div className="relative aspect-square sm:aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-[#f8f8f8] mb-3 sm:mb-6 dark:bg-slate-800">
+          <div key={product.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all">
+            <div className="relative aspect-square sm:aspect-[3/4] overflow-hidden rounded-xl bg-[#f8f8f8] mb-3 dark:bg-slate-700">
               <a href={product.href} className="block w-full h-full">
                 {product.tag && (
-                  <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10">
-                    <span className="bg-slate-900 text-white px-2 py-0.5 sm:px-3 sm:py-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest rounded-full shadow-lg dark:bg-white dark:text-slate-900">
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded-2xl shadow-lg dark:bg-white dark:text-slate-900">
                       {product.tag}
                     </span>
                   </div>
                 )}
-                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 sm:bg-white shadow-lg flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-colors dark:bg-slate-700/80 dark:text-rose-400 backdrop-blur-sm">
+                <div className="absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
+                  <button className="w-8 h-8 rounded-2xl bg-white/80 sm:bg-white shadow-lg flex items-center justify-center text-sky-500 hover:bg-sky-500 hover:text-white transition-colors dark:bg-slate-700/80 dark:text-sky-400 backdrop-blur-sm">
                     ♥
                   </button>
                 </div>
@@ -59,34 +60,31 @@ export function FeaturedProductsSection({
                   className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
               </a>
+            </div>
+            
+            <div className="flex flex-col flex-grow space-y-2">
+              <div className="space-y-1 text-center">
+                <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
+                  <a href={product.href}>{product.name}</a>
+                </h3>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-0.5">
+                    <RatingStars rating={product.rating || 5} />
+                    <span className="hidden sm:inline">({product.reviewCount})</span>
+                  </div>
+                </div>
+                <div className="text-lg font-bold text-slate-900 dark:text-white text-center">
+                  {product.price}
+                </div>
+              </div>
               
-              {/* Add to Cart Button - Always visible on mobile, hover on desktop */}
-              <div className="absolute inset-x-2 bottom-2 sm:inset-x-4 sm:bottom-4 translate-y-0 sm:translate-y-full sm:group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-none sm:pointer-events-auto">
-                 {/* Pointer events none on mobile wrapper to let click pass to link? No, button should be clickable. 
-                     Actually, if the whole card is a link, the button inside might conflict.
-                     I'll keep the button clickable.
-                 */}
+              <div className="mt-auto pt-2">
                 <Button 
-                  variant="secondary"
-                  className="w-full bg-white/90 backdrop-blur-md text-slate-900 hover:bg-slate-900 hover:text-white shadow-xl font-bold py-2 sm:py-4 rounded-lg sm:rounded-xl text-xs sm:text-sm dark:bg-slate-800/90 dark:text-white dark:hover:bg-white dark:hover:text-slate-900 pointer-events-auto"
+                  variant="primary"
+                  className="w-full bg-sky-400 text-white hover:bg-sky-500 shadow-md font-bold py-2.5 rounded-2xl text-sm"
                 >
                   Add to Cart
                 </Button>
-              </div>
-            </div>
-            
-            <div className="space-y-1 sm:space-y-2 text-center">
-              <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-serif group-hover:text-rose-500 transition-colors dark:text-white line-clamp-1">
-                <a href={product.href}>{product.name}</a>
-              </h3>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                <span className="font-bold text-slate-900 dark:text-white">{product.price}</span>
-                {product.rating != null && (
-                  <div className="flex items-center gap-1">
-                    <RatingStars rating={product.rating} />
-                    <span className="hidden sm:inline">({product.reviewCount})</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -96,7 +94,7 @@ export function FeaturedProductsSection({
       {viewAllHref && (
         <div className="mt-8 text-center sm:hidden">
           <a href={viewAllHref} className="block w-full">
-            <Button variant="outline" className="rounded-full px-8 py-3 border-2 border-slate-900 text-slate-900 w-full font-bold dark:border-white dark:text-white">
+            <Button variant="primary" className="rounded-2xl px-6 py-2.5 bg-sky-500 text-white hover:bg-sky-600 shadow-lg shadow-sky-500/30 w-full font-bold dark:bg-sky-600 dark:hover:bg-sky-500 text-sm">
               Shop All Products
             </Button>
           </a>
