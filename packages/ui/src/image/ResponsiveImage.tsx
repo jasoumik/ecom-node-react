@@ -17,7 +17,7 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = (props) => {
       {...rest}
       src={props.src}
       alt={props.alt}
-      className={`rounded-3xl object-cover ${className ?? ""}`}
+      className={`rounded-md object-cover ${className ?? ""}`}
       placeholder={props.placeholder ?? "empty"}
       loading={resolvedLoading}
       priority={priority}
