@@ -4,12 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Heading, Text, Button, ResponsiveImage } from "@repo/ui";
 import { API_URL } from "@/lib/config";
+import { useCart } from "@/lib/cart";
+import { useToast } from "@/components/ui/Toast";
 
 export default function ProductPage() {
   const params = useParams();
   const id = params.id as string;
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { addItem } = useCart();
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -31,10 +35,34 @@ export default function ProductPage() {
     fetchProduct();
   }, [id]);
 
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    // Parse image for cart
+    let imageUrl = "https://picsum.photos/seed/default/800/800";
+    if (Array.isArray(product.images) && product.images.length > 0) {
+        imageUrl = product.images[0];
+    } else if (typeof product.images === 'string') {
+        try {
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+        } catch (e) {}
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      image: imageUrl,
+      quantity: 1,
+    });
+    addToast(`Added ${product.name} to cart`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -92,8 +120,8 @@ export default function ProductPage() {
 
           <div className="space-y-8">
             <div>
-              <div className="text-sm font-bold text-rose-500 uppercase tracking-wider mb-2">{product.category}</div>
-              <Heading as="h1" size="xl" className="font-serif dark:text-white text-4xl sm:text-5xl">{product.name}</Heading>
+              <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{product.category}</div>
+              <Heading as="h1" size="xl" className="font-sans dark:text-white text-4xl sm:text-5xl font-bold">{product.name}</Heading>
               <div className="text-3xl font-bold text-slate-900 dark:text-white mt-4">৳{product.price}</div>
             </div>
 
@@ -102,7 +130,10 @@ export default function ProductPage() {
             </Text>
 
             <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
-              <Button className="w-full py-4 text-lg rounded-full shadow-xl shadow-rose-500/20 bg-rose-500 text-white hover:bg-rose-600 hover:scale-105 transition-all duration-300">
+              <Button 
+                className="w-full py-4 text-lg rounded-2xl shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 font-bold"
+                onClick={handleAddToCart}
+              >
                 Add to Cart
               </Button>
             </div>

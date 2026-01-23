@@ -11,6 +11,7 @@ export class PublicService {
 
   async getLandingPageData(tenant: string) {
     const categories = await this.categoriesService.findAll();
+    // Flatten top-level categories for the landing page display if needed, or just take top 4
     const displayCategories = categories.slice(0, 4).map(cat => ({
         id: cat.id,
         name: cat.name,
@@ -50,8 +51,8 @@ export class PublicService {
 
     return {
       hero: {
-        headline: "Everything your baby needs, delivered.",
-        subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, and organic skincare. Trusted by 50,000+ parents.",
+        headline: "Everything for Mom & Baby, Delivered.",
+        subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, organic skincare, and maternity essentials. Trusted by 50,000+ parents.",
         primaryCta: { label: "Shop All Products", href: "/products" },
         secondaryCta: { label: "Bundle & Save", href: "/bundles" },
         image: {
@@ -63,12 +64,12 @@ export class PublicService {
         },
         stats: [
           { label: "Products Available", value: `${allProducts.length}+` },
-          { label: "Happy Parents", value: "50k+" },
+          { label: "Happy Families", value: "50k+" },
         ],
       },
       categories: displayCategories,
       trustBadges: {
-        title: "Only the best for your baby",
+        title: "Only the best for Mom & Baby",
         badges: [
           { id: "brands", label: "Top Global Brands" },
           { id: "authentic", label: "100% Authentic" },
@@ -78,7 +79,7 @@ export class PublicService {
       },
       featuredProducts: {
         title: "Trending Now",
-        subtitle: "Parents are loving these essentials this week.",
+        subtitle: "Moms are loving these essentials this week.",
         viewAllHref: "/products",
         products: featuredProducts,
       },
@@ -100,7 +101,7 @@ export class PublicService {
           {
             id: "support",
             title: "24/7 Parent Support",
-            description: "Questions? Chat with our baby care experts anytime.",
+            description: "Questions? Chat with our experts anytime.",
             iconUrl: "/icons/chat.svg",
           },
         ],
@@ -141,8 +142,8 @@ export class PublicService {
 
   getLandingSeoData(tenant: string) {
     return {
-      title: "Prithibee | The Best Baby Shop",
-      description: "Shop diapers, wipes, skincare and more. Fast delivery.",
+      title: "Prithibee | The Best Baby & Mom Shop",
+      description: "Shop diapers, wipes, skincare, maternity and more. Fast delivery.",
     };
   }
 }

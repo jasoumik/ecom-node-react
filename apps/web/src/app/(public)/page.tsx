@@ -72,7 +72,7 @@ function getFallbackLandingPageContent(): LandingPageContent {
       { id: "clothing", name: "Clothing", image: "https://picsum.photos/seed/clothing/800/800" },
     ],
     trustBadges: {
-      title: "Only the best for your baby",
+      title: "Only the best for Mom & Babies",
       badges: [
         { id: "brands", label: "Top Global Brands" },
         { id: "authentic", label: "100% Authentic" },

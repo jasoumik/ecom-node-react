@@ -4,12 +4,16 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
+import { useCart } from "@/lib/cart";
+import { useToast } from "@/components/ui/Toast";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addItem } = useCart();
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -33,6 +37,28 @@ export default function ProductsPage() {
 
     fetchProducts();
   }, [categoryId]);
+
+  const handleAddToCart = (product: any) => {
+    // Parse image for cart
+    let imageUrl = "https://picsum.photos/seed/default/800/800";
+    if (Array.isArray(product.images) && product.images.length > 0) {
+        imageUrl = product.images[0];
+    } else if (typeof product.images === 'string') {
+        try {
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+        } catch (e) {}
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      image: imageUrl,
+      quantity: 1,
+    });
+    addToast(`Added ${product.name} to cart`);
+  };
 
   if (loading) {
     return (
@@ -78,7 +104,7 @@ export default function ProductsPage() {
                         />
                     </a>
                     </div>
-
+                    
                     <div className="flex flex-col flex-grow space-y-2">
                       <div className="space-y-1 text-center">
                         <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
@@ -94,11 +120,12 @@ export default function ProductsPage() {
                             ৳{product.price}
                         </div>
                       </div>
-
+                      
                       <div className="mt-auto pt-2">
                         <Button 
                         variant="primary"
                         className="w-full bg-sky-400 text-white hover:bg-sky-500 shadow-md font-bold py-2.5 rounded-2xl text-sm"
+                        onClick={() => handleAddToCart(product)}
                         >
                         Add to Cart
                         </Button>

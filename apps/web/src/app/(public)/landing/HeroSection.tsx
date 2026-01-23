@@ -17,9 +17,9 @@ export function HeroSection(props: HeroContent) {
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text Content */}
           <div className="space-y-6 text-center lg:text-left w-full">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white shadow-sm border border-sky-100 text-sky-600 text-xs font-bold uppercase tracking-wider animate-fade-in-up dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white shadow-sm border border-sky-100 text-sky-600 text-xs font-bold uppercase tracking-wider animate-fade-in-up dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
-              #1 Choice for New Moms
+              #1 Choice for Moms & Babies
             </div>
             
             <Heading as="h1" size="xl" className="font-sans text-slate-900 dark:text-white leading-[1.1] text-4xl sm:text-5xl lg:text-6xl font-bold">
@@ -32,7 +32,7 @@ export function HeroSection(props: HeroContent) {
             
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-2">
               <a href={primaryCta.href} className="w-full sm:w-auto">
-                <Button className="px-8 py-4 text-base rounded-2xl shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 w-full dark:shadow-sky-900/40 font-bold">
+                <Button className="px-8 py-4 text-base rounded-md shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 w-full dark:shadow-sky-900/40 font-bold">
                   {primaryCta.label}
                 </Button>
               </a>
@@ -43,7 +43,7 @@ export function HeroSection(props: HeroContent) {
               <div className="flex items-center justify-center lg:justify-start gap-6 pt-4">
                 {stats.map((stat) => (
                   <div key={stat.label} className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-2xl bg-white shadow-md flex items-center justify-center text-xl dark:bg-slate-800 dark:text-white">
+                    <div className="w-10 h-10 rounded-md bg-white shadow-md flex items-center justify-center text-xl dark:bg-slate-800 dark:text-white">
                       🏆
                     </div>
                     <div className="text-left">
@@ -64,10 +64,10 @@ export function HeroSection(props: HeroContent) {
           <div className="relative lg:h-[500px] flex items-center justify-center w-full">
             <div className="relative w-full max-w-md lg:max-w-full aspect-[4/5] lg:aspect-auto lg:h-full">
               {/* Main Image Frame */}
-              <div className="absolute inset-3 bg-white rounded-[2.5rem] shadow-2xl rotate-3 z-10 dark:bg-slate-800"></div>
-              <div className="absolute inset-3 bg-sky-100 rounded-[2.5rem] -rotate-3 z-0 dark:bg-sky-900/30"></div>
+              <div className="absolute inset-3 bg-white rounded-md shadow-2xl rotate-3 z-10 dark:bg-slate-800"></div>
+              <div className="absolute inset-3 bg-sky-100 rounded-md -rotate-3 z-0 dark:bg-sky-900/30"></div>
               
-              <div className="absolute inset-0 z-20 rounded-[2.5rem] overflow-hidden shadow-xl border-4 border-white dark:border-slate-800">
+              <div className="absolute inset-0 z-20 rounded-md overflow-hidden shadow-xl border-4 border-white dark:border-slate-800">
                 {image && (
                   <ResponsiveImage
                     src={image.src}
@@ -81,7 +81,7 @@ export function HeroSection(props: HeroContent) {
               </div>
 
               {/* Floating Badge 1 */}
-              <div className="absolute top-8 -left-4 z-30 bg-white p-3 rounded-xl shadow-xl border border-slate-50 animate-bounce-slow hidden sm:block dark:bg-slate-800 dark:border-slate-700">
+              <div className="absolute top-8 -left-4 z-30 bg-white p-3 rounded-md shadow-xl border border-slate-50 animate-bounce-slow hidden sm:block dark:bg-slate-800 dark:border-slate-700">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-lg dark:bg-green-900/30">🏷️</div>
                   <div>
@@ -92,7 +92,7 @@ export function HeroSection(props: HeroContent) {
               </div>
 
               {/* Floating Badge 2 */}
-              <div className="absolute bottom-12 -right-4 z-30 bg-white p-3 rounded-xl shadow-xl border border-slate-50 animate-bounce-slow delay-700 hidden sm:block dark:bg-slate-800 dark:border-slate-700">
+              <div className="absolute bottom-12 -right-4 z-30 bg-white p-3 rounded-md shadow-xl border border-slate-50 animate-bounce-slow delay-700 hidden sm:block dark:bg-slate-800 dark:border-slate-700">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-lg dark:bg-yellow-900/30">🚚</div>
                   <div>
