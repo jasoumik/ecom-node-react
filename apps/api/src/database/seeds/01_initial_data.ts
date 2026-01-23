@@ -13,12 +13,14 @@ export async function seed(knex: Knex): Promise<void> {
 
   await knex('users').insert([
     {
+      phone: '01700000000', // Admin Phone
       email: 'admin@example.com',
       passwordHash,
       name: 'Admin User',
       role: 'admin',
     },
     {
+      phone: '01700000001', // Customer Phone
       email: 'customer@example.com',
       passwordHash, // Same password 'password'
       name: 'John Doe',

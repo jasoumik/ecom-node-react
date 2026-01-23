@@ -9,6 +9,10 @@ export class UsersService {
     return this.knex('users').where({ email }).first();
   }
 
+  async findOneByPhone(phone: string): Promise<any> {
+    return this.knex('users').where({ phone }).first();
+  }
+
   async create(userData: any): Promise<any> {
     const [user] = await this.knex('users').insert(userData).returning('*');
     return user;

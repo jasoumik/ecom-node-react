@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button, Heading, Text } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
+import { useToast } from "@/components/ui/Toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const { addToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,24 +19,25 @@ export default function LoginPage() {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
       
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        addToast("Logged in successfully!", "success");
         if (data.user.role === 'admin') {
             router.push("/admin/products");
         } else {
             router.push("/");
         }
       } else {
-        alert("Login failed");
+        addToast("Login failed. Check your credentials.", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Error logging in");
+      addToast("Error logging in.", "error");
     }
   };
 
@@ -48,11 +51,11 @@ export default function LoginPage() {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input
-            label="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            label="Phone Number or Email"
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            placeholder="017... or you@example.com"
             required
           />
           <Input
@@ -64,14 +67,14 @@ export default function LoginPage() {
             required
           />
           
-          <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-rose-500/20">
+          <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
             Sign In
           </Button>
         </form>
         
         <div className="mt-8 text-center">
             <Text className="text-slate-500 dark:text-slate-400">
-              Don't have an account? <a href="/register" className="text-rose-600 font-bold hover:text-rose-700 hover:underline dark:text-rose-400">Create account</a>
+              Don't have an account? <a href="/register" className="text-sky-600 font-bold hover:text-sky-700 hover:underline dark:text-sky-400">Create account</a>
             </Text>
         </div>
       </div>

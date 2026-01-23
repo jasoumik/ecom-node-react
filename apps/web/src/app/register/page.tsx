@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import { Button, Heading, Text } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
+import { useToast } from "@/components/ui/Toast";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const { addToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,17 +21,19 @@ export default function RegisterPage() {
       const res = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, phone, email, password }),
       });
       
       if (res.ok) {
+        addToast("Registration successful! Please login.", "success");
         router.push("/login");
       } else {
-        alert("Registration failed");
+        const data = await res.json();
+        addToast(data.message || "Registration failed", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Error registering");
+      addToast("Error registering", "error");
     }
   };
 
@@ -50,12 +55,19 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Email Address"
+            label="Phone Number (Required)"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="017..."
+            required
+          />
+          <Input
+            label="Email Address (Optional)"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            required
           />
           <Input
             label="Password"
@@ -65,14 +77,14 @@ export default function RegisterPage() {
             placeholder="••••••••"
             required
           />
-          <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-rose-500/20">
+          <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
             Create Account
           </Button>
         </form>
         
         <div className="mt-8 text-center">
             <Text className="text-slate-500 dark:text-slate-400">
-              Already have an account? <a href="/login" className="text-rose-600 font-bold hover:text-rose-700 hover:underline dark:text-rose-400">Sign in</a>
+              Already have an account? <a href="/login" className="text-sky-600 font-bold hover:text-sky-700 hover:underline dark:text-sky-400">Sign in</a>
             </Text>
         </div>
       </div>
