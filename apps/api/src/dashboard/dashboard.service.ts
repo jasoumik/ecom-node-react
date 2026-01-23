@@ -1,0 +1,29 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { Knex } from 'knex';
+
+@Injectable()
+export class DashboardService {
+  constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
+
+  async getStats() {
+    // Use first() to get the single row result for count/sum
+    const products = await this.knex('products').count('id as count').first();
+    const orders = await this.knex('orders').count('id as count').first();
+    const users = await this.knex('users').count('id as count').first();
+    const revenue = await this.knex('orders').sum('total_amount as total').first();
+
+    // Recent orders
+    const recentOrders = await this.knex('orders')
+      .select('id', 'order_number', 'customer_name', 'total_amount', 'status', 'created_at')
+      .orderBy('created_at', 'desc')
+      .limit(5);
+
+    return {
+      totalProducts: parseInt(products?.count as string || '0', 10),
+      totalOrders: parseInt(orders?.count as string || '0', 10),
+      totalUsers: parseInt(users?.count as string || '0', 10),
+      totalRevenue: parseFloat(revenue?.total as string || '0'),
+      recentOrders,
+    };
+  }
+}

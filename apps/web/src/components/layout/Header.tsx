@@ -10,12 +10,29 @@ import { useCart } from "@/lib/cart";
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const { totalItems } = useCart();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    const checkUser = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+
+    checkUser();
+    window.addEventListener("storage", checkUser);
+    return () => window.removeEventListener("storage", checkUser);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -24,6 +41,13 @@ export function Header() {
       router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+    router.push("/login");
   };
 
   return (
@@ -120,11 +144,25 @@ export function Header() {
               </nav>
 
               <div className="flex items-center gap-3">
-                <Link href="/login">
-                  <Button className="text-sm font-bold py-2.5 px-6 h-auto rounded-2xl bg-sky-500 text-white hover:bg-sky-600 shadow-lg shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-500">
-                    Login
-                  </Button>
-                </Link>
+                {user ? (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 hidden sm:inline">
+                      {user.name}
+                    </span>
+                    <Button 
+                      onClick={handleLogout}
+                      className="text-sm font-bold py-2.5 px-4 h-auto rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 shadow-sm dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 border border-red-100 dark:border-red-900"
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                ) : (
+                  <Link href="/login">
+                    <Button className="text-sm font-bold py-2.5 px-6 h-auto rounded-2xl bg-sky-500 text-white hover:bg-sky-600 shadow-lg shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-500">
+                      Login
+                    </Button>
+                  </Link>
+                )}
               </div>
               <ThemeToggle className="hover:bg-sky-50 dark:hover:bg-slate-800 p-2.5 rounded-2xl text-sky-500 dark:text-yellow-400" />
             </div>

@@ -36,6 +36,7 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable('orders', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.increments('order_number').unique().notNullable(); // Auto-incrementing numeric ID for display
     table.uuid('user_id').nullable().references('id').inTable('users').onDelete('SET NULL');
     table.string('customer_name').notNullable();
     table.string('customer_phone').notNullable();
