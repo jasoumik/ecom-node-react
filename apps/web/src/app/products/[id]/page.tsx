@@ -6,6 +6,7 @@ import { Heading, Text, Button, ResponsiveImage } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
+import { FullScreenLoader } from "@/components/ui/Loader";
 
 export default function ProductPage() {
   const params = useParams();
@@ -38,7 +39,6 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     if (!product) return;
     
-    // Parse image for cart
     let imageUrl = "https://picsum.photos/seed/default/800/800";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = product.images[0];
@@ -60,11 +60,7 @@ export default function ProductPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
-      </div>
-    );
+    return <FullScreenLoader />;
   }
 
   if (!product) {

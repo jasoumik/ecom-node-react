@@ -6,6 +6,7 @@ import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
+import { FullScreenLoader } from "@/components/ui/Loader";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -21,11 +22,8 @@ export default function ProductsPage() {
       setLoading(true);
       let url = `${API_URL}/products`;
       
-      // Handle query params manually since backend might expect different format or we need to combine
       const params = new URLSearchParams();
       if (categoryId) params.append("category", categoryId);
-      // If backend supports search, add it here. For now, client side filter or ignore.
-      // Assuming backend returns { data: [], meta: {} } now due to pagination change
       
       if (params.toString()) {
           url += `?${params.toString()}`;
@@ -35,7 +33,6 @@ export default function ProductsPage() {
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
-          // Handle paginated response structure { data: [], meta: {} }
           if (data.data && Array.isArray(data.data)) {
               let filteredProducts = data.data;
               if (searchQuery) {
@@ -46,7 +43,6 @@ export default function ProductsPage() {
               }
               setProducts(filteredProducts);
           } else if (Array.isArray(data)) {
-              // Fallback for non-paginated response
               let filteredProducts = data;
               if (searchQuery) {
                   const lowerQuery = searchQuery.toLowerCase();
@@ -71,7 +67,6 @@ export default function ProductsPage() {
   }, [categoryId, searchQuery]);
 
   const handleAddToCart = (product: any) => {
-    // Parse image for cart
     let imageUrl = "https://picsum.photos/seed/default/800/800";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = product.images[0];
@@ -93,11 +88,7 @@ export default function ProductsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
-      </div>
-    );
+    return <FullScreenLoader />;
   }
 
   return (

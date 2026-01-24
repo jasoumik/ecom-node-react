@@ -6,9 +6,11 @@ import { Button, Heading } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ name: "", price: "", old_price: "", cost_price: "", description: "", images: "", category_id: "", stock: "", sku: "" });
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -64,7 +66,19 @@ export default function CreateProductPage() {
               rows={4}
             />
           </div>
-          <Input label="Image URLs (comma separated)" value={newProduct.images} onChange={e => setNewProduct({...newProduct, images: e.target.value})} />
+          
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Images</label>
+            <div className="flex gap-2 mb-2">
+                <Input 
+                    className="flex-1" 
+                    value={newProduct.images} 
+                    onChange={e => setNewProduct({...newProduct, images: e.target.value})} 
+                    placeholder="Image URLs (comma separated)"
+                />
+                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)}>Select Media</Button>
+            </div>
+          </div>
           
           <div className="flex justify-end gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
@@ -72,6 +86,17 @@ export default function CreateProductPage() {
           </div>
         </form>
       </div>
+
+      {showMediaPicker && (
+        <MediaPicker 
+            onSelect={(url) => {
+                const currentImages = newProduct.images ? newProduct.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+                setNewProduct({ ...newProduct, images: [...currentImages, url].join(', ') });
+                setShowMediaPicker(false);
+            }}
+            onClose={() => setShowMediaPicker(false)}
+        />
+      )}
     </div>
   );
 }

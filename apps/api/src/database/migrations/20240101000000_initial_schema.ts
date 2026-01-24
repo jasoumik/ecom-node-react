@@ -73,9 +73,43 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('quantity').notNullable();
     table.timestamps(true, true);
   });
+
+  // Banners Table
+  await knex.schema.createTable('banners', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('title').notNullable();
+    table.string('image').notNullable();
+    table.string('link').nullable();
+    table.boolean('is_active').defaultTo(true);
+    table.integer('order').defaultTo(0);
+    table.timestamps(true, true);
+  });
+
+  // Media Folders Table
+  await knex.schema.createTable('media_folders', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('name').notNullable();
+    table.uuid('parent_id').nullable().references('id').inTable('media_folders').onDelete('CASCADE');
+    table.timestamps(true, true);
+  });
+
+  // Media Files Table
+  await knex.schema.createTable('media_files', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('name').notNullable();
+    table.string('url').notNullable();
+    table.string('type').notNullable(); // image, video, etc.
+    table.string('mime_type').notNullable();
+    table.integer('size').notNullable(); // in bytes
+    table.uuid('folder_id').nullable().references('id').inTable('media_folders').onDelete('SET NULL');
+    table.timestamps(true, true);
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('media_files');
+  await knex.schema.dropTableIfExists('media_folders');
+  await knex.schema.dropTableIfExists('banners');
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
   await knex.schema.dropTableIfExists('product_batches');

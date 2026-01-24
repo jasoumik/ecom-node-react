@@ -6,9 +6,11 @@ import { Button, Heading } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function EditProductPage() {
   const [product, setProduct] = useState<any>(null);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const params = useParams();
   const { addToast } = useToast();
@@ -18,7 +20,6 @@ export default function EditProductPage() {
     fetch(`${API_URL}/products/${id}`)
       .then(res => res.json())
       .then(data => {
-          // Parse images if string
           let images = data.images;
           if (typeof images === 'string') {
               try { images = JSON.parse(images).join(', '); } catch(e) { images = ''; }
@@ -82,7 +83,19 @@ export default function EditProductPage() {
               rows={4}
             />
           </div>
-          <Input label="Image URLs (comma separated)" value={product.images} onChange={e => setProduct({...product, images: e.target.value})} />
+          
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Images</label>
+            <div className="flex gap-2 mb-2">
+                <Input 
+                    className="flex-1" 
+                    value={product.images} 
+                    onChange={e => setProduct({...product, images: e.target.value})} 
+                    placeholder="Image URLs (comma separated)"
+                />
+                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)}>Select Media</Button>
+            </div>
+          </div>
           
           <div className="flex justify-end gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
@@ -90,6 +103,17 @@ export default function EditProductPage() {
           </div>
         </form>
       </div>
+
+      {showMediaPicker && (
+        <MediaPicker 
+            onSelect={(url) => {
+                const currentImages = product.images ? product.images.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+                setProduct({ ...product, images: [...currentImages, url].join(', ') });
+                setShowMediaPicker(false);
+            }}
+            onClose={() => setShowMediaPicker(false)}
+        />
+      )}
     </div>
   );
 }

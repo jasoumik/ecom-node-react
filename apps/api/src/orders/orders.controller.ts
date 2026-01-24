@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Put, UseGuards, Request } from '@ne
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
-@Controller('api/orders')
+@Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

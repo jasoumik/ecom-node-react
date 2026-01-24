@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Heading, Text } from "@repo/ui";
+import { Button, Heading } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { FullScreenLoader } from "@/components/ui/Loader";
+import { Table } from "@/components/ui/Table";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1 });
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -22,10 +25,10 @@ export default function AdminProductsPage() {
   }, []);
 
   const fetchProducts = async (page: number) => {
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/products?page=${page}&limit=10`);
       const data = await res.json();
-      // Handle both paginated and non-paginated responses for safety
       if (data.data && Array.isArray(data.data)) {
           setProducts(data.data);
           setMeta(data.meta);
@@ -38,6 +41,8 @@ export default function AdminProductsPage() {
     } catch (e) {
       console.error("Failed to fetch products", e);
       setProducts([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,94 +61,153 @@ export default function AdminProductsPage() {
     }
   };
 
+  if (loading && products.length === 0) return <FullScreenLoader />;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
-        <Heading size="xl" className="font-sans text-slate-900 dark:text-white">Products</Heading>
-        <Button onClick={() => router.push("/admin/products/create")}>Add Product</Button>
+        <div>
+            <Heading size="lg" className="font-sans text-slate-800 dark:text-white mb-1">Products</Heading>
+            <p className="text-sm text-slate-500">Manage your product inventory</p>
+        </div>
+        <Button onClick={() => router.push("/admin/products/create")} className="rounded-xl shadow-lg shadow-sky-500/20">
+            + Add Product
+        </Button>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 dark:bg-slate-700/50">
-            <tr>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Image</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Name</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Price</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Stock</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
-            {products.length === 0 ? (
-                <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No products found.</td>
-                </tr>
-            ) : (
-                products.map((product) => {
-                let imageUrl = "https://picsum.photos/seed/default/800/800";
-                try {
-                    const parsed = JSON.parse(product.images);
-                    if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
-                } catch (e) {}
-
-                return (
-                    <tr key={product.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <td className="px-6 py-4">
-                        <img src={imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
-                        {product.name}
-                        {product.sku && <div className="text-xs text-slate-500 font-normal">SKU: {product.sku}</div>}
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                        <div>৳{product.price}</div>
-                        {product.old_price && <div className="text-xs text-slate-400 line-through">৳{product.old_price}</div>}
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{product.stock}</td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                        <Button 
-                        variant="outline" 
-                        className="px-3 py-1.5 text-xs rounded-lg"
-                        onClick={() => router.push(`/admin/products/${product.id}/edit`)}
-                        >
-                        Edit
-                        </Button>
-                        <Button 
-                        variant="outline" 
-                        className="text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300 px-3 py-1.5 text-xs rounded-lg"
-                        onClick={() => handleDelete(product.id)}
-                        >
-                        Delete
-                        </Button>
-                    </td>
-                    </tr>
-                );
-                })
-            )}
-          </tbody>
-        </table>
-        
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
-            <Button 
-                variant="outline" 
-                disabled={meta.page === 1}
-                onClick={() => fetchProducts(meta.page - 1)}
-            >
-                Previous
-            </Button>
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-                Page {meta.page} of {meta.totalPages}
-            </span>
-            <Button 
-                variant="outline" 
-                disabled={meta.page === meta.totalPages}
-                onClick={() => fetchProducts(meta.page + 1)}
-            >
-                Next
-            </Button>
-        </div>
+      <Table
+        data={products}
+        columns={[
+          {
+            header: "Product",
+            cell: (product) => {
+              let imageUrl = "https://picsum.photos/seed/default/800/800";
+              try {
+                  const parsed = JSON.parse(product.images);
+                  if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+              } catch (e) {}
+              return (
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-100 dark:border-slate-700 shrink-0">
+                        <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">{product.name}</div>
+                        {product.sku && <div className="text-xs text-slate-400 font-medium mt-0.5">SKU: {product.sku}</div>}
+                    </div>
+                </div>
+              );
+            }
+          },
+          {
+            header: "Price",
+            cell: (product) => (
+              <div>
+                <div className="font-bold text-slate-900 dark:text-white text-sm">৳{product.price}</div>
+                {product.old_price && <div className="text-xs text-slate-400 line-through">৳{product.old_price}</div>}
+              </div>
+            )
+          },
+          {
+            header: "Stock",
+            cell: (product) => (
+              <div className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold ${
+                  product.stock > 10 
+                  ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' 
+                  : product.stock > 0 
+                  ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
+                  : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+              }`}>
+                  {product.stock} in stock
+              </div>
+            )
+          },
+          {
+            header: "Actions",
+            className: "text-right",
+            cell: (product) => (
+              <div className="flex justify-end gap-2">
+                  <button 
+                  onClick={() => router.push(`/admin/products/${product.id}/edit`)}
+                  className="p-2 rounded-lg text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition-colors"
+                  title="Edit"
+                  >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                  </button>
+                  <button 
+                  onClick={() => handleDelete(product.id)}
+                  className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                  title="Delete"
+                  >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+              </div>
+            )
+          }
+        ]}
+        mobileRenderer={(product) => {
+            let imageUrl = "https://picsum.photos/seed/default/800/800";
+            try {
+                const parsed = JSON.parse(product.images);
+                if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+            } catch (e) {}
+            
+            return (
+                <div className="flex gap-4">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                        <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">{product.name}</h4>
+                                <div className="text-xs text-slate-500 mt-0.5">SKU: {product.sku || '-'}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="font-bold text-slate-900 dark:text-white text-sm">৳{product.price}</div>
+                                {product.old_price && <div className="text-xs text-slate-400 line-through">৳{product.old_price}</div>}
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center mt-2">
+                            <div className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
+                                product.stock > 10 
+                                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' 
+                                : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                            }`}>
+                                {product.stock} left
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => router.push(`/admin/products/${product.id}/edit`)} className="text-sky-600 text-xs font-bold">Edit</button>
+                                <button onClick={() => handleDelete(product.id)} className="text-red-600 text-xs font-bold">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }}
+      />
+      
+      {/* Pagination */}
+      <div className="flex justify-between items-center pt-4">
+          <Button 
+              variant="outline" 
+              disabled={meta.page === 1}
+              onClick={() => fetchProducts(meta.page - 1)}
+              className="rounded-xl"
+          >
+              Previous
+          </Button>
+          <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+              Page {meta.page} of {meta.totalPages}
+          </span>
+          <Button 
+              variant="outline" 
+              disabled={meta.page === meta.totalPages}
+              onClick={() => fetchProducts(meta.page + 1)}
+              className="rounded-xl"
+          >
+              Next
+          </Button>
       </div>
     </div>
   );

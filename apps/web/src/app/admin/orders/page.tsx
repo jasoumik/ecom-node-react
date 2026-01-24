@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Heading, Button } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { Table } from "@/components/ui/Table";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -38,58 +39,99 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <Heading size="xl" className="font-sans text-slate-900 dark:text-white">Orders</Heading>
-
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 dark:bg-slate-700/50">
-            <tr>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Order #</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Customer</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Items</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Total</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400">Status</th>
-              <th className="px-6 py-4 font-bold text-slate-500 dark:text-slate-400 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
-            {orders.map((order) => (
-              <tr key={order.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">#{order.order_number}</td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-slate-900 dark:text-white">{order.customer_name}</div>
-                  <div className="text-xs text-slate-500">{order.customer_phone}</div>
-                </td>
-                <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                  {order.items?.length || 0} items
-                </td>
-                <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">৳{order.total_amount}</td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold capitalize ${
-                    order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-slate-100 text-slate-700'
-                  }`}>
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right space-x-2">
-                  {order.status === 'pending' && (
-                    <Button 
-                      variant="outline" 
-                      className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300 px-3 py-1.5 text-xs rounded-lg"
-                      onClick={() => handleStatusUpdate(order.id, 'completed')}
-                    >
-                      Complete
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div>
+        <Heading size="lg" className="font-sans text-slate-800 dark:text-white mb-1">Orders</Heading>
+        <p className="text-sm text-slate-500">Track and manage customer orders</p>
       </div>
+
+      <Table
+        data={orders}
+        columns={[
+          {
+            header: "Order #",
+            cell: (order) => <span className="font-medium text-slate-700 dark:text-slate-300">#{order.order_number}</span>
+          },
+          {
+            header: "Customer",
+            cell: (order) => (
+              <div>
+                <div className="font-bold text-slate-900 dark:text-white text-sm">{order.customer_name}</div>
+                <div className="text-xs text-slate-500">{order.customer_phone}</div>
+              </div>
+            )
+          },
+          {
+            header: "Items",
+            cell: (order) => <span className="text-slate-600 dark:text-slate-300 text-sm">{order.items?.length || 0} items</span>
+          },
+          {
+            header: "Total",
+            cell: (order) => <span className="font-bold text-slate-900 dark:text-white text-sm">৳{order.total_amount}</span>
+          },
+          {
+            header: "Status",
+            cell: (order) => (
+              <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold capitalize tracking-wide ${
+                  order.status === 'completed' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                  order.status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
+                  'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+              }`}>
+                  {order.status}
+              </span>
+            )
+          },
+          {
+            header: "Actions",
+            className: "text-right",
+            cell: (order) => (
+              <div className="flex justify-end">
+                {order.status === 'pending' && (
+                    <button 
+                    onClick={() => handleStatusUpdate(order.id, 'completed')}
+                    className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
+                    title="Mark as Completed"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </button>
+                )}
+              </div>
+            )
+          }
+        ]}
+        mobileRenderer={(order) => (
+            <div className="flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">#{order.order_number}</div>
+                        <div className="text-xs text-slate-500">{new Date(order.created_at).toLocaleDateString()}</div>
+                    </div>
+                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold capitalize ${
+                        order.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                        {order.status}
+                    </span>
+                </div>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <div className="text-sm font-medium text-slate-800 dark:text-white">{order.customer_name}</div>
+                        <div className="text-xs text-slate-500">{order.items?.length || 0} items</div>
+                    </div>
+                    <div className="text-right">
+                        <div className="font-bold text-slate-900 dark:text-white">৳{order.total_amount}</div>
+                        {order.status === 'pending' && (
+                            <button 
+                                onClick={() => handleStatusUpdate(order.id, 'completed')}
+                                className="text-emerald-600 text-xs font-bold mt-1"
+                            >
+                                Mark Complete
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        )}
+      />
     </div>
   );
 }
