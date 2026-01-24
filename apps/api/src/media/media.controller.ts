@@ -39,8 +39,12 @@ export class MediaController {
       }
     })
   }))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Body('folderId') folderId?: string) {
-    return this.mediaService.saveFileRecord(file, folderId);
+  uploadFile(
+      @UploadedFile() file: Express.Multer.File, 
+      @Body('folderId') folderId?: string,
+      @Body('context') context?: string
+  ) {
+    return this.mediaService.saveFileRecord(file, folderId, context);
   }
 
   @Delete('files/:id')

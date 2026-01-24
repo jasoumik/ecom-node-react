@@ -12,6 +12,8 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('banners').del();
   await knex('media_files').del();
   await knex('media_folders').del();
+  await knex('delivery_charges').del();
+  await knex('coupons').del();
 
   // Create Admin User
   const salt = await bcrypt.genSalt();
@@ -103,5 +105,18 @@ export async function seed(knex: Knex): Promise<void> {
       is_active: true,
       order: 2,
     },
+  ]);
+
+  // Insert Delivery Charges
+  await knex('delivery_charges').insert([
+    { name: 'Inside Dhaka', amount: 60.00 },
+    { name: 'Outside Dhaka Metro', amount: 100.00 },
+    { name: 'Outside Dhaka', amount: 130.00 },
+  ]);
+
+  // Insert Coupons
+  await knex('coupons').insert([
+    { code: 'WELCOME20', type: 'percentage', value: 20.00, min_order_amount: 1000.00, expires_at: '2025-12-31' },
+    { code: 'FLAT100', type: 'fixed', value: 100.00, min_order_amount: 2000.00, expires_at: '2025-12-31' },
   ]);
 }

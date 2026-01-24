@@ -26,9 +26,13 @@ export default function LoginPage() {
         const data = await res.json();
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        
+        // Dispatch storage event to update header immediately
+        window.dispatchEvent(new Event("storage"));
+        
         addToast("Logged in successfully!", "success");
         if (data.user.role === 'admin') {
-            router.push("/admin/products");
+            router.push("/admin");
         } else {
             router.push("/");
         }

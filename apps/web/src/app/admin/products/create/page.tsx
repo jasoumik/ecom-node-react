@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Heading } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
@@ -10,9 +10,26 @@ import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ name: "", price: "", old_price: "", cost_price: "", description: "", images: "", category_id: "", stock: "", sku: "" });
+  const [categories, setCategories] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
+
+  useEffect(() => {
+    fetch(`${API_URL}/categories`)
+      .then(res => res.json())
+      .then(data => {
+          const flatten = (cats: any[], level = 0): any[] => {
+              return cats.reduce((acc, cat) => {
+                  acc.push({ ...cat, level });
+                  if (cat.children) acc.push(...flatten(cat.children, level + 1));
+                  return acc;
+              }, []);
+          };
+          setCategories(flatten(Array.isArray(data) ? data : []));
+      })
+      .catch(console.error);
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +70,22 @@ export default function CreateProductPage() {
           </div>
           <div className="grid grid-cols-2 gap-6">
              <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} />
-             <Input label="Category ID (UUID)" value={newProduct.category_id} onChange={e => setNewProduct({...newProduct, category_id: e.target.value})} required />
+             <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Category</label>
+                <select 
+                    className="w-full px-4 py-3 rounded-md border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                    value={newProduct.category_id}
+                    onChange={e => setNewProduct({...newProduct, category_id: e.target.value})}
+                    required
+                >
+                    <option value="">Select Category</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                            {'\u00A0'.repeat(cat.level * 4)}{cat.name}
+                        </option>
+                    ))}
+                </select>
+             </div>
           </div>
           
           <div>

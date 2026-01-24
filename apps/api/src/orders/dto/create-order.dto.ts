@@ -8,5 +8,7 @@ export class CreateOrderDto {
   customerPhone: string;
   customerAddress: string;
   items: CreateOrderItemDto[];
-  userId?: string; // Optional, if logged in
+  userId?: string;
+  deliveryChargeId: string; // Required now
+  couponCode?: string; // Optional
 }

@@ -1,5 +1,6 @@
-import { Controller, Get, Delete, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Delete, Param, UseGuards, Put, Body, Post, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -10,8 +11,33 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('profile/:id')
+  getProfile(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
+  @Put('profile/:id')
+  updateProfile(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.usersService.update(id, updateProfileDto);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Get(':id/addresses')
+  getAddresses(@Param('id') id: string) {
+    return this.usersService.getAddresses(id);
+  }
+
+  @Post(':id/addresses')
+  addAddress(@Param('id') id: string, @Body() addressData: any) {
+    return this.usersService.addAddress(id, addressData);
+  }
+
+  @Delete(':id/addresses/:addressId')
+  deleteAddress(@Param('id') id: string, @Param('addressId') addressId: string) {
+    return this.usersService.deleteAddress(addressId, id);
   }
 }

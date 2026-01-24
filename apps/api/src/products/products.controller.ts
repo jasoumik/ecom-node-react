@@ -16,6 +16,14 @@ export class ProductsController {
     return this.productsService.findAll(Number(page), Number(limit), categoryId);
   }
 
+  @Get('batches')
+  async getAllBatches(
+      @Query('page') page: number = 1,
+      @Query('limit') limit: number = 20
+  ) {
+      return this.productsService.getAllBatches(Number(page), Number(limit));
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
@@ -39,5 +47,10 @@ export class ProductsController {
   @Post(':id/batches')
   addBatch(@Param('id') id: string, @Body() batchData: any) {
     return this.productsService.addBatch(id, batchData);
+  }
+
+  @Delete('batches/:id')
+  deleteBatch(@Param('id') id: string) {
+      return this.productsService.deleteBatch(id);
   }
 }

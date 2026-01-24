@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, UseGuards, Request, Query, Delete } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
@@ -16,6 +16,11 @@ export class OrdersController {
     return this.ordersService.findAll();
   }
 
+  @Get('my-orders')
+  findMyOrders(@Query('userId') userId: string) {
+    return this.ordersService.findByUser(userId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
@@ -24,5 +29,10 @@ export class OrdersController {
   @Put(':id/status')
   updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.ordersService.updateStatus(id, status);
+  }
+
+  @Put(':id/cancel')
+  cancelOrder(@Param('id') id: string, @Body('userId') userId: string) {
+    return this.ordersService.cancelOrder(id, userId);
   }
 }

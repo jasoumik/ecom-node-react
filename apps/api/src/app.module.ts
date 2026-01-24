@@ -10,6 +10,10 @@ import { OrdersModule } from './orders/orders.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { BannersModule } from './banners/banners.module';
 import { MediaModule } from './media/media.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { DeliveryModule } from './delivery/delivery.module';
+import { BrandsModule } from './brands/brands.module';
+import { SettingsModule } from './settings/settings.module';
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -26,8 +30,12 @@ import { join } from 'path';
     DashboardModule,
     BannersModule,
     MediaModule,
+    CouponsModule,
+    DeliveryModule,
+    BrandsModule,
+    SettingsModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // Serve uploads from root/uploads
+      rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
   ],

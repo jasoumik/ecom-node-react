@@ -8,9 +8,10 @@ import { FullScreenLoader } from "./Loader";
 interface MediaPickerProps {
   onSelect: (url: string) => void;
   onClose: () => void;
+  context?: string; // 'profile' or 'general'
 }
 
-export function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
+export function MediaPicker({ onSelect, onClose, context = 'general' }: MediaPickerProps) {
   const [folders, setFolders] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
     const formData = new FormData();
     formData.append("file", e.target.files[0]);
     if (currentFolder) formData.append("folderId", currentFolder);
+    if (context) formData.append("context", context);
 
     setLoading(true);
     try {
@@ -56,7 +58,15 @@ export function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
         body: formData,
       });
       if (res.ok) {
-        fetchMedia(currentFolder);
+        const data = await res.json();
+        // If context is profile, we might not get a file record back in the list immediately if we chose not to save it to DB.
+        // But we need to select it.
+        if (context === 'profile') {
+            onSelect(`${BASE_URL}${data.url}`);
+            onClose();
+        } else {
+            fetchMedia(currentFolder);
+        }
       }
     } catch (e) {
       console.error(e);

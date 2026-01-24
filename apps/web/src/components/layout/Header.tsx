@@ -108,7 +108,7 @@ export function Header() {
             </div>
             
             {/* Actions */}
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {/* Mobile Search Toggle */}
               <button 
                 className="md:hidden p-2.5 rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors dark:bg-slate-800 dark:text-sky-400"
@@ -143,18 +143,32 @@ export function Header() {
                 </Link>
               </nav>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {user ? (
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 hidden sm:inline">
-                      {user.name}
-                    </span>
-                    <Button 
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Link href="/profile" className="flex items-center gap-2 group">
+                        <div className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-sm border border-sky-200 dark:border-sky-800 group-hover:border-sky-400 transition-colors">
+                            {user.avatar ? (
+                                <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                                user.name.charAt(0).toUpperCase()
+                            )}
+                        </div>
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300 hidden sm:inline group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                        {user.name.split(' ')[0]}
+                        </span>
+                    </Link>
+                    <button 
                       onClick={handleLogout}
-                      className="text-sm font-bold py-2.5 px-4 h-auto rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 shadow-sm dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 border border-red-100 dark:border-red-900"
+                      className="p-2.5 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 shadow-sm dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 border border-red-100 dark:border-red-900 transition-colors"
+                      title="Logout"
                     >
-                      Logout
-                    </Button>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                    </button>
                   </div>
                 ) : (
                   <Link href="/login">

@@ -5,7 +5,8 @@ export class CreateProductDto {
   old_price?: number;
   cost_price?: number;
   images: string[];
-  category_id: string; // Changed from category string to category_id
+  category_id: string;
+  brand_id?: string; // Optional
   stock: number;
   sku?: string;
 }

@@ -8,6 +8,7 @@ export class UpdateProductDto {
   cost_price?: number;
   images?: string[];
   category_id?: string;
+  brand_id?: string;
   stock?: number;
   sku?: string;
 }
