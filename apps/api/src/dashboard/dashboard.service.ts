@@ -7,10 +7,12 @@ export class DashboardService {
 
   async getStats() {
     // Use first() to get the single row result for count/sum
-    const products = await this.knex('products').count('id as count').first();
-    const orders = await this.knex('orders').count('id as count').first();
-    const users = await this.knex('users').count('id as count').first();
+    const products = await this.knex('products').count('* as count').first();
+    const orders = await this.knex('orders').count('* as count').first();
+    const users = await this.knex('users').count('* as count').first();
     const revenue = await this.knex('orders').sum('total_amount as total').first();
+
+    console.log('Dashboard Stats Raw:', { products, orders, users, revenue });
 
     // Recent orders
     const recentOrders = await this.knex('orders')

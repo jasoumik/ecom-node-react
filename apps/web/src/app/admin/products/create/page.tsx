@@ -8,29 +8,13 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 
 export default function CreateProductPage() {
-  const [newProduct, setNewProduct] = useState({ name: "", price: "", description: "", images: "", category: "", stock: "" });
+  const [newProduct, setNewProduct] = useState({ name: "", price: "", old_price: "", cost_price: "", description: "", images: "", category_id: "", stock: "", sku: "" });
   const router = useRouter();
   const { addToast } = useToast();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     const imagesArray = newProduct.images.split(",").map(s => s.trim());
-    
-    // Need to fetch category ID first or use a dropdown. For simplicity, assuming category name is passed or we need to implement category selection.
-    // Since we changed schema to use category_id, we should ideally fetch categories.
-    // For now, let's assume the user inputs a valid category ID or we need to fix this flow.
-    // Let's fetch categories to show in a dropdown.
-    
-    // Actually, let's just send what we have and let backend handle or fail.
-    // But wait, backend expects category_id UUID.
-    // I should add a category selector.
-    
-    // For this step, I'll just send the data. If it fails, I'll fix it.
-    // But wait, the previous code was sending 'category' string. The backend migration changed it to 'category_id'.
-    // I need to update the form to select a category.
-    
-    // Let's fetch categories first.
-    // I'll do that in a separate useEffect.
     
     try {
         const res = await fetch(`${API_URL}/products`, {
@@ -59,11 +43,16 @@ export default function CreateProductPage() {
           <Input label="Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required />
           <div className="grid grid-cols-2 gap-6">
             <Input label="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required />
+            <Input label="Old Price" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <Input label="Cost Price" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} />
             <Input label="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required />
           </div>
-          
-          {/* Category Selection should be here. For now keeping text input but labeled as Category ID */}
-          <Input label="Category ID (UUID)" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} required />
+          <div className="grid grid-cols-2 gap-6">
+             <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} />
+             <Input label="Category ID (UUID)" value={newProduct.category_id} onChange={e => setNewProduct({...newProduct, category_id: e.target.value})} required />
+          </div>
           
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Description</label>

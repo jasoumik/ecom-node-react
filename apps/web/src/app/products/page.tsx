@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/Toast";
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
+  const searchQuery = searchParams.get("search");
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { addItem } = useCart();
@@ -18,25 +19,56 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-      const url = categoryId 
-        ? `${API_URL}/products?category=${categoryId}`
-        : `${API_URL}/products`;
-        
+      let url = `${API_URL}/products`;
+      
+      // Handle query params manually since backend might expect different format or we need to combine
+      const params = new URLSearchParams();
+      if (categoryId) params.append("category", categoryId);
+      // If backend supports search, add it here. For now, client side filter or ignore.
+      // Assuming backend returns { data: [], meta: {} } now due to pagination change
+      
+      if (params.toString()) {
+          url += `?${params.toString()}`;
+      }
+
       try {
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
-          setProducts(data);
+          // Handle paginated response structure { data: [], meta: {} }
+          if (data.data && Array.isArray(data.data)) {
+              let filteredProducts = data.data;
+              if (searchQuery) {
+                  const lowerQuery = searchQuery.toLowerCase();
+                  filteredProducts = filteredProducts.filter((p: any) => 
+                      p.name.toLowerCase().includes(lowerQuery)
+                  );
+              }
+              setProducts(filteredProducts);
+          } else if (Array.isArray(data)) {
+              // Fallback for non-paginated response
+              let filteredProducts = data;
+              if (searchQuery) {
+                  const lowerQuery = searchQuery.toLowerCase();
+                  filteredProducts = filteredProducts.filter((p: any) => 
+                      p.name.toLowerCase().includes(lowerQuery)
+                  );
+              }
+              setProducts(filteredProducts);
+          } else {
+              setProducts([]);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch products", error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [categoryId]);
+  }, [categoryId, searchQuery]);
 
   const handleAddToCart = (product: any) => {
     // Parse image for cart

@@ -8,16 +8,12 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  async findAll(@Query('category') categoryId?: string) {
-    console.log('GET /api/products', { categoryId });
-    if (categoryId) {
-        const products = await this.productsService.findByCategory(categoryId);
-        console.log(`Found ${products.length} products for category ${categoryId}`);
-        return products;
-    }
-    const products = await this.productsService.findAll();
-    console.log(`Found ${products.length} products`);
-    return products;
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('category') categoryId?: string
+  ) {
+    return this.productsService.findAll(Number(page), Number(limit), categoryId);
   }
 
   @Get(':id')
@@ -38,5 +34,10 @@ export class ProductsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
+  }
+
+  @Post(':id/batches')
+  addBatch(@Param('id') id: string, @Body() batchData: any) {
+    return this.productsService.addBatch(id, batchData);
   }
 }

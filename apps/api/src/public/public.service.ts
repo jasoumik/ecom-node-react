@@ -18,8 +18,11 @@ export class PublicService {
         image: cat.image || "https://picsum.photos/seed/default/800/800"
     }));
 
-    const allProducts = await this.productsService.findAll();
-    // Take top 4 products, assuming they are ordered by creation or just take first 4
+    // Fetch products (paginated response)
+    const productsResult = await this.productsService.findAll(1, 10); // Fetch first page
+    const allProducts = productsResult.data || [];
+    
+    // Take top 4 products
     const featuredProducts = allProducts.slice(0, 4).map(p => {
         let imageUrl = "https://picsum.photos/seed/default/800/800";
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
@@ -63,7 +66,7 @@ export class PublicService {
           priority: true,
         },
         stats: [
-          { label: "Products Available", value: `${allProducts.length}+` },
+          { label: "Products Available", value: `${productsResult.meta?.total || allProducts.length}+` },
           { label: "Happy Families", value: "50k+" },
         ],
       },
