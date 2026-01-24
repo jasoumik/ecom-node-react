@@ -1,5 +1,9 @@
+"use client";
+
 import { Section, Heading, Text, CardGrid, Card, ResponsiveImage, RatingStars, Button } from "@repo/ui";
 import type { FeaturedProduct } from "./types";
+import { useCart } from "@/lib/cart";
+import { useToast } from "@/components/ui/Toast";
 
 interface FeaturedProductsSectionProps {
   title: string;
@@ -14,6 +18,23 @@ export function FeaturedProductsSection({
   products,
   viewAllHref,
 }: FeaturedProductsSectionProps) {
+  const { addItem } = useCart();
+  const { addToast } = useToast();
+
+  const handleAddToCart = (product: FeaturedProduct) => {
+    // Clean price string (remove currency symbol and commas)
+    const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
+    
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: isNaN(priceValue) ? 0 : priceValue,
+      image: product.image.src,
+      quantity: 1,
+    });
+    addToast(`Added ${product.name} to cart`);
+  };
+
   return (
     <Section className="py-12 sm:py-24 transition-colors duration-300 !bg-sky-50 dark:!bg-slate-950">
       <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-10 sm:mb-16 max-w-7xl mx-auto px-4">
@@ -82,6 +103,7 @@ export function FeaturedProductsSection({
                 <Button 
                   variant="primary"
                   className="w-full bg-sky-400 text-white hover:bg-sky-500 shadow-md font-bold py-2.5 rounded-md text-sm"
+                  onClick={() => handleAddToCart(product)}
                 >
                   Add to Cart
                 </Button>
