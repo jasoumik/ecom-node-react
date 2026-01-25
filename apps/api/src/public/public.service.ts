@@ -19,10 +19,32 @@ export class PublicService {
         image: cat.image || "https://picsum.photos/seed/default/800/800"
     }));
 
-    const productsResult = await this.productsService.findAll(1, 10);
-    const allProducts = productsResult.data || [];
+    // Fetch Trending Products (Most Ordered)
+    const trendingProducts = await this.knex('order_items')
+        .join('products', 'order_items.product_id', 'products.id')
+        .select(
+            'products.id',
+            'products.name',
+            'products.price',
+            'products.images',
+            'products.stock'
+        )
+        .sum('order_items.quantity as total_sold')
+        .groupBy('products.id')
+        .orderBy('total_sold', 'desc')
+        .limit(8);
+
+    // Fallback to latest products if no orders yet
+    let productsToDisplay = trendingProducts;
+    if (trendingProducts.length < 4) {
+        const latestProducts = await this.productsService.findAll(1, 8);
+        // Merge and deduplicate
+        const existingIds = new Set(trendingProducts.map(p => p.id));
+        const additional = (latestProducts.data || []).filter(p => !existingIds.has(p.id));
+        productsToDisplay = [...trendingProducts, ...additional].slice(0, 8);
+    }
     
-    const featuredProducts = allProducts.slice(0, 4).map(p => {
+    const featuredProducts = productsToDisplay.map((p: any) => {
         let imageUrl = "https://picsum.photos/seed/default/800/800";
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
             imageUrl = p.images[0];
@@ -44,9 +66,9 @@ export class PublicService {
                 width: 400,
                 height: 400,
             },
-            tag: p.stock < 10 ? "Low Stock" : "New",
+            tag: p.total_sold > 5 ? "Best Seller" : (p.stock < 10 ? "Low Stock" : "New"),
             rating: 5.0,
-            reviewCount: 0,
+            reviewCount: 0, // Ideally fetch review count too
         };
     });
 
@@ -61,7 +83,6 @@ export class PublicService {
         subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, organic skincare, and maternity essentials. Trusted by 50,000+ parents.",
         primaryCta: { label: "Shop All Products", href: "/products" },
         secondaryCta: { label: "Bundle & Save", href: "/bundles" },
-        // If banners exist, use them. Otherwise fallback to static image.
         banners: banners.length > 0 ? banners.map(b => ({
             id: b.id,
             src: b.image,
@@ -76,7 +97,7 @@ export class PublicService {
           priority: true,
         },
         stats: [
-          { label: "Products Available", value: `${productsResult.meta?.total || allProducts.length}+` },
+          { label: "Products Available", value: `100+` },
           { label: "Happy Families", value: "50k+" },
         ],
       },
