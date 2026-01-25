@@ -3,8 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Heading } from "@repo/ui";
+import { Button } from "@repo/ui";
 import { FullScreenLoader } from "@/components/ui/Loader";
+
+interface NavItem {
+  label: string;
+  href?: string;
+  icon: string;
+  children?: NavItem[];
+}
 
 export default function AdminLayout({
   children,
@@ -16,6 +23,7 @@ export default function AdminLayout({
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(["Catalog", "Sales"]); // Default expanded
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -36,31 +44,109 @@ export default function AdminLayout({
     }
   }, [router]);
 
-  // Close mobile menu on route change
   useEffect(() => {
       setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  const toggleMenu = (label: string) => {
+      setExpandedMenus(prev => 
+          prev.includes(label) ? prev.filter(m => m !== label) : [...prev, label]
+      );
+  };
 
   if (!isAuthorized) {
     return <FullScreenLoader />;
   }
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { label: "Dashboard", href: "/admin", icon: "📊" },
-    { label: "Products", href: "/admin/products", icon: "🛍️" },
-    { label: "Batches", href: "/admin/batches", icon: "📦" },
-    { label: "Stock Ledger", href: "/admin/stock-ledger", icon: "📜" },
-    { label: "Requests", href: "/admin/requests", icon: "🔔" },
-    { label: "Reviews", href: "/admin/reviews", icon: "⭐" }, // Added Reviews
-    { label: "Categories", href: "/admin/categories", icon: "📂" },
-    { label: "Brands", href: "/admin/brands", icon: "🏷️" },
-    { label: "Countries", href: "/admin/countries", icon: "🏳️" },
-    { label: "Orders", href: "/admin/orders", icon: "📦" },
-    { label: "Customers", href: "/admin/customers", icon: "👥" },
-    { label: "Banners", href: "/admin/banners", icon: "🖼️" },
-    { label: "Media", href: "/admin/media", icon: "📁" },
-    { label: "Settings", href: "/admin/settings", icon: "⚙️" },
+    { 
+      label: "Catalog", 
+      icon: "🛍️",
+      children: [
+        { label: "Products", href: "/admin/products", icon: "📦" },
+        { label: "Categories", href: "/admin/categories", icon: "📂" },
+        { label: "Brands", href: "/admin/brands", icon: "🏷️" },
+        { label: "Batches", href: "/admin/batches", icon: "🔢" },
+        { label: "Stock Ledger", href: "/admin/stock-ledger", icon: "📜" },
+      ]
+    },
+    { 
+      label: "Sales", 
+      icon: "💰",
+      children: [
+        { label: "Orders", href: "/admin/orders", icon: "🛒" },
+        { label: "Customers", href: "/admin/customers", icon: "👥" },
+        { label: "Reviews", href: "/admin/reviews", icon: "⭐" },
+      ]
+    },
+    { 
+      label: "Content", 
+      icon: "🎨",
+      children: [
+        { label: "Banners", href: "/admin/banners", icon: "🖼️" },
+        { label: "Media", href: "/admin/media", icon: "📁" },
+      ]
+    },
+    { 
+      label: "System", 
+      icon: "⚙️",
+      children: [
+        { label: "Settings", href: "/admin/settings", icon: "🔧" },
+        { label: "Countries", href: "/admin/countries", icon: "🏳️" },
+        { label: "Requests", href: "/admin/requests", icon: "🔔" },
+      ]
+    },
   ];
+
+  const renderNavItem = (item: NavItem) => {
+      if (item.children) {
+          const isExpanded = expandedMenus.includes(item.label);
+          const hasActiveChild = item.children.some(child => pathname === child.href);
+          
+          return (
+              <div key={item.label} className="mb-1">
+                  <button 
+                      onClick={() => toggleMenu(item.label)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                          hasActiveChild ? 'text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800'
+                      }`}
+                  >
+                      <div className="flex items-center gap-3">
+                          <span className="text-base">{item.icon}</span>
+                          {item.label}
+                      </div>
+                      <span className={`text-xs transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                  </button>
+                  
+                  {isExpanded && (
+                      <div className="ml-4 pl-3 border-l border-slate-100 dark:border-slate-800 mt-1 space-y-0.5 animate-in slide-in-from-top-1 duration-200">
+                          {item.children.map(child => renderNavItem(child))}
+                      </div>
+                  )}
+              </div>
+          );
+      }
+
+      const isActive = pathname === item.href;
+      return (
+        <Link
+          key={item.href}
+          href={item.href!}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative overflow-hidden ${
+            isActive
+              ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400"
+              : "text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
+          }`}
+        >
+          {isActive && (
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-sky-500 rounded-r-full"></div>
+          )}
+          <span className={`text-base transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`}>{item.icon}</span>
+          {item.label}
+        </Link>
+      );
+  };
 
   return (
     <div className="min-h-screen bg-[#f4f7fa] dark:bg-slate-950 flex font-sans overflow-hidden">
@@ -94,31 +180,13 @@ export default function AdminLayout({
           <nav className="space-y-0.5">
             <Link
                 href="/"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all duration-200 group"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all duration-200 group mb-2"
             >
                 <span className="text-base transition-transform duration-300 group-hover:scale-110">🏠</span>
                 Visit Store
             </Link>
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative overflow-hidden ${
-                    isActive
-                      ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
-                  }`}
-                >
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-sky-500 rounded-r-full"></div>
-                  )}
-                  <span className={`text-base transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`}>{item.icon}</span>
-                  {item.label}
-                </Link>
-              );
-            })}
+            
+            {navItems.map(item => renderNavItem(item))}
           </nav>
         </div>
         
