@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Heading, Text, Button, ResponsiveImage } from "@repo/ui";
+import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
@@ -13,6 +13,7 @@ export default function ProductPage() {
   const params = useParams();
   const id = params.id as string;
   const [product, setProduct] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState<string>("");
   const [isZoomed, setIsZoomed] = useState(false);
@@ -38,9 +39,13 @@ export default function ProductPage() {
       if (!id) return;
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/products/${id}`);
-        if (res.ok) {
-          const data = await res.json();
+        const [productRes, reviewsRes] = await Promise.all([
+            fetch(`${API_URL}/products/${id}`),
+            fetch(`${API_URL}/reviews/product/${id}`)
+        ]);
+        
+        if (productRes.ok) {
+          const data = await productRes.json();
           setProduct(data);
           
           let media: string[] = [];
@@ -55,13 +60,17 @@ export default function ProductPage() {
           }
           if (media.length > 0) setSelectedMedia(media[0]);
 
-          // Pre-select first variant options if available
           if (data.variants && data.variants.length > 0) {
               const sortedVariants = [...data.variants].sort((a, b) => b.stock - a.stock);
               const first = sortedVariants[0];
               if (first.size) setSelectedSize(first.size);
               if (first.color) setSelectedColor(first.color);
           }
+        }
+
+        if (reviewsRes.ok) {
+            const reviewsData = await reviewsRes.json();
+            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
         }
       } catch (error) {
         console.error("Failed to fetch product", error);
@@ -72,7 +81,6 @@ export default function ProductPage() {
 
     fetchProduct();
     
-    // Pre-fill user info if logged in
     const userStr = localStorage.getItem("user");
     if (userStr) {
         try {
@@ -83,7 +91,6 @@ export default function ProductPage() {
     }
   }, [id]);
 
-  // Update selected variant when options change
   useEffect(() => {
       if (!product || !product.variants) return;
       
@@ -95,6 +102,32 @@ export default function ProductPage() {
       
       setSelectedVariant(variant);
   }, [selectedSize, selectedColor, product]);
+
+  const handleSizeChange = (newSize: string) => {
+      setSelectedSize(newSize);
+      const isValidCombination = product.variants.some((v: any) => 
+          v.size === newSize && v.color === selectedColor
+      );
+      if (!isValidCombination) {
+          const validVariant = product.variants.find((v: any) => v.size === newSize);
+          if (validVariant && validVariant.color) {
+              setSelectedColor(validVariant.color);
+          }
+      }
+  };
+
+  const handleColorChange = (newColor: string) => {
+      setSelectedColor(newColor);
+      const isValidCombination = product.variants.some((v: any) => 
+          v.color === newColor && v.size === selectedSize
+      );
+      if (!isValidCombination) {
+          const validVariant = product.variants.find((v: any) => v.color === newColor);
+          if (validVariant && validVariant.size) {
+              setSelectedSize(validVariant.size);
+          }
+      }
+  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!imageRef.current) return;
@@ -210,10 +243,15 @@ export default function ProductPage() {
       return variant && variant.stock > 0;
   };
 
+  // Calculate average rating
+  const avgRating = reviews.length > 0 
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+      : 0;
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-12 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
           {/* Media Gallery */}
           <div className="space-y-4">
             <div 
@@ -288,8 +326,22 @@ export default function ProductPage() {
           {/* Product Details */}
           <div className="space-y-8">
             <div>
-              <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{product.category}</div>
+              <div className="flex justify-between items-start">
+                  <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{product.category}</div>
+                  {product.country_id && (
+                      <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Product of {product.country_name || 'Origin'}</span>
+                          {product.country_flag && <img src={product.country_flag} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />}
+                      </div>
+                  )}
+              </div>
               <Heading as="h1" size="xl" className="font-sans dark:text-white text-4xl sm:text-5xl font-bold">{product.name}</Heading>
+              
+              <div className="flex items-center gap-2 mt-2">
+                  <RatingStars rating={avgRating} />
+                  <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">({reviews.length} reviews)</span>
+              </div>
+
               <div className="flex items-baseline gap-4 mt-4">
                 <div className="text-3xl font-bold text-slate-900 dark:text-white">৳{currentPrice}</div>
                 {product.old_price && <div className="text-xl text-slate-400 line-through">৳{product.old_price}</div>}
@@ -309,7 +361,7 @@ export default function ProductPage() {
                                 {sizes.map((size: any) => (
                                     <button
                                         key={size}
-                                        onClick={() => setSelectedSize(size)}
+                                        onClick={() => handleSizeChange(size)}
                                         className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                             selectedSize === size 
                                             ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400' 
@@ -332,7 +384,7 @@ export default function ProductPage() {
                                     return (
                                         <button
                                             key={color}
-                                            onClick={() => setSelectedColor(color)}
+                                            onClick={() => handleColorChange(color)}
                                             className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                                 selectedColor === color 
                                                 ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400' 
@@ -396,6 +448,56 @@ export default function ProductPage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-12">
+            <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">Customer Reviews</Heading>
+            
+            {reviews.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-3xl">
+                    <p className="text-slate-500 dark:text-slate-400">No reviews yet. Be the first to review this product!</p>
+                </div>
+            ) : (
+                <div className="grid gap-6">
+                    {reviews.map((review) => (
+                        <div key={review.id} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                                        {review.user_avatar ? (
+                                            <img src={review.user_avatar} alt={review.user_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">
+                                                {review.user_name?.charAt(0)}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-slate-900 dark:text-white">{review.user_name}</div>
+                                        <div className="text-xs text-slate-500">{new Date(review.created_at).toLocaleDateString()}</div>
+                                    </div>
+                                </div>
+                                <RatingStars rating={review.rating} />
+                            </div>
+                            
+                            {review.comment && (
+                                <p className="text-slate-600 dark:text-slate-300 mb-4">{review.comment}</p>
+                            )}
+                            
+                            {review.images && (
+                                <div className="flex gap-2">
+                                    {JSON.parse(review.images).map((img: string, i: number) => (
+                                        <div key={i} className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
+                                            <ResponsiveImage src={img} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
       </div>
 

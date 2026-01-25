@@ -50,7 +50,8 @@ export default function AdminLayout({
     { label: "Products", href: "/admin/products", icon: "🛍️" },
     { label: "Batches", href: "/admin/batches", icon: "📦" },
     { label: "Stock Ledger", href: "/admin/stock-ledger", icon: "📜" },
-    { label: "Requests", href: "/admin/requests", icon: "🔔" }, // Added Requests
+    { label: "Requests", href: "/admin/requests", icon: "🔔" },
+    { label: "Reviews", href: "/admin/reviews", icon: "⭐" }, // Added Reviews
     { label: "Categories", href: "/admin/categories", icon: "📂" },
     { label: "Brands", href: "/admin/brands", icon: "🏷️" },
     { label: "Countries", href: "/admin/countries", icon: "🏳️" },

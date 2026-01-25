@@ -6,21 +6,27 @@ import { Button, Heading } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { formatDate } from "@/lib/utils";
+import { ReviewModal } from "@/components/ui/ReviewModal";
 
 export default function OrderInvoicePage() {
   const params = useParams();
   const id = params.id as string;
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewProduct, setReviewProduct] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
+    fetchOrder();
+  }, [id]);
+
+  const fetchOrder = () => {
     fetch(`${API_URL}/orders/${id}`)
       .then(res => res.json())
       .then(setOrder)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [id]);
+  };
 
   if (loading) return <FullScreenLoader />;
   if (!order) return <div>Order not found</div>;
@@ -77,15 +83,29 @@ export default function OrderInvoicePage() {
                   <th className="text-center py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Quantity</th>
                   <th className="text-right py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Price</th>
                   <th className="text-right py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Total</th>
+                  <th className="print:hidden w-24"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800 print:divide-slate-200">
                 {order.items.map((item: any) => (
                   <tr key={item.id}>
-                    <td className="py-4 text-slate-900 dark:text-white print:text-black">{item.product_name}</td>
+                    <td className="py-4 text-slate-900 dark:text-white print:text-black">
+                        {item.product_name}
+                        {item.variant_name && <div className="text-xs text-slate-500">{item.variant_name}</div>}
+                    </td>
                     <td className="py-4 text-center text-slate-600 dark:text-slate-400 print:text-slate-700">{item.quantity}</td>
                     <td className="py-4 text-right text-slate-600 dark:text-slate-400 print:text-slate-700">৳{item.price}</td>
                     <td className="py-4 text-right font-bold text-slate-900 dark:text-white print:text-black">৳{(item.price * item.quantity).toFixed(2)}</td>
+                    <td className="print:hidden text-right">
+                        {(order.status === 'completed' || order.status === 'delivered') && (
+                            <button 
+                                onClick={() => setReviewProduct({ id: item.product_id, name: item.product_name })}
+                                className="text-xs font-bold text-sky-600 hover:underline"
+                            >
+                                Review
+                            </button>
+                        )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -118,7 +138,7 @@ export default function OrderInvoicePage() {
             {/* Footer */}
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 text-center text-slate-500 text-sm print:border-slate-200 print:text-slate-600">
               <p>Thank you for shopping with Prithibee!</p>
-              <p className="mt-1">For any queries, please contact us at +880 1700-000000</p>
+              <p className="mt-1">For any queries, please contact us at +880 1616-684803</p>
             </div>
           </div>
         </div>
@@ -139,13 +159,23 @@ export default function OrderInvoicePage() {
             background: white;
             color: black;
           }
-          /* Ensure text colors are forced to black/dark for printing */
           #invoice-content * {
             color-adjust: exact;
             -webkit-print-color-adjust: exact;
           }
         }
       `}</style>
+
+      {reviewProduct && (
+          <ReviewModal 
+            productId={reviewProduct.id}
+            productName={reviewProduct.name}
+            orderId={order.id}
+            userId={order.user_id}
+            onClose={() => setReviewProduct(null)}
+            onSuccess={() => {}}
+          />
+      )}
     </>
   );
 }

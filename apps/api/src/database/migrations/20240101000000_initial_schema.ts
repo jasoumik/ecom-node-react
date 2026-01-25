@@ -257,9 +257,27 @@ export async function up(knex: Knex): Promise<void> {
     table.string('status').defaultTo('unread'); // unread, read, replied
     table.timestamps(true, true);
   });
+
+  // Reviews Table
+  await knex.schema.createTable('reviews', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.uuid('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE'); // Verify purchase
+    table.integer('rating').notNullable(); // 1-5
+    table.text('comment').nullable();
+    table.jsonb('images').nullable(); // Array of image URLs
+    table.string('status').defaultTo('pending'); // pending, approved, rejected
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+    
+    // Ensure one review per product per order
+    table.unique(['product_id', 'order_id']);
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('reviews');
   await knex.schema.dropTableIfExists('contact_messages');
   await knex.schema.dropTableIfExists('product_requests');
   await knex.schema.dropTableIfExists('stock_requests');
