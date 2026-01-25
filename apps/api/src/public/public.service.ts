@@ -82,6 +82,20 @@ export class PublicService {
         .where({ is_active: true })
         .orderBy('order', 'asc');
 
+    // Fetch Testimonials (Approved Reviews)
+    const reviews = await this.knex('reviews')
+        .join('users', 'reviews.user_id', 'users.id')
+        .select(
+            'reviews.id',
+            'reviews.comment as quote',
+            'reviews.rating',
+            'users.name as authorName',
+            'users.role as authorRole' // Just using role as placeholder, ideally user profile has title
+        )
+        .where({ 'reviews.status': 'approved', 'reviews.rating': 5 })
+        .orderBy('reviews.created_at', 'desc')
+        .limit(3);
+
     return {
       hero: {
         headline: "Everything for Mom & Baby, Delivered.",
@@ -128,52 +142,18 @@ export class PublicService {
             id: p.id,
             title: p.title,
             description: p.description,
-            iconUrl: p.icon // Assuming icon is emoji or URL, frontend handles it
-        })) : [
-          {
-            id: "curated",
-            title: "Expertly Curated",
-            description: "Every product is vetted by pediatricians and moms.",
-            iconUrl: "🛡️",
-          },
-          {
-            id: "fast",
-            title: "Same-Day Delivery",
-            description: "Order by 2PM and get it today. Because babies can't wait.",
-            iconUrl: "🌱",
-          },
-          {
-            id: "support",
-            title: "24/7 Parent Support",
-            description: "Questions? Chat with our experts anytime.",
-            iconUrl: "🤝",
-          },
-        ],
+            iconUrl: p.icon
+        })) : [],
       },
       testimonials: {
         title: "Parents Love Prithibee",
-        items: [
-          {
-            id: "1",
-            quote: "Prithibee is a lifesaver! The diaper subscription saves me so much time.",
-            authorName: "Jessica K.",
-            authorRole: "Mom of twins",
-            rating: 5,
-          },
-          {
-            id: "2",
-            quote: "Best selection of organic baby food I've found online.",
-            authorName: "Michael T.",
-            authorRole: "Dad",
-            rating: 5,
-          },
-          {
-            id: "3",
-            quote: "Fast delivery and amazing customer service. Highly recommend!",
-            authorName: "Linda W.",
-            rating: 5,
-          },
-        ],
+        items: reviews.length > 0 ? reviews.map(r => ({
+            id: r.id,
+            quote: r.quote,
+            authorName: r.authorName,
+            authorRole: "Verified Buyer", // Static for now
+            rating: r.rating
+        })) : [], // Fallback handled in frontend component
       },
       callToAction: {
         title: "Start Your Journey with Prithibee",

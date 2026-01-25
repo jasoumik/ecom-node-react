@@ -28,22 +28,25 @@ export async function seed(knex: Knex): Promise<void> {
   const salt = await bcrypt.genSalt();
   const passwordHash = await bcrypt.hash('password', salt);
 
-  await knex('users').insert([
+  const [admin] = await knex('users').insert([
     {
       phone: '01700000000', // Admin Phone
       email: 'admin@example.com',
       passwordHash,
       name: 'Admin User',
       role: 'admin',
-    },
+    }
+  ]).returning('id');
+
+  const [customer] = await knex('users').insert([
     {
       phone: '01700000001', // Customer Phone
       email: 'customer@example.com',
       passwordHash, // Same password 'password'
       name: 'John Doe',
       role: 'customer',
-    },
-  ]);
+    }
+  ]).returning('id');
 
   // Insert Categories
   const [diapers] = await knex('categories').insert({ name: 'Diapers & Wipes', image: 'https://picsum.photos/seed/diapers/800/800' }).returning('id');
@@ -217,5 +220,48 @@ export async function seed(knex: Knex): Promise<void> {
       icon: '🤝',
       order: 3
     }
+  ]);
+
+  // Create a dummy order for review
+  const [order] = await knex('orders').insert({
+      user_id: customer.id,
+      customer_name: 'John Doe',
+      customer_phone: '01700000001',
+      customer_address: 'Dhaka',
+      subtotal: 3200,
+      total_amount: 3260,
+      status: 'delivered',
+      payment_status: 'Paid'
+  }).returning('id');
+
+  // Insert Reviews
+  await knex('reviews').insert([
+      {
+          product_id: diaperProduct.id,
+          user_id: customer.id,
+          order_id: order.id,
+          rating: 5,
+          comment: 'Prithibee is a lifesaver! The diaper subscription saves me so much time.',
+          status: 'approved',
+          created_at: new Date()
+      },
+      {
+          product_id: lotionProduct.id,
+          user_id: customer.id,
+          order_id: order.id, // Reusing same order for simplicity in seed
+          rating: 5,
+          comment: 'Best selection of organic baby food I\'ve found online.',
+          status: 'approved',
+          created_at: new Date()
+      },
+      {
+          product_id: feedingProduct.id,
+          user_id: customer.id,
+          order_id: order.id,
+          rating: 5,
+          comment: 'Fast delivery and amazing customer service. Highly recommend!',
+          status: 'approved',
+          created_at: new Date()
+      }
   ]);
 }
