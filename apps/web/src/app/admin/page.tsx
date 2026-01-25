@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { Heading, Text } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { FullScreenLoader } from "@/components/ui/Loader";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetch(`${API_URL}/dashboard/stats`)
@@ -68,7 +70,12 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <h3 className="font-bold text-base text-slate-800 dark:text-white">Recent Orders</h3>
-                <button className="text-xs font-medium text-sky-500 hover:text-sky-600">View All</button>
+                <button 
+                    onClick={() => router.push('/admin/orders')}
+                    className="text-xs font-medium text-sky-500 hover:text-sky-600 hover:underline"
+                >
+                    View All
+                </button>
             </div>
             <div className="overflow-x-auto">
             <table className="w-full text-left">
