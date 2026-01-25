@@ -15,14 +15,11 @@ export class RequestsService {
   async createStockRequest(data: CreateStockRequestDto) {
     const [request] = await this.knex('stock_requests').insert(data).returning('*');
     
-    // Notify Admin
     const adminMessage = `New Stock Request for Product ID: ${data.productId}. Customer: ${data.phone}`;
     await this.notificationService.sendEmail(process.env.ADMIN_EMAIL || 'admin@example.com', 'New Stock Request', adminMessage);
     
-    // Notify Customer
     const customerMessage = `We received your request for stock notification. We will notify you when it's available.`;
     if (data.email) await this.notificationService.sendEmail(data.email, 'Stock Request Received', customerMessage);
-    // await this.notificationService.sendSMS(data.phone, customerMessage);
 
     return request;
   }
@@ -57,7 +54,6 @@ export class RequestsService {
   async createProductRequest(data: CreateProductRequestDto) {
     const [request] = await this.knex('product_requests').insert(data).returning('*');
     
-    // Notify Admin
     const adminMessage = `New Product Request: ${data.productName}. Customer: ${data.userName} (${data.phone})`;
     await this.notificationService.sendEmail(process.env.ADMIN_EMAIL || 'admin@example.com', 'New Product Idea', adminMessage);
 
@@ -78,5 +74,37 @@ export class RequestsService {
       }
       
       return request;
+  }
+
+  // Contact Messages
+  async sendContactMessage(data: { name: string; email: string; subject: string; message: string }) {
+      // Save to DB
+      await this.knex('contact_messages').insert({
+          name: data.name,
+          email: data.email,
+          subject: data.subject,
+          message: data.message
+      });
+
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+      const emailBody = `
+        New Contact Message from ${data.name} (${data.email}):
+        
+        Subject: ${data.subject}
+        
+        Message:
+        ${data.message}
+      `;
+      
+      await this.notificationService.sendEmail(adminEmail, `Contact: ${data.subject}`, emailBody);
+      
+      // Auto-reply to user
+      await this.notificationService.sendEmail(data.email, 'We received your message', `Hi ${data.name},\n\nThanks for reaching out. We have received your message and will get back to you shortly.\n\nBest,\nPrithibee Team`);
+      
+      return { success: true };
+  }
+
+  async getContactMessages() {
+      return this.knex('contact_messages').orderBy('created_at', 'desc');
   }
 }

@@ -8,9 +8,10 @@ import { Table } from "@/components/ui/Table";
 import { FullScreenLoader } from "@/components/ui/Loader";
 
 export default function AdminRequestsPage() {
-  const [activeTab, setActiveTab] = useState<'stock' | 'product'>('stock');
+  const [activeTab, setActiveTab] = useState<'stock' | 'product' | 'contact'>('stock');
   const [stockRequests, setStockRequests] = useState<any[]>([]);
   const [productRequests, setProductRequests] = useState<any[]>([]);
+  const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
 
@@ -25,10 +26,14 @@ export default function AdminRequestsPage() {
           const res = await fetch(`${API_URL}/requests/stock`);
           const data = await res.json();
           setStockRequests(Array.isArray(data) ? data : []);
-      } else {
+      } else if (activeTab === 'product') {
           const res = await fetch(`${API_URL}/requests/product`);
           const data = await res.json();
           setProductRequests(Array.isArray(data) ? data : []);
+      } else {
+          const res = await fetch(`${API_URL}/requests/contact`);
+          const data = await res.json();
+          setContactMessages(Array.isArray(data) ? data : []);
       }
     } catch (e) {
       console.error(e);
@@ -59,7 +64,7 @@ export default function AdminRequestsPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div>
         <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Requests</Heading>
-        <p className="text-xs text-slate-500">Manage customer requests</p>
+        <p className="text-xs text-slate-500">Manage customer requests and messages</p>
       </div>
 
       <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
@@ -74,6 +79,12 @@ export default function AdminRequestsPage() {
             className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'product' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
           >
               Product Ideas
+          </button>
+          <button 
+            onClick={() => setActiveTab('contact')}
+            className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'contact' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          >
+              Contact Messages
           </button>
       </div>
 
@@ -113,7 +124,7 @@ export default function AdminRequestsPage() {
                 }
                 ]}
             />
-          ) : (
+          ) : activeTab === 'product' ? (
             <Table
                 data={productRequests}
                 emptyMessage="No product requests found."
@@ -174,6 +185,45 @@ export default function AdminRequestsPage() {
                                 </>
                             )}
                         </div>
+                    )
+                }
+                ]}
+            />
+          ) : (
+            <Table
+                data={contactMessages}
+                emptyMessage="No contact messages found."
+                columns={[
+                {
+                    header: "Subject",
+                    cell: (msg) => (
+                        <div>
+                            <div className="font-bold text-slate-900 dark:text-white text-xs">{msg.subject}</div>
+                            <div className="text-[10px] text-slate-500 max-w-xs truncate">{msg.message}</div>
+                        </div>
+                    )
+                },
+                {
+                    header: "Sender",
+                    cell: (msg) => (
+                        <div>
+                            <div className="text-xs font-medium text-slate-900 dark:text-white">{msg.name}</div>
+                            <div className="text-[10px] text-slate-500">{msg.email}</div>
+                        </div>
+                    )
+                },
+                {
+                    header: "Date",
+                    cell: (msg) => <span className="text-slate-500 dark:text-slate-400 text-xs">{new Date(msg.created_at).toLocaleString()}</span>
+                },
+                {
+                    header: "Status",
+                    cell: (msg) => (
+                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+                            msg.status === 'read' ? 'bg-slate-100 text-slate-600' : 'bg-blue-50 text-blue-600'
+                        }`}>
+                            {msg.status}
+                        </span>
                     )
                 }
                 ]}

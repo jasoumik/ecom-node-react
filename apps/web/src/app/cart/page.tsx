@@ -127,6 +127,7 @@ export default function CartPage() {
         transactionId: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? transactionId : undefined,
         items: items.map(item => ({
             productId: item.id,
+            variantId: item.variantId,
             quantity: item.quantity
         }))
       };
@@ -188,7 +189,7 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="flex-1 space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
+              <div key={`${item.id}-${item.variantId}`} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
@@ -201,21 +202,21 @@ export default function CartPage() {
                 <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
                     <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
                         <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)} 
                             className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
                         >
                             -
                         </button>
                         <span className="font-bold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
                         <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)} 
                             className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
                         >
                             +
                         </button>
                     </div>
                     <button 
-                        onClick={() => removeItem(item.id)} 
+                        onClick={() => removeItem(item.id, item.variantId)} 
                         className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
                         title="Remove Item"
                     >
@@ -293,16 +294,16 @@ export default function CartPage() {
                             <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
                                 <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
                                 <span className="text-2xl mb-1">💵</span>
-                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">COD</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight">Cash on Delivery</span>
                             </label>
                             <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
                                 <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="hidden" />
-                                <span className="text-2xl mb-1">🅱️</span>
+                                <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-8 w-auto mb-1 object-contain" />
                                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Bkash</span>
                             </label>
                             <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
                                 <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => setPaymentMethod('nagad')} className="hidden" />
-                                <span className="text-2xl mb-1">🟧</span>
+                                <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-8 w-auto mb-1 object-contain" />
                                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Nagad</span>
                             </label>
                         </div>

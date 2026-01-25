@@ -31,4 +31,14 @@ export class RequestsController {
   updateProductRequestStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.requestsService.updateProductRequestStatus(id, status);
   }
+
+  @Post('contact')
+  sendContactMessage(@Body() body: { name: string; email: string; subject: string; message: string }) {
+      return this.requestsService.sendContactMessage(body);
+  }
+
+  @Get('contact')
+  getContactMessages() {
+      return this.requestsService.getContactMessages();
+  }
 }
