@@ -22,7 +22,6 @@ export default function CreateManualOrderPage() {
   });
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState("");
-  const [selectedVariant, setSelectedVariant] = useState("");
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const { addToast } = useToast();
@@ -38,23 +37,18 @@ export default function CreateManualOrderPage() {
     const product = products.find(p => p.id === selectedProduct);
     if (!product) return;
 
-    let variant = null;
-    if (selectedVariant) {
-        // Need to fetch full product details to get variants if not in list
-        // Or assume products list has variants (it doesn't usually).
-        // For simplicity, let's fetch product details when selected.
-    }
-
-    // For now, simple add without variant check in UI for speed, 
-    // but ideally we should fetch variants.
-    // Let's just add basic item.
-    
     setOrder({
       ...order,
       items: [...order.items, { productId: selectedProduct, quantity, name: product.name, price: product.price }]
     });
     setSelectedProduct("");
     setQuantity(1);
+  };
+
+  const handleRemoveItem = (index: number) => {
+      const newItems = [...order.items];
+      newItems.splice(index, 1);
+      setOrder({ ...order, items: newItems });
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -77,83 +71,170 @@ export default function CreateManualOrderPage() {
     }
   };
 
+  const calculateTotal = () => {
+      const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      return subtotal + (order.deliveryCharge || 0) - (order.discount || 0);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <Heading size="xl" className="font-sans text-slate-900 dark:text-white">Create Manual Order</Heading>
-      
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
-        <form onSubmit={handleCreate} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Order Source</label>
-                <select 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                    value={order.orderSource}
-                    onChange={e => setOrder({...order, orderSource: e.target.value})}
-                >
-                    <option value="Website">Website</option>
-                    <option value="Facebook">Facebook</option>
-                    <option value="Phone">Phone</option>
-                    <option value="WhatsApp">WhatsApp</option>
-                </select>
-            </div>
-            <Input label="Customer Name" value={order.customerName} onChange={e => setOrder({...order, customerName: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="Mobile Number" value={order.customerPhone} onChange={e => setOrder({...order, customerPhone: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="Address" value={order.customerAddress} onChange={e => setOrder({...order, customerAddress: e.target.value})} required className="bg-slate-50/50" />
-          </div>
-
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
-            <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-4">Products</h3>
-            <div className="flex gap-4 mb-4">
-                <select 
-                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                    value={selectedProduct}
-                    onChange={e => setSelectedProduct(e.target.value)}
-                >
-                    <option value="">Select Product</option>
-                    {products.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</option>
-                    ))}
-                </select>
-                <Input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="w-24 bg-slate-50/50" min="1" />
-                <Button type="button" onClick={handleAddItem} className="rounded-xl">Add</Button>
-            </div>
-            
-            {order.items.length > 0 && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-4">
-                    {order.items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700 last:border-0">
-                            <span>{item.name} x {item.quantity}</span>
-                            <span className="font-bold">৳{item.price * item.quantity}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 border-t border-slate-100 dark:border-slate-800 pt-6">
-            <Input label="Delivery Charge" type="number" value={order.deliveryCharge} onChange={e => setOrder({...order, deliveryCharge: parseFloat(e.target.value)})} className="bg-slate-50/50" />
-            <Input label="Discount" type="number" value={order.discount} onChange={e => setOrder({...order, discount: parseFloat(e.target.value)})} className="bg-slate-50/50" />
-            <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Payment Method</label>
-                <select 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                    value={order.paymentMethod}
-                    onChange={e => setOrder({...order, paymentMethod: e.target.value})}
-                >
-                    <option value="cod">Cash on Delivery</option>
-                    <option value="bkash">bKash</option>
-                    <option value="nagad">Nagad</option>
-                </select>
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-4 pt-4">
-            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl">Cancel</Button>
-            <Button type="submit" className="rounded-xl shadow-lg shadow-sky-500/20 px-8">Create Order</Button>
-          </div>
-        </form>
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <Heading size="md" className="font-sans text-slate-900 dark:text-white">Create Manual Order</Heading>
+        <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-lg py-2 px-4 text-sm h-auto">Cancel</Button>
+            <Button type="submit" form="manual-order-form" className="rounded-lg shadow-md shadow-sky-500/20 py-2 px-6 text-sm h-auto">Create Order</Button>
+        </div>
       </div>
+      
+      <form id="manual-order-form" onSubmit={handleCreate} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Customer & Order Details */}
+        <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Customer Information</h3>
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Order Source</label>
+                        <select 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            value={order.orderSource}
+                            onChange={e => setOrder({...order, orderSource: e.target.value})}
+                        >
+                            <option value="Website">Website</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Phone">Phone</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                        </select>
+                    </div>
+                    <Input label="Customer Name" value={order.customerName} onChange={e => setOrder({...order, customerName: e.target.value})} required className="bg-slate-50/50" />
+                </div>
+                <div className="space-y-4">
+                    <Input label="Mobile Number" value={order.customerPhone} onChange={e => setOrder({...order, customerPhone: e.target.value})} required className="bg-slate-50/50" />
+                    <Input label="Address" value={order.customerAddress} onChange={e => setOrder({...order, customerAddress: e.target.value})} required className="bg-slate-50/50" />
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Order Items</h3>
+                
+                <div className="flex gap-3 mb-4 items-end">
+                    <div className="flex-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Product</label>
+                        <select 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            value={selectedProduct}
+                            onChange={e => setSelectedProduct(e.target.value)}
+                        >
+                            <option value="">Select Product</option>
+                            {products.map(p => (
+                                <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="w-20">
+                        <Input label="Qty" type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="bg-slate-50/50" min="1" />
+                    </div>
+                    <Button type="button" onClick={handleAddItem} className="rounded-lg py-2.5 px-4 text-xs h-auto mb-[2px]">Add</Button>
+                </div>
+                
+                {order.items.length > 0 ? (
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800 text-xs text-slate-500">
+                                <tr>
+                                    <th className="px-3 py-2">Product</th>
+                                    <th className="px-3 py-2 text-center">Qty</th>
+                                    <th className="px-3 py-2 text-right">Price</th>
+                                    <th className="px-3 py-2 text-right">Total</th>
+                                    <th className="px-3 py-2 w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                                {order.items.map((item, idx) => (
+                                    <tr key={idx}>
+                                        <td className="px-3 py-2 font-medium">{item.name}</td>
+                                        <td className="px-3 py-2 text-center">{item.quantity}</td>
+                                        <td className="px-3 py-2 text-right">৳{item.price}</td>
+                                        <td className="px-3 py-2 text-right font-bold">৳{item.price * item.quantity}</td>
+                                        <td className="px-3 py-2 text-center">
+                                            <button type="button" onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-700">✕</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-slate-400 text-xs border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-lg">
+                        No items added yet
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {/* Right Column: Payment & Summary */}
+        <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Payment</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Payment Method</label>
+                        <select 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            value={order.paymentMethod}
+                            onChange={e => setOrder({...order, paymentMethod: e.target.value})}
+                        >
+                            <option value="cod">Cash on Delivery</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Payment Status</label>
+                        <select 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            value={order.paymentStatus}
+                            onChange={e => setOrder({...order, paymentStatus: e.target.value})}
+                        >
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Order Summary</h3>
+                <div className="space-y-3">
+                    <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
+                        <span>Subtotal</span>
+                        <span>৳{order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs text-slate-600 dark:text-slate-400">Delivery</span>
+                        <input 
+                            type="number" 
+                            className="w-20 px-2 py-1 text-right text-xs border border-slate-200 rounded bg-slate-50"
+                            value={order.deliveryCharge}
+                            onChange={e => setOrder({...order, deliveryCharge: parseFloat(e.target.value) || 0})}
+                        />
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs text-slate-600 dark:text-slate-400">Discount</span>
+                        <input 
+                            type="number" 
+                            className="w-20 px-2 py-1 text-right text-xs border border-slate-200 rounded bg-slate-50"
+                            value={order.discount}
+                            onChange={e => setOrder({...order, discount: parseFloat(e.target.value) || 0})}
+                        />
+                    </div>
+                    <div className="flex justify-between text-sm font-bold text-slate-900 dark:text-white pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <span>Total</span>
+                        <span>৳{calculateTotal()}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </form>
     </div>
   );
 }

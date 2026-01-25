@@ -1,13 +1,15 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
   async findAll(): Promise<any[]> {
-    return this.knex('users').select('id', 'name', 'email', 'phone', 'role', 'created_at', 'avatar');
+    return this.knex('users').select('id', 'name', 'email', 'phone', 'role', 'created_at', 'avatar', 'is_active');
   }
 
   async findOne(id: string): Promise<any> {
@@ -27,9 +29,31 @@ export class UsersService {
     return this.knex('users').where({ phone }).first();
   }
 
-  async create(userData: any): Promise<any> {
-    const [user] = await this.knex('users').insert(userData).returning('*');
-    return user;
+  async create(createUserDto: CreateUserDto): Promise<any> {
+    const existingUser = await this.knex('users')
+        .where({ phone: createUserDto.phone })
+        .orWhere({ email: createUserDto.email || '' })
+        .first();
+
+    if (existingUser) {
+        throw new BadRequestException('User with this phone or email already exists');
+    }
+
+    const password = createUserDto.password || '123456'; // Default password if not provided
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const [user] = await this.knex('users').insert({
+        name: createUserDto.name,
+        phone: createUserDto.phone,
+        email: createUserDto.email,
+        passwordHash,
+        role: createUserDto.role || 'customer',
+        is_active: true
+    }).returning('*');
+
+    const { passwordHash: _, ...result } = user;
+    return result;
   }
 
   async update(id: string, updateProfileDto: UpdateProfileDto): Promise<any> {

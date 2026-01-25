@@ -48,48 +48,51 @@ export default function AdminSettingsPage() {
   if (loading) return <FullScreenLoader />;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <Heading size="xl" className="font-sans text-slate-900 dark:text-white">Settings</Heading>
+    <div className="space-y-6 animate-in fade-in duration-500 max-w-3xl">
+      <div>
+        <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Settings</Heading>
+        <p className="text-xs text-slate-500">Configure system preferences</p>
+      </div>
       
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
-        <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Inventory Configuration</h3>
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+        <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">Inventory Configuration</h3>
         
-        <div className="space-y-6">
+        <div className="space-y-5">
             {settings.map(setting => (
-                <div key={setting.id} className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 capitalize">
+                <div key={setting.id} className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 capitalize">
                         {setting.key.replace(/_/g, ' ')}
                     </label>
-                    <p className="text-xs text-slate-500 mb-2">{setting.description}</p>
+                    <p className="text-[10px] text-slate-500 mb-1.5">{setting.description}</p>
                     
                     {setting.key === 'inventory_method' ? (
-                        <div className="flex gap-4">
-                            <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer transition-all ${setting.value === 'FIFO' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
+                        <div className="flex gap-3">
+                            <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${setting.value === 'FIFO' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
                                 <input 
                                     type="radio" 
                                     name="inventory_method" 
                                     checked={setting.value === 'FIFO'} 
                                     onChange={() => handleUpdate('inventory_method', 'FIFO')}
-                                    className="w-4 h-4 text-sky-500 focus:ring-sky-500"
+                                    className="w-3.5 h-3.5 text-sky-500 focus:ring-sky-500"
                                 />
-                                <span className="font-bold text-slate-900 dark:text-white">FIFO (First-In, First-Out)</span>
+                                <span className="text-xs font-bold text-slate-900 dark:text-white">FIFO (First-In, First-Out)</span>
                             </label>
-                            <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer transition-all ${setting.value === 'LIFO' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
+                            <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${setting.value === 'LIFO' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
                                 <input 
                                     type="radio" 
                                     name="inventory_method" 
                                     checked={setting.value === 'LIFO'} 
                                     onChange={() => handleUpdate('inventory_method', 'LIFO')}
-                                    className="w-4 h-4 text-sky-500 focus:ring-sky-500"
+                                    className="w-3.5 h-3.5 text-sky-500 focus:ring-sky-500"
                                 />
-                                <span className="font-bold text-slate-900 dark:text-white">LIFO (Last-In, First-Out)</span>
+                                <span className="text-xs font-bold text-slate-900 dark:text-white">LIFO (Last-In, First-Out)</span>
                             </label>
                         </div>
                     ) : (
                         <input 
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
                             value={setting.value}
-                            onChange={(e) => handleUpdate(setting.key, e.target.value)} // Note: This triggers update on every keystroke, ideally use debounce or save button. For radio it's fine.
+                            onChange={(e) => handleUpdate(setting.key, e.target.value)}
                         />
                     )}
                 </div>

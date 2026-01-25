@@ -55,36 +55,55 @@ export default function EditBannerPage() {
   if (!banner) return <div>Loading...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <Heading size="xl" className="font-sans text-slate-900 dark:text-white">Edit Banner</Heading>
+    <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <Heading size="md" className="font-sans text-slate-900 dark:text-white">Edit Banner</Heading>
+        <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-lg py-2 px-4 text-sm h-auto">Cancel</Button>
+            <Button type="submit" form="edit-banner-form" className="rounded-lg shadow-md shadow-sky-500/20 py-2 px-6 text-sm h-auto">Update Banner</Button>
+        </div>
+      </div>
       
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
-        <form onSubmit={handleUpdate} className="space-y-6">
-          <Input label="Title" value={banner.title} onChange={e => setBanner({...banner, title: e.target.value})} required />
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+        <form id="edit-banner-form" onSubmit={handleUpdate} className="space-y-6">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-2">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Banner Details</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        checked={banner.is_active} 
+                        onChange={e => setBanner({...banner, is_active: e.target.checked})}
+                        className="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                    />
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Active</span>
+                </label>
+          </div>
+
+          <Input label="Title" value={banner.title} onChange={e => setBanner({...banner, title: e.target.value})} required className="bg-slate-50/50" />
           
           <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Image URL</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image URL</label>
             <div className="flex gap-2">
                 <Input 
-                    className="flex-1" 
+                    className="flex-1 bg-slate-50/50 text-sm" 
                     value={banner.image} 
                     onChange={e => setBanner({...banner, image: e.target.value})} 
                     required 
+                    placeholder="Image URL..."
                 />
-                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)}>Select Media</Button>
+                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Link Route</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Link Route</label>
             <div className="flex flex-col gap-2">
-                <select
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                <select 
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
                     value={AVAILABLE_ROUTES.some(r => r.value === banner.link) ? banner.link : "custom"}
                     onChange={e => {
                         const val = e.target.value;
                         if (val !== "custom") setBanner({...banner, link: val});
-                        // If custom selected, keep current link if it's not in list, or clear it
                         else if (AVAILABLE_ROUTES.some(r => r.value === banner.link)) setBanner({...banner, link: ""});
                     }}
                 >
@@ -94,35 +113,20 @@ export default function EditBannerPage() {
                     ))}
                     <option value="custom">Custom URL...</option>
                 </select>
-
+                
                 {(!AVAILABLE_ROUTES.some(r => r.value === banner.link) || banner.link === "") && (
-                    <Input
-                        placeholder="Enter custom URL (e.g. /products/123)"
-                        value={banner.link || ""}
-                        onChange={e => setBanner({...banner, link: e.target.value})}
+                    <Input 
+                        placeholder="Enter custom URL (e.g. /products/123)" 
+                        value={banner.link || ""} 
+                        onChange={e => setBanner({...banner, link: e.target.value})} 
+                        className="bg-slate-50/50"
                     />
                 )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <Input label="Order" type="number" value={banner.order} onChange={e => setBanner({...banner, order: e.target.value})} />
-            <div className="flex items-center pt-8">
-                <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        checked={banner.is_active} 
-                        onChange={e => setBanner({...banner, is_active: e.target.checked})}
-                        className="w-5 h-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
-                    />
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Active</span>
-                </label>
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-4 pt-4">
-            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl">Cancel</Button>
-            <Button type="submit" className="rounded-xl shadow-lg shadow-sky-500/20">Update Banner</Button>
+          <div className="w-1/3">
+            <Input label="Order" type="number" value={banner.order} onChange={e => setBanner({...banner, order: e.target.value})} className="bg-slate-50/50" />
           </div>
         </form>
       </div>

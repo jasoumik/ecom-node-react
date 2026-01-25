@@ -37,10 +37,10 @@ export default function StockLedgerPage() {
   if (loading && movements.length === 0) return <FullScreenLoader />;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-4 animate-in fade-in duration-500">
       <div>
-        <Heading size="lg" className="font-sans text-slate-800 dark:text-white mb-1">Stock Ledger</Heading>
-        <p className="text-sm text-slate-500">Audit trail of all inventory changes</p>
+        <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Stock Ledger</Heading>
+        <p className="text-xs text-slate-500">Audit trail of all inventory changes</p>
       </div>
 
       <FilterBar onSearch={() => {}} placeholder="Search by product..." />
@@ -50,17 +50,17 @@ export default function StockLedgerPage() {
         columns={[
           {
             header: "Date",
-            cell: (m) => <span className="text-slate-500 dark:text-slate-400 text-sm">{new Date(m.created_at).toLocaleString()}</span>
+            cell: (m) => <span className="text-slate-500 dark:text-slate-400 text-xs">{new Date(m.created_at).toLocaleString()}</span>
           },
           {
             header: "Product",
             accessorKey: "product_name",
-            className: "font-bold text-slate-900 dark:text-white"
+            className: "font-bold text-slate-900 dark:text-white text-xs"
           },
           {
             header: "Change",
             cell: (m) => (
-                <span className={`font-bold ${m.quantity_change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`font-bold text-xs ${m.quantity_change > 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {m.quantity_change > 0 ? '+' : ''}{m.quantity_change}
                 </span>
             )
@@ -68,7 +68,7 @@ export default function StockLedgerPage() {
           {
             header: "Type",
             cell: (m) => (
-                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${
+                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
                     m.type === 'sale' ? 'bg-blue-50 text-blue-600' :
                     m.type === 'batch_purchase' ? 'bg-green-50 text-green-600' :
                     m.type === 'cancellation_restock' ? 'bg-amber-50 text-amber-600' :
@@ -81,29 +81,29 @@ export default function StockLedgerPage() {
           {
             header: "Reason",
             accessorKey: "reason",
-            className: "text-slate-600 dark:text-slate-300 text-sm"
+            className: "text-slate-600 dark:text-slate-300 text-xs"
           }
         ]}
       />
       
       {/* Pagination */}
-      <div className="flex justify-between items-center pt-4">
+      <div className="flex justify-between items-center pt-2">
           <Button 
               variant="outline" 
               disabled={meta.page === 1}
               onClick={() => fetchMovements(meta.page - 1)}
-              className="rounded-xl"
+              className="rounded-lg py-1.5 px-3 text-xs h-auto"
           >
               Previous
           </Button>
-          <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+          <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
               Page {meta.page} of {meta.totalPages}
           </span>
           <Button 
               variant="outline" 
               disabled={meta.page === meta.totalPages}
               onClick={() => fetchMovements(meta.page + 1)}
-              className="rounded-xl"
+              className="rounded-lg py-1.5 px-3 text-xs h-auto"
           >
               Next
           </Button>
