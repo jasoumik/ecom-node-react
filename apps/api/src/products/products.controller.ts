@@ -24,6 +24,15 @@ export class ProductsController {
       return this.productsService.getAllBatches(Number(page), Number(limit));
   }
 
+  @Get('stock-movements')
+  async getStockMovements(
+      @Query('page') page: number = 1,
+      @Query('limit') limit: number = 20,
+      @Query('productId') productId?: string
+  ) {
+      return this.productsService.getStockMovements(Number(page), Number(limit), productId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);

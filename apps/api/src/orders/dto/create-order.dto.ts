@@ -1,5 +1,6 @@
 export class CreateOrderItemDto {
   productId: string;
+  variantId?: string; // Added variantId
   quantity: number;
 }
 
@@ -9,6 +10,8 @@ export class CreateOrderDto {
   customerAddress: string;
   items: CreateOrderItemDto[];
   userId?: string;
-  deliveryChargeId: string; // Required now
-  couponCode?: string; // Optional
+  deliveryChargeId: string;
+  couponCode?: string;
+  paymentMethod: string;
+  transactionId?: string;
 }

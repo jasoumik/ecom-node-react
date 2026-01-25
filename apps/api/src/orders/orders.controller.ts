@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Put, UseGuards, Request, Query, Delete } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -9,6 +10,11 @@ export class OrdersController {
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.create(createOrderDto);
+  }
+
+  @Post('manual')
+  createManual(@Body() createManualOrderDto: CreateManualOrderDto) {
+    return this.ordersService.createManual(createManualOrderDto);
   }
 
   @Get()

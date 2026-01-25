@@ -10,10 +10,34 @@ export function TestimonialsSection({
   title,
   testimonials,
 }: TestimonialsSectionProps) {
+  // Fallback if no testimonials
+  const items = testimonials && testimonials.length > 0 ? testimonials : [
+      {
+          id: "1",
+          quote: "Prithibee is a lifesaver! The diaper subscription saves me so much time.",
+          authorName: "Jessica K.",
+          authorRole: "Mom of twins",
+          rating: 5,
+      },
+      {
+          id: "2",
+          quote: "Best selection of organic baby food I've found online.",
+          authorName: "Michael T.",
+          authorRole: "Dad",
+          rating: 5,
+      },
+      {
+          id: "3",
+          quote: "Fast delivery and amazing customer service. Highly recommend!",
+          authorName: "Linda W.",
+          rating: 5,
+      },
+  ];
+
   return (
-    <Section className="py-16 !bg-sky-50  relative overflow-hidden transition-colors duration-300 bg-[#f0f9ff] dark:bg-slate-950">
+    <Section className="py-16 relative overflow-hidden transition-colors duration-300 bg-[#f0f9ff] dark:bg-slate-950">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-30 dark:opacity-10" style={{ backgroundImage: 'radial-gradient(currentColor 0.5px, transparent 0.5px)', backgroundSize: '20px 20px', color: '#bae6fd' }}></div>
+      <div className="absolute inset-0 opacity-30 dark:opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(currentColor 0.5px, transparent 0.5px)', backgroundSize: '20px 20px', color: '#bae6fd' }}></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-12">
@@ -23,7 +47,7 @@ export function TestimonialsSection({
               Love Notes
             </div>
             <Heading size="lg" className="font-sans text-3xl sm:text-5xl text-slate-900 leading-tight dark:text-white font-bold">
-              {title}
+              {title || "Parents Love Prithibee"}
             </Heading>
           </div>
           <div className="flex gap-2 items-center">
@@ -33,7 +57,7 @@ export function TestimonialsSection({
         </div>
         
         <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
+          {items.map((t, i) => (
             <div key={t.id} className={`bg-white p-8 rounded-md border border-sky-100 shadow-xl shadow-sky-100/50 hover:-translate-y-2 transition-transform duration-300 ${i === 1 ? 'md:-translate-y-8' : ''} dark:bg-slate-800 dark:border-slate-700 dark:shadow-none`}>
               <div className="flex gap-1 mb-6">
                 <RatingStars rating={t.rating || 5} />

@@ -9,8 +9,12 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateProductPage() {
-  const [newProduct, setNewProduct] = useState({ name: "", price: "", old_price: "", cost_price: "", description: "", images: "", category_id: "", stock: "", sku: "" });
+  const [newProduct, setNewProduct] = useState({ 
+      name: "", price: "", old_price: "", cost_price: "", description: "", images: "", category_id: "", stock: "", sku: "",
+      size: "", weight: "", color: "", material: "", is_active: true, country_id: "" 
+  });
   const [categories, setCategories] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
@@ -28,6 +32,11 @@ export default function CreateProductPage() {
           };
           setCategories(flatten(Array.isArray(data) ? data : []));
       })
+      .catch(console.error);
+
+    fetch(`${API_URL}/countries`)
+      .then(res => res.json())
+      .then(data => setCountries(Array.isArray(data) ? data : []))
       .catch(console.error);
   }, []);
 
@@ -54,67 +63,115 @@ export default function CreateProductPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
       <Heading size="xl" className="font-sans text-slate-900 dark:text-white">Add Product</Heading>
       
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-        <form onSubmit={handleCreate} className="space-y-6">
-          <Input label="Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required />
-          <div className="grid grid-cols-2 gap-6">
-            <Input label="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required />
-            <Input label="Old Price" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} />
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <Input label="Cost Price" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} />
-            <Input label="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required />
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-             <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} />
-             <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Category</label>
-                <select 
-                    className="w-full px-4 py-3 rounded-md border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-                    value={newProduct.category_id}
-                    onChange={e => setNewProduct({...newProduct, category_id: e.target.value})}
-                    required
-                >
-                    <option value="">Select Category</option>
-                    {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>
-                            {'\u00A0'.repeat(cat.level * 4)}{cat.name}
-                        </option>
-                    ))}
-                </select>
-             </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Description</label>
-            <textarea 
-              className="w-full px-4 py-3 rounded-md border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-500"
-              value={newProduct.description} 
-              onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
-              required 
-              rows={4}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Images</label>
-            <div className="flex gap-2 mb-2">
-                <Input 
-                    className="flex-1" 
-                    value={newProduct.images} 
-                    onChange={e => setNewProduct({...newProduct, images: e.target.value})} 
-                    placeholder="Image URLs (comma separated)"
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
+        <form onSubmit={handleCreate} className="space-y-8">
+          {/* Basic Info */}
+          <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">Basic Information</h3>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            checked={newProduct.is_active} 
+                            onChange={e => setNewProduct({...newProduct, is_active: e.target.checked})}
+                            className="w-5 h-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                        />
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Active</span>
+                    </label>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Input label="Product Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50" />
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Category</label>
+                    <select 
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                        value={newProduct.category_id}
+                        onChange={e => setNewProduct({...newProduct, category_id: e.target.value})}
+                        required
+                    >
+                        <option value="">Select Category</option>
+                        {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                                {'\u00A0'.repeat(cat.level * 4)}{cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Description</label>
+                <textarea 
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500"
+                  value={newProduct.description} 
+                  onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
+                  required 
+                  rows={4}
                 />
-                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)}>Select Media</Button>
-            </div>
+              </div>
+          </div>
+
+          {/* Pricing & Inventory */}
+          <div className="space-y-6">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Pricing & Inventory</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <Input label="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required className="bg-slate-50/50" />
+                <Input label="Old Price" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} className="bg-slate-50/50" />
+                <Input label="Cost Price" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} className="bg-slate-50/50" />
+                <Input label="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required className="bg-slate-50/50" />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                  <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} className="bg-slate-50/50" />
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Country of Origin</label>
+                    <select 
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                        value={newProduct.country_id}
+                        onChange={e => setNewProduct({...newProduct, country_id: e.target.value})}
+                    >
+                        <option value="">Select Country</option>
+                        {countries.map(country => (
+                            <option key={country.id} value={country.id}>{country.name}</option>
+                        ))}
+                    </select>
+                  </div>
+              </div>
+          </div>
+
+          {/* Attributes */}
+          <div className="space-y-6">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Attributes</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <Input label="Size" placeholder="e.g. M, L, XL" value={newProduct.size} onChange={e => setNewProduct({...newProduct, size: e.target.value})} className="bg-slate-50/50" />
+                  <Input label="Weight" placeholder="e.g. 500g" value={newProduct.weight} onChange={e => setNewProduct({...newProduct, weight: e.target.value})} className="bg-slate-50/50" />
+                  <Input label="Color" placeholder="e.g. Red" value={newProduct.color} onChange={e => setNewProduct({...newProduct, color: e.target.value})} className="bg-slate-50/50" />
+                  <Input label="Material" placeholder="e.g. Cotton" value={newProduct.material} onChange={e => setNewProduct({...newProduct, material: e.target.value})} className="bg-slate-50/50" />
+              </div>
+          </div>
+          
+          {/* Media */}
+          <div className="space-y-6">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Media</h3>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Product Images</label>
+                <div className="flex gap-2 mb-2">
+                    <Input 
+                        className="flex-1 bg-slate-50/50" 
+                        value={newProduct.images} 
+                        onChange={e => setNewProduct({...newProduct, images: e.target.value})} 
+                        placeholder="Image URLs (comma separated)"
+                    />
+                    <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-xl">Select Media</Button>
+                </div>
+              </div>
           </div>
           
           <div className="flex justify-end gap-4 pt-4">
-            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-            <Button type="submit">Save Product</Button>
+            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl">Cancel</Button>
+            <Button type="submit" className="rounded-xl shadow-lg shadow-sky-500/20 px-8">Save Product</Button>
           </div>
         </form>
       </div>

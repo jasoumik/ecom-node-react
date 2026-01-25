@@ -1,13 +1,14 @@
 import { Injectable, Inject, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 
 @Injectable()
 export class OrdersService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<any> {
-    const { items, deliveryChargeId, couponCode, ...orderData } = createOrderDto;
+    const { items, deliveryChargeId, couponCode, paymentMethod, transactionId, ...orderData } = createOrderDto;
 
     console.log('Creating order payload:', JSON.stringify(createOrderDto, null, 2));
 
@@ -29,10 +30,30 @@ export class OrdersService {
         if (!product) {
           throw new NotFoundException(`Product with ID ${item.productId} not found`);
         }
-        const price = parseFloat(product.price);
+        
+        let price = parseFloat(product.price);
+        let variantId = null;
+        
+        if ((item as any).variantId) {
+            const variant = await this.knex('product_variants').where({ id: (item as any).variantId }).first();
+            if (variant) {
+                price = variant.price ? parseFloat(variant.price) : price;
+                variantId = variant.id;
+                
+                if (variant.stock < item.quantity) {
+                    throw new BadRequestException(`Insufficient stock for variant of ${product.name}`);
+                }
+            }
+        } else {
+            if (product.stock < item.quantity) {
+                throw new BadRequestException(`Insufficient stock for ${product.name}`);
+            }
+        }
+
         subtotal += price * item.quantity;
         orderItemsData.push({
           product_id: product.id,
+          variant_id: variantId,
           product_name: product.name,
           price: price,
           quantity: item.quantity,
@@ -52,7 +73,6 @@ export class OrdersService {
       if (couponCode) {
           const coupon = await this.knex('coupons').where({ code: couponCode, is_active: true }).first();
           if (coupon) {
-              // Validate expiry and min amount
               if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
                   throw new BadRequestException('Coupon expired');
               }
@@ -66,7 +86,6 @@ export class OrdersService {
               } else {
                   discountAmount = parseFloat(coupon.value);
               }
-              // Ensure discount doesn't exceed subtotal
               if (discountAmount > subtotal) discountAmount = subtotal;
           }
       }
@@ -85,7 +104,11 @@ export class OrdersService {
           discount: discountAmount,
           total_amount: totalAmount,
           coupon_id: couponId,
+          payment_method: paymentMethod || 'cod',
+          transaction_id: transactionId || null,
           status: 'pending',
+          order_source: 'Website',
+          payment_status: 'Pending'
         };
         
         const [order] = await trx('orders').insert(orderInsertData).returning('*');
@@ -97,12 +120,127 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
+        // Deduct Stock and Record Movement
+        for (const item of orderItemsData) {
+            if (item.variant_id) {
+                await trx('product_variants').where({ id: item.variant_id }).decrement('stock', item.quantity);
+                await trx('products').where({ id: item.product_id }).decrement('stock', item.quantity);
+            } else {
+                await trx('products').where({ id: item.product_id }).decrement('stock', item.quantity);
+            }
+            
+            // Record Stock Movement
+            await trx('stock_movements').insert({
+                product_id: item.product_id,
+                variant_id: item.variant_id,
+                quantity_change: -item.quantity,
+                type: 'sale',
+                reason: `Order #${order.order_number}`,
+                order_id: order.id
+            });
+        }
+
         return { ...order, items: itemsToInsert };
       });
     } catch (error) {
       console.error('Error creating order:', error);
       if (error instanceof NotFoundException || error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException(`Failed to create order: ${error.message}`);
+    }
+  }
+
+  async createManual(createManualOrderDto: CreateManualOrderDto): Promise<any> {
+    const { items, ...orderData } = createManualOrderDto;
+
+    let subtotal = 0;
+    const orderItemsData: any[] = [];
+
+    try {
+      for (const item of items) {
+        const product = await this.knex('products').where({ id: item.productId }).first();
+        if (!product) {
+          throw new NotFoundException(`Product with ID ${item.productId} not found`);
+        }
+        
+        let price = parseFloat(product.price);
+        let variantId = null;
+        
+        if ((item as any).variantId) {
+            const variant = await this.knex('product_variants').where({ id: (item as any).variantId }).first();
+            if (variant) {
+                price = variant.price ? parseFloat(variant.price) : price;
+                variantId = variant.id;
+                
+                if (variant.stock < item.quantity) {
+                    throw new BadRequestException(`Insufficient stock for variant of ${product.name}`);
+                }
+            }
+        } else {
+            if (product.stock < item.quantity) {
+                throw new BadRequestException(`Insufficient stock for ${product.name}`);
+            }
+        }
+
+        subtotal += price * item.quantity;
+        orderItemsData.push({
+          product_id: product.id,
+          variant_id: variantId,
+          product_name: product.name,
+          price: price,
+          quantity: item.quantity,
+        });
+      }
+
+      const totalAmount = subtotal + (orderData.deliveryCharge || 0) - (orderData.discount || 0);
+
+      return await this.knex.transaction(async (trx) => {
+        const orderInsertData = {
+          customer_name: orderData.customerName,
+          customer_phone: orderData.customerPhone,
+          customer_address: orderData.customerAddress,
+          subtotal: subtotal,
+          delivery_charge: orderData.deliveryCharge || 0,
+          discount: orderData.discount || 0,
+          total_amount: totalAmount,
+          payment_method: orderData.paymentMethod,
+          status: orderData.status,
+          order_source: orderData.orderSource,
+          payment_status: orderData.paymentStatus
+        };
+        
+        const [order] = await trx('orders').insert(orderInsertData).returning('*');
+
+        const itemsToInsert = orderItemsData.map((item: any) => ({
+          ...item,
+          order_id: order.id,
+        }));
+
+        await trx('order_items').insert(itemsToInsert);
+
+        // Deduct Stock
+        for (const item of orderItemsData) {
+            if (item.variant_id) {
+                await trx('product_variants').where({ id: item.variant_id }).decrement('stock', item.quantity);
+                await trx('products').where({ id: item.product_id }).decrement('stock', item.quantity);
+            } else {
+                await trx('products').where({ id: item.product_id }).decrement('stock', item.quantity);
+            }
+            
+            await trx('stock_movements').insert({
+                product_id: item.product_id,
+                variant_id: item.variant_id,
+                quantity_change: -item.quantity,
+                type: 'sale',
+                reason: `Manual Order #${order.order_number}`,
+                order_id: order.id
+            });
+        }
+
+        return { ...order, items: itemsToInsert };
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException(`Failed to create manual order: ${error.message}`);
     }
   }
 
@@ -151,11 +289,33 @@ export class OrdersService {
         throw new BadRequestException('Only pending orders can be cancelled');
     }
     
-    const [updatedOrder] = await this.knex('orders')
-        .where({ id })
-        .update({ status: 'cancelled' })
-        .returning('*');
+    // Restore Stock and Record Movement
+    const items = await this.knex('order_items').where({ order_id: id });
+    await this.knex.transaction(async (trx) => {
+        for (const item of items) {
+            if (item.variant_id) {
+                await trx('product_variants').where({ id: item.variant_id }).increment('stock', item.quantity);
+                await trx('products').where({ id: item.product_id }).increment('stock', item.quantity);
+            } else {
+                await trx('products').where({ id: item.product_id }).increment('stock', item.quantity);
+            }
+
+            // Record Stock Movement
+            await trx('stock_movements').insert({
+                product_id: item.product_id,
+                variant_id: item.variant_id,
+                quantity_change: item.quantity,
+                type: 'cancellation_restock',
+                reason: `Order #${order.order_number} Cancelled`,
+                order_id: order.id
+            });
+        }
         
-    return updatedOrder;
+        await trx('orders')
+            .where({ id })
+            .update({ status: 'cancelled' });
+    });
+        
+    return { ...order, status: 'cancelled' };
   }
 }

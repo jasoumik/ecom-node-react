@@ -9,7 +9,13 @@ export class DashboardService {
     // Use first() to get the single row result for count/sum
     const products = await this.knex('products').count('* as count').first();
     const orders = await this.knex('orders').count('* as count').first();
-    const users = await this.knex('users').count('* as count').first();
+    
+    // Filter users by role 'customer'
+    const users = await this.knex('users')
+        .where({ role: 'customer' })
+        .count('* as count')
+        .first();
+
     const revenue = await this.knex('orders').sum('total_amount as total').first();
 
     console.log('Dashboard Stats Raw:', { products, orders, users, revenue });

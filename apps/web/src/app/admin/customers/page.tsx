@@ -5,9 +5,11 @@ import { Heading, Button } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { Table } from "@/components/ui/Table";
+import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([]);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -20,13 +22,29 @@ export default function AdminCustomersPage() {
       const data = await res.json();
       
       if (Array.isArray(data)) {
-        setCustomers(data.filter((u: any) => u.role === 'customer'));
+        const custs = data.filter((u: any) => u.role === 'customer');
+        setCustomers(custs);
+        setFilteredCustomers(custs);
       } else {
         setCustomers([]);
+        setFilteredCustomers([]);
       }
     } catch (e) {
       setCustomers([]);
     }
+  };
+
+  const handleSearch = (query: string) => {
+      if (!query) {
+          setFilteredCustomers(customers);
+          return;
+      }
+      const lower = query.toLowerCase();
+      setFilteredCustomers(customers.filter(c => 
+          c.name.toLowerCase().includes(lower) || 
+          c.phone?.includes(lower) ||
+          c.email?.toLowerCase().includes(lower)
+      ));
   };
 
   const handleDelete = async (id: string) => {
@@ -51,8 +69,10 @@ export default function AdminCustomersPage() {
         <p className="text-sm text-slate-500">View and manage your customer base</p>
       </div>
 
+      <FilterBar onSearch={handleSearch} placeholder="Search customers by name, phone or email..." />
+
       <Table
-        data={customers}
+        data={filteredCustomers}
         columns={[
           {
             header: "Name",

@@ -1,34 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CategoriesService } from '../categories/categories.service';
 import { ProductsService } from '../products/products.service';
+import { Knex } from 'knex';
 
 @Injectable()
 export class PublicService {
   constructor(
     private readonly categoriesService: CategoriesService,
     private readonly productsService: ProductsService,
+    @Inject('KNEX_CONNECTION') private readonly knex: Knex,
   ) {}
 
   async getLandingPageData(tenant: string) {
     const categories = await this.categoriesService.findAll();
-    // Flatten top-level categories for the landing page display if needed, or just take top 4
     const displayCategories = categories.slice(0, 4).map(cat => ({
         id: cat.id,
         name: cat.name,
         image: cat.image || "https://picsum.photos/seed/default/800/800"
     }));
 
-    // Fetch products (paginated response)
-    const productsResult = await this.productsService.findAll(1, 10); // Fetch first page
+    const productsResult = await this.productsService.findAll(1, 10);
     const allProducts = productsResult.data || [];
     
-    // Take top 4 products
     const featuredProducts = allProducts.slice(0, 4).map(p => {
         let imageUrl = "https://picsum.photos/seed/default/800/800";
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
             imageUrl = p.images[0];
         } else if (p.images && typeof p.images === 'string') {
-             // Handle case where it might be a stringified JSON if not parsed by driver
              try {
                  const parsed = JSON.parse(p.images);
                  if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
@@ -46,11 +44,16 @@ export class PublicService {
                 width: 400,
                 height: 400,
             },
-            tag: p.stock < 10 ? "Low Stock" : "New", // Simple logic for tag
-            rating: 5.0, // Placeholder as we don't have ratings table yet
+            tag: p.stock < 10 ? "Low Stock" : "New",
+            rating: 5.0,
             reviewCount: 0,
         };
     });
+
+    // Fetch Banners
+    const banners = await this.knex('banners')
+        .where({ is_active: true })
+        .orderBy('order', 'asc');
 
     return {
       hero: {
@@ -58,6 +61,13 @@ export class PublicService {
         subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, organic skincare, and maternity essentials. Trusted by 50,000+ parents.",
         primaryCta: { label: "Shop All Products", href: "/products" },
         secondaryCta: { label: "Bundle & Save", href: "/bundles" },
+        // If banners exist, use them. Otherwise fallback to static image.
+        banners: banners.length > 0 ? banners.map(b => ({
+            id: b.id,
+            src: b.image,
+            alt: b.title,
+            link: b.link
+        })) : [],
         image: {
           src: "/prithibee.png",
           alt: "Prithibee Shop Hero",

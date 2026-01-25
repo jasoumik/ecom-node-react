@@ -12,6 +12,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name').notNullable();
     table.string('role').defaultTo('customer');
     table.string('avatar').nullable(); // Profile picture
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -23,6 +24,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('city').nullable();
     table.string('zip').nullable();
     table.boolean('is_default').defaultTo(false);
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -32,6 +34,7 @@ export async function up(knex: Knex): Promise<void> {
     table.text('description').nullable();
     table.string('image').nullable();
     table.uuid('parent_id').nullable().references('id').inTable('categories').onDelete('CASCADE');
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -41,6 +44,17 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name').notNullable();
     table.string('logo').nullable();
     table.text('description').nullable();
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Countries Table
+  await knex.schema.createTable('countries', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('name').notNullable();
+    table.string('code').notNullable(); // ISO code e.g. BD, US
+    table.string('flag').nullable(); // URL to flag image
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -54,8 +68,31 @@ export async function up(knex: Knex): Promise<void> {
     table.jsonb('images').nullable();
     table.uuid('category_id').nullable().references('id').inTable('categories').onDelete('SET NULL');
     table.uuid('brand_id').nullable().references('id').inTable('brands').onDelete('SET NULL'); // Brand is optional
+    table.uuid('country_id').nullable().references('id').inTable('countries').onDelete('SET NULL'); // Country of Origin
     table.integer('stock').defaultTo(0);
     table.string('sku').unique().nullable(); // Stock Keeping Unit
+    // Base attributes (can be used if no variants)
+    table.string('size').nullable();
+    table.string('weight').nullable();
+    table.string('color').nullable();
+    table.string('material').nullable();
+    table.boolean('has_variants').defaultTo(false); // Flag to check if we should look at variants table
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Product Variants Table
+  await knex.schema.createTable('product_variants', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.string('size').nullable();
+    table.string('color').nullable();
+    table.string('material').nullable();
+    table.string('weight').nullable();
+    table.decimal('price', 10, 2).nullable(); // Override base price
+    table.integer('stock').defaultTo(0);
+    table.string('sku').unique().nullable();
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -63,6 +100,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('product_batches', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('CASCADE'); // Optional link to variant
     table.string('batch_number').notNullable();
     table.decimal('purchase_price', 10, 2).notNullable();
     table.decimal('selling_price', 10, 2).notNullable(); // Price for this batch
@@ -70,6 +108,7 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('remaining_quantity').notNullable();
     table.date('expiry_date').nullable();
     table.date('purchase_date').defaultTo(knex.fn.now());
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -107,6 +146,11 @@ export async function up(knex: Knex): Promise<void> {
     table.decimal('total_amount', 10, 2).notNullable(); // Final total
     table.string('status').defaultTo('pending'); // pending, processing, shipped, delivered, cancelled
     table.uuid('coupon_id').nullable().references('id').inTable('coupons').onDelete('SET NULL');
+    table.string('payment_method').defaultTo('cod'); // cod, bkash, nagad
+    table.string('transaction_id').nullable(); // For bkash/nagad
+    table.string('order_source').defaultTo('Website'); // Facebook, Phone, WhatsApp, Website
+    table.string('payment_status').defaultTo('Pending'); // Pending, Paid
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -114,10 +158,25 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.uuid('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE');
     table.uuid('product_id').nullable().references('id').inTable('products').onDelete('SET NULL');
+    table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('SET NULL'); // Track variant
     table.uuid('batch_id').nullable().references('id').inTable('product_batches').onDelete('SET NULL'); // Track which batch
     table.string('product_name').notNullable(); // Snapshot of product name
+    table.string('variant_name').nullable(); // Snapshot of variant details (e.g. "Size: M, Color: Red")
     table.decimal('price', 10, 2).notNullable(); // Snapshot of price
     table.integer('quantity').notNullable();
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Stock Movements Table
+  await knex.schema.createTable('stock_movements', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('CASCADE');
+    table.integer('quantity_change').notNullable(); // Positive for stock in, negative for stock out
+    table.string('type').notNullable(); // e.g., 'sale', 'cancellation_restock', 'return_restock', 'batch_purchase', 'manual_adjustment'
+    table.text('reason').nullable();
+    table.uuid('order_id').nullable().references('id').inTable('orders').onDelete('SET NULL');
     table.timestamps(true, true);
   });
 
@@ -137,6 +196,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.uuid('parent_id').nullable().references('id').inTable('media_folders').onDelete('CASCADE');
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
@@ -149,20 +209,35 @@ export async function up(knex: Knex): Promise<void> {
     table.string('mime_type').notNullable();
     table.integer('size').notNullable(); // in bytes
     table.uuid('folder_id').nullable().references('id').inTable('media_folders').onDelete('SET NULL');
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Settings Table
+  await knex.schema.createTable('settings', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('key').unique().notNullable();
+    table.string('value').notNullable();
+    table.string('description').nullable();
+    table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('settings');
   await knex.schema.dropTableIfExists('media_files');
   await knex.schema.dropTableIfExists('media_folders');
   await knex.schema.dropTableIfExists('banners');
+  await knex.schema.dropTableIfExists('stock_movements');
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
   await knex.schema.dropTableIfExists('coupons');
   await knex.schema.dropTableIfExists('delivery_charges');
   await knex.schema.dropTableIfExists('product_batches');
+  await knex.schema.dropTableIfExists('product_variants');
   await knex.schema.dropTableIfExists('products');
+  await knex.schema.dropTableIfExists('countries');
   await knex.schema.dropTableIfExists('brands');
   await knex.schema.dropTableIfExists('categories');
   await knex.schema.dropTableIfExists('addresses');

@@ -17,6 +17,9 @@ export default function CartPage() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>("");
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentNumbers, setPaymentNumbers] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -33,6 +36,7 @@ export default function CartPage() {
         } catch (e) {}
     }
     fetchDeliveryCharges();
+    fetchSettings();
   }, []);
 
   const fetchDeliveryCharges = async () => {
@@ -44,6 +48,19 @@ export default function CartPage() {
       } catch (e) {
           console.error("Failed to fetch delivery charges");
       }
+  };
+
+  const fetchSettings = async () => {
+      try {
+          const res = await fetch(`${API_URL}/settings`);
+          const data = await res.json();
+          const numbers: any = {};
+          data.forEach((s: any) => {
+              if (s.key === 'bkash_number') numbers.bkash = s.value;
+              if (s.key === 'nagad_number') numbers.nagad = s.value;
+          });
+          setPaymentNumbers(numbers);
+      } catch (e) {}
   };
 
   const handleApplyCoupon = async () => {
@@ -92,6 +109,10 @@ export default function CartPage() {
         addToast("Please select a delivery area", "error");
         return;
     }
+    if ((paymentMethod === 'bkash' || paymentMethod === 'nagad') && !transactionId) {
+        addToast("Please enter transaction ID", "error");
+        return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -102,6 +123,8 @@ export default function CartPage() {
         userId: user?.id,
         deliveryChargeId: selectedDeliveryId,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+        paymentMethod,
+        transactionId: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? transactionId : undefined,
         items: items.map(item => ({
             productId: item.id,
             quantity: item.quantity
@@ -264,6 +287,41 @@ export default function CartPage() {
                                 </label>
                             ))}
                         </div>
+
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">Payment Method</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                            <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                                <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
+                                <span className="text-2xl mb-1">💵</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">COD</span>
+                            </label>
+                            <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                                <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="hidden" />
+                                <span className="text-2xl mb-1">🅱️</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Bkash</span>
+                            </label>
+                            <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                                <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => setPaymentMethod('nagad')} className="hidden" />
+                                <span className="text-2xl mb-1">🟧</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Nagad</span>
+                            </label>
+                        </div>
+
+                        {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
+                            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in">
+                                <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                                    Please send money to <span className="font-bold text-slate-900 dark:text-white">{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span>
+                                </p>
+                                <Input 
+                                    label="Transaction ID" 
+                                    value={transactionId} 
+                                    onChange={(e) => setTransactionId(e.target.value)} 
+                                    placeholder="e.g. 8X92..." 
+                                    required 
+                                    className="bg-white"
+                                />
+                            </div>
+                        )}
 
                         <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">Shipping Details</h4>
                         <Input 

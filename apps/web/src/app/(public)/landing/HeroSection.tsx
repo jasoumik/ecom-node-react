@@ -68,16 +68,18 @@ export function HeroSection(props: HeroContent) {
               <div className="absolute inset-3 bg-sky-100 rounded-md -rotate-3 z-0 dark:bg-sky-900/30"></div>
               
               <div className="absolute inset-0 z-20 rounded-md overflow-hidden shadow-xl border-4 border-white dark:border-slate-800">
-                {image && (
-                  <ResponsiveImage
-                    src={image.src}
-                    alt={image.alt}
-                    width={image.width}
-                    height={image.height}
-                    priority={image.priority}
-                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-1000"
-                  />
-                )}
+                <div className="w-full h-full overflow-hidden rounded-md">
+                    {image && (
+                    <ResponsiveImage
+                        src={image.src}
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        priority={image.priority}
+                        className="object-cover w-full h-full hover:scale-105 transition-transform duration-1000"
+                    />
+                    )}
+                </div>
               </div>
 
               {/* Floating Badge 1 */}

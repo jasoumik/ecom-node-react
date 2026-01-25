@@ -7,9 +7,11 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { Table } from "@/components/ui/Table";
+import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -31,12 +33,15 @@ export default function AdminProductsPage() {
       const data = await res.json();
       if (data.data && Array.isArray(data.data)) {
           setProducts(data.data);
+          setFilteredProducts(data.data);
           setMeta(data.meta);
       } else if (Array.isArray(data)) {
           setProducts(data);
+          setFilteredProducts(data);
           setMeta({ page: 1, totalPages: 1 });
       } else {
           setProducts([]);
+          setFilteredProducts([]);
       }
     } catch (e) {
       console.error("Failed to fetch products", e);
@@ -44,6 +49,18 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (query: string) => {
+      if (!query) {
+          setFilteredProducts(products);
+          return;
+      }
+      const lower = query.toLowerCase();
+      setFilteredProducts(products.filter(p => 
+          p.name.toLowerCase().includes(lower) || 
+          p.sku?.toLowerCase().includes(lower)
+      ));
   };
 
   const handleDelete = async (id: string) => {
@@ -75,8 +92,10 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
+      <FilterBar onSearch={handleSearch} placeholder="Search products by name or SKU..." />
+
       <Table
-        data={products}
+        data={filteredProducts}
         columns={[
           {
             header: "Product",
@@ -120,6 +139,18 @@ export default function AdminProductsPage() {
               }`}>
                   {product.stock} in stock
               </div>
+            )
+          },
+          {
+            header: "Status",
+            cell: (product) => (
+                <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold ${
+                    product.is_active 
+                    ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' 
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                }`}>
+                    {product.is_active ? 'Active' : 'Inactive'}
+                </span>
             )
           },
           {
@@ -169,12 +200,21 @@ export default function AdminProductsPage() {
                             </div>
                         </div>
                         <div className="flex justify-between items-center mt-2">
-                            <div className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
-                                product.stock > 10 
-                                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' 
-                                : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                            }`}>
-                                {product.stock} left
+                            <div className="flex gap-2">
+                                <div className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    product.stock > 10 
+                                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' 
+                                    : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                                }`}>
+                                    {product.stock} left
+                                </div>
+                                <div className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    product.is_active 
+                                    ? 'bg-green-50 text-green-600' 
+                                    : 'bg-slate-100 text-slate-500'
+                                }`}>
+                                    {product.is_active ? 'Active' : 'Inactive'}
+                                </div>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => router.push(`/admin/products/${product.id}/edit`)} className="text-sky-600 text-xs font-bold">Edit</button>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@repo/ui";
+import { Button, Heading } from "@repo/ui";
 import { FullScreenLoader } from "@/components/ui/Loader";
 
 export default function AdminLayout({
@@ -43,8 +43,10 @@ export default function AdminLayout({
     { label: "Dashboard", href: "/admin", icon: "📊" },
     { label: "Products", href: "/admin/products", icon: "🛍️" },
     { label: "Batches", href: "/admin/batches", icon: "📦" },
+    { label: "Stock Ledger", href: "/admin/stock-ledger", icon: "📜" },
     { label: "Categories", href: "/admin/categories", icon: "📂" },
     { label: "Brands", href: "/admin/brands", icon: "🏷️" },
+    { label: "Countries", href: "/admin/countries", icon: "🏳️" }, // Added Countries
     { label: "Orders", href: "/admin/orders", icon: "📦" },
     { label: "Customers", href: "/admin/customers", icon: "👥" },
     { label: "Banners", href: "/admin/banners", icon: "🖼️" },

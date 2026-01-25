@@ -14,6 +14,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { BrandsModule } from './brands/brands.module';
 import { SettingsModule } from './settings/settings.module';
+import { CountriesModule } from './countries/countries.module'; // Added CountriesModule
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -34,6 +35,7 @@ import { join } from 'path';
     DeliveryModule,
     BrandsModule,
     SettingsModule,
+    CountriesModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',

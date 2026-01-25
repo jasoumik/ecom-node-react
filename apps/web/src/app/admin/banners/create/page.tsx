@@ -8,6 +8,15 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
+const AVAILABLE_ROUTES = [
+    { label: "Home", value: "/" },
+    { label: "All Products", value: "/products" },
+    { label: "New Arrivals", value: "/products?sort=new" },
+    { label: "Best Sellers", value: "/products?sort=best_selling" },
+    { label: "About Us", value: "/about" },
+    { label: "Contact", value: "/contact" },
+];
+
 export default function CreateBannerPage() {
   const [newBanner, setNewBanner] = useState({ title: "", image: "", link: "", order: "0", is_active: true });
   const [showMediaPicker, setShowMediaPicker] = useState(false);
@@ -55,7 +64,35 @@ export default function CreateBannerPage() {
             </div>
           </div>
 
-          <Input label="Link (Optional)" value={newBanner.link} onChange={e => setNewBanner({...newBanner, link: e.target.value})} />
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Link Route</label>
+            <div className="flex flex-col gap-2">
+                <select 
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    value={AVAILABLE_ROUTES.some(r => r.value === newBanner.link) ? newBanner.link : "custom"}
+                    onChange={e => {
+                        const val = e.target.value;
+                        if (val !== "custom") setNewBanner({...newBanner, link: val});
+                        else setNewBanner({...newBanner, link: ""});
+                    }}
+                >
+                    <option value="">Select a Route</option>
+                    {AVAILABLE_ROUTES.map(route => (
+                        <option key={route.value} value={route.value}>{route.label} ({route.value})</option>
+                    ))}
+                    <option value="custom">Custom URL...</option>
+                </select>
+                
+                {(!AVAILABLE_ROUTES.some(r => r.value === newBanner.link) || newBanner.link === "") && (
+                    <Input 
+                        placeholder="Enter custom URL (e.g. /products/123)" 
+                        value={newBanner.link} 
+                        onChange={e => setNewBanner({...newBanner, link: e.target.value})} 
+                    />
+                )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-6">
             <Input label="Order" type="number" value={newBanner.order} onChange={e => setNewBanner({...newBanner, order: e.target.value})} />
             <div className="flex items-center pt-8">
