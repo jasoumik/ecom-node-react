@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { create } from "zustand";
+import { useEffect } from "react";
 
 interface Toast {
   id: string;
@@ -17,7 +17,7 @@ interface ToastStore {
 
 export const useToast = create<ToastStore>((set) => ({
   toasts: [],
-  addToast: (message, type = "success") => {
+  addToast: (message, type = "info") => {
     const id = Math.random().toString(36).substring(2, 9);
     set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
     setTimeout(() => {
@@ -32,32 +32,53 @@ export function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`min-w-[300px] p-4 rounded-xl shadow-lg border flex items-center justify-between animate-in slide-in-from-right-full duration-300 ${
-            toast.type === "success"
-              ? "bg-white border-green-100 text-green-800 dark:bg-slate-800 dark:border-green-900 dark:text-green-400"
-              : toast.type === "error"
-              ? "bg-white border-red-100 text-red-800 dark:bg-slate-800 dark:border-red-900 dark:text-red-400"
-              : "bg-white border-sky-100 text-sky-800 dark:bg-slate-800 dark:border-sky-900 dark:text-sky-400"
-          }`}
+          className={`
+            pointer-events-auto min-w-[300px] max-w-md p-4 rounded-xl shadow-xl border animate-in slide-in-from-right-full fade-in duration-300 backdrop-blur-md
+            ${
+              toast.type === "success"
+                ? "bg-white/95 border-emerald-100 text-emerald-900 dark:bg-slate-800/95 dark:border-emerald-900/30 dark:text-emerald-100"
+                : toast.type === "error"
+                ? "bg-white/95 border-red-100 text-red-900 dark:bg-slate-800/95 dark:border-red-900/30 dark:text-red-100"
+                : "bg-white/95 border-sky-100 text-sky-900 dark:bg-slate-800/95 dark:border-sky-900/30 dark:text-sky-100"
+            }
+          `}
         >
-          <div className="flex items-center gap-3">
-            {toast.type === "success" && (
-              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 dark:bg-green-900/30">
-                ✓
-              </div>
-            )}
-            <span className="font-medium text-sm">{toast.message}</span>
+          <div className="flex items-start gap-3">
+            <div className={`
+                w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5
+                ${
+                    toast.type === "success" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400" :
+                    toast.type === "error" ? "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400" :
+                    "bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400"
+                }
+            `}>
+                {toast.type === "success" && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                )}
+                {toast.type === "error" && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                )}
+                {toast.type === "info" && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                )}
+            </div>
+            
+            <div className="flex-1">
+                <p className="font-bold text-sm mb-0.5 capitalize">{toast.type}</p>
+                <p className="text-sm opacity-90 leading-snug">{toast.message}</p>
+            </div>
+            
+            <button 
+                onClick={() => removeToast(toast.id)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
           </div>
-          <button
-            onClick={() => removeToast(toast.id)}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-          >
-            ×
-          </button>
         </div>
       ))}
     </div>
