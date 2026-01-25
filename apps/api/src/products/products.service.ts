@@ -3,12 +3,14 @@ import { Knex } from 'knex';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SettingsService } from '../settings/settings.service';
+import { RequestsService } from '../requests/requests.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @Inject('KNEX_CONNECTION') private readonly knex: Knex,
-    private readonly settingsService: SettingsService
+    private readonly settingsService: SettingsService,
+    private readonly requestsService: RequestsService
   ) {}
 
   async findAll(page: number = 1, limit: number = 10, categoryId?: string): Promise<any> {
@@ -174,6 +176,12 @@ export class ProductsService {
             }
         }
         
+        // Check for stock requests if stock increased
+        if (product.stock > 0) {
+            // This is async, don't await to block response
+            this.requestsService.notifyStockAvailable(id);
+        }
+        
         return product;
     });
   }
@@ -202,6 +210,9 @@ export class ProductsService {
             type: 'batch_purchase',
             reason: `Batch #${batchData.batch_number}`
         });
+        
+        // Notify stock requests
+        this.requestsService.notifyStockAvailable(productId);
 
         return batch[0];
     });

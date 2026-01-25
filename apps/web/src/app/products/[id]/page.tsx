@@ -7,6 +7,7 @@ import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
+import { Input } from "@/components/ui/Input";
 
 export default function ProductPage() {
   const params = useParams();
@@ -21,6 +22,11 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+  // Notify Me State
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
+  const [notifyPhone, setNotifyPhone] = useState("");
+  const [notifyEmail, setNotifyEmail] = useState("");
 
   const imageRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
@@ -51,8 +57,7 @@ export default function ProductPage() {
 
           // Pre-select first variant options if available
           if (data.variants && data.variants.length > 0) {
-              // Sort variants to ensure consistent default selection
-              const sortedVariants = [...data.variants].sort((a, b) => b.stock - a.stock); // Prefer in-stock
+              const sortedVariants = [...data.variants].sort((a, b) => b.stock - a.stock);
               const first = sortedVariants[0];
               if (first.size) setSelectedSize(first.size);
               if (first.color) setSelectedColor(first.color);
@@ -66,59 +71,30 @@ export default function ProductPage() {
     };
 
     fetchProduct();
+    
+    // Pre-fill user info if logged in
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            setNotifyPhone(user.phone || "");
+            setNotifyEmail(user.email || "");
+        } catch (e) {}
+    }
   }, [id]);
 
-  // Smart Variant Selection Logic
+  // Update selected variant when options change
   useEffect(() => {
       if (!product || !product.variants) return;
       
-      // 1. Try to find exact match
-      let variant = product.variants.find((v: any) => {
+      const variant = product.variants.find((v: any) => {
           const sizeMatch = !v.size || v.size === selectedSize;
           const colorMatch = !v.color || v.color === selectedColor;
           return sizeMatch && colorMatch;
       });
-
-      // 2. If no exact match (invalid combination), try to find a valid variant for the *just changed* attribute
-      // This part is tricky because we don't know which one changed in this effect.
-      // Instead, let's handle this in the selection handlers (handleSizeChange, handleColorChange).
       
-      setSelectedVariant(variant || null);
+      setSelectedVariant(variant);
   }, [selectedSize, selectedColor, product]);
-
-  const handleSizeChange = (newSize: string) => {
-      setSelectedSize(newSize);
-      
-      // Check if current color is valid for new size
-      const isValidCombination = product.variants.some((v: any) => 
-          v.size === newSize && v.color === selectedColor
-      );
-
-      if (!isValidCombination) {
-          // Find first valid color for this size
-          const validVariant = product.variants.find((v: any) => v.size === newSize);
-          if (validVariant && validVariant.color) {
-              setSelectedColor(validVariant.color);
-          }
-      }
-  };
-
-  const handleColorChange = (newColor: string) => {
-      setSelectedColor(newColor);
-      
-      // Check if current size is valid for new color
-      const isValidCombination = product.variants.some((v: any) => 
-          v.color === newColor && v.size === selectedSize
-      );
-
-      if (!isValidCombination) {
-          // Find first valid size for this color
-          const validVariant = product.variants.find((v: any) => v.color === newColor);
-          if (validVariant && validVariant.size) {
-              setSelectedSize(validVariant.size);
-          }
-      }
-  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!imageRef.current) return;
@@ -140,7 +116,7 @@ export default function ProductPage() {
     const finalStock = selectedVariant ? selectedVariant.stock : product.stock;
 
     if (finalStock <= 0) {
-        addToast("Out of stock", "error");
+        setShowNotifyModal(true);
         return;
     }
 
@@ -166,8 +142,37 @@ export default function ProductPage() {
   };
 
   const handleOrderNow = () => {
+      const finalStock = selectedVariant ? selectedVariant.stock : product.stock;
+      if (finalStock <= 0) {
+          setShowNotifyModal(true);
+          return;
+      }
       handleAddToCart();
       router.push('/cart');
+  };
+
+  const handleNotifyRequest = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+          const res = await fetch(`${API_URL}/requests/stock`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  productId: product.id,
+                  variantId: selectedVariant?.id,
+                  phone: notifyPhone,
+                  email: notifyEmail
+              }),
+          });
+          if (res.ok) {
+              addToast("Request received! We'll notify you.", "success");
+              setShowNotifyModal(false);
+          } else {
+              addToast("Failed to submit request", "error");
+          }
+      } catch (e) {
+          addToast("Error submitting request", "error");
+      }
   };
 
   if (loading) return <FullScreenLoader />;
@@ -189,21 +194,17 @@ export default function ProductPage() {
       return url.match(/\.(mp4|webm|ogg)$/i);
   };
 
-  // Extract unique options
   const sizes = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.size).filter(Boolean))) : [];
   const colors = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) : [];
 
   const currentPrice = selectedVariant ? (selectedVariant.price || product.price) : product.price;
   const currentStock = selectedVariant ? selectedVariant.stock : product.stock;
 
-  // Helper to check availability
   const isSizeAvailable = (size: string) => {
-      // Check if this size exists with ANY color
       return product.variants.some((v: any) => v.size === size && v.stock > 0);
   };
   
   const isColorAvailableForSize = (color: string) => {
-      // Check if this color is valid for currently selected size
       if (!selectedSize) return true;
       const variant = product.variants.find((v: any) => v.size === selectedSize && v.color === color);
       return variant && variant.stock > 0;
@@ -308,7 +309,7 @@ export default function ProductPage() {
                                 {sizes.map((size: any) => (
                                     <button
                                         key={size}
-                                        onClick={() => handleSizeChange(size)}
+                                        onClick={() => setSelectedSize(size)}
                                         className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                             selectedSize === size 
                                             ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400' 
@@ -331,7 +332,7 @@ export default function ProductPage() {
                                     return (
                                         <button
                                             key={color}
-                                            onClick={() => handleColorChange(color)}
+                                            onClick={() => setSelectedColor(color)}
                                             className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                                 selectedColor === color 
                                                 ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400' 
@@ -370,24 +371,50 @@ export default function ProductPage() {
             </Text>
 
             <div className="pt-4 flex flex-col sm:flex-row gap-4">
-              <Button 
-                className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleAddToCart}
-                disabled={currentStock <= 0}
-              >
-                {currentStock > 0 ? 'Add to Cart' : 'Out of Stock'}
-              </Button>
-              <Button 
-                className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-emerald-500/20 bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 transition-all duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleOrderNow}
-                disabled={currentStock <= 0}
-              >
-                Order Now
-              </Button>
+              {currentStock > 0 ? (
+                  <>
+                    <Button 
+                        className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 font-bold"
+                        onClick={handleAddToCart}
+                    >
+                        Add to Cart
+                    </Button>
+                    <Button 
+                        className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-emerald-500/20 bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 transition-all duration-300 font-bold"
+                        onClick={handleOrderNow}
+                    >
+                        Order Now
+                    </Button>
+                  </>
+              ) : (
+                  <Button 
+                    className="w-full py-4 text-lg rounded-2xl shadow-xl shadow-amber-500/20 bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 transition-all duration-300 font-bold"
+                    onClick={() => setShowNotifyModal(true)}
+                  >
+                    Notify Me When Available
+                  </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Notify Me Modal */}
+      {showNotifyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-3xl shadow-2xl relative">
+                  <button onClick={() => setShowNotifyModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+                  <Heading size="lg" className="mb-2 text-slate-900 dark:text-white">Request Stock</Heading>
+                  <p className="text-slate-500 dark:text-slate-400 mb-6">We'll notify you when this product is back in stock.</p>
+                  
+                  <form onSubmit={handleNotifyRequest} className="space-y-4">
+                      <Input label="Phone Number" value={notifyPhone} onChange={e => setNotifyPhone(e.target.value)} required placeholder="017..." />
+                      <Input label="Email (Optional)" value={notifyEmail} onChange={e => setNotifyEmail(e.target.value)} placeholder="you@example.com" />
+                      <Button fullWidth type="submit" className="rounded-xl py-3 mt-2">Submit Request</Button>
+                  </form>
+              </div>
+          </div>
+      )}
     </div>
   );
 }

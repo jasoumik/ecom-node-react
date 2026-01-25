@@ -2,29 +2,30 @@ import { Injectable, Inject, NotFoundException, InternalServerErrorException, Ba
 import { Knex } from 'knex';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateManualOrderDto } from './dto/create-manual-order.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
+  constructor(
+    @Inject('KNEX_CONNECTION') private readonly knex: Knex,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<any> {
     const { items, deliveryChargeId, couponCode, paymentMethod, transactionId, ...orderData } = createOrderDto;
 
     console.log('Creating order payload:', JSON.stringify(createOrderDto, null, 2));
 
-    // 1. Calculate Subtotal
     let subtotal = 0;
     const orderItemsData: any[] = [];
 
     try {
-      // Validate User
       let validUserId = null;
       if (orderData.userId) {
         const user = await this.knex('users').where({ id: orderData.userId }).first();
         if (user) validUserId = user.id;
       }
 
-      // Process Items
       for (const item of items) {
         const product = await this.knex('products').where({ id: item.productId }).first();
         if (!product) {
@@ -60,14 +61,12 @@ export class OrdersService {
         });
       }
 
-      // 2. Get Delivery Charge
       const deliveryCharge = await this.knex('delivery_charges').where({ id: deliveryChargeId }).first();
       if (!deliveryCharge) {
           throw new BadRequestException('Invalid delivery charge selected');
       }
       const deliveryAmount = parseFloat(deliveryCharge.amount);
 
-      // 3. Apply Coupon
       let discountAmount = 0;
       let couponId = null;
       if (couponCode) {
@@ -92,7 +91,6 @@ export class OrdersService {
 
       const totalAmount = subtotal + deliveryAmount - discountAmount;
 
-      // Transaction
       return await this.knex.transaction(async (trx) => {
         const orderInsertData = {
           user_id: validUserId,
@@ -120,7 +118,6 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
-        // Deduct Stock and Record Movement
         for (const item of orderItemsData) {
             if (item.variant_id) {
                 await trx('product_variants').where({ id: item.variant_id }).decrement('stock', item.quantity);
@@ -129,7 +126,6 @@ export class OrdersService {
                 await trx('products').where({ id: item.product_id }).decrement('stock', item.quantity);
             }
             
-            // Record Stock Movement
             await trx('stock_movements').insert({
                 product_id: item.product_id,
                 variant_id: item.variant_id,
@@ -139,6 +135,9 @@ export class OrdersService {
                 order_id: order.id
             });
         }
+
+        // Send Notifications (Async, don't block)
+        this.sendOrderNotifications(order);
 
         return { ...order, items: itemsToInsert };
       });
@@ -217,7 +216,6 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
-        // Deduct Stock
         for (const item of orderItemsData) {
             if (item.variant_id) {
                 await trx('product_variants').where({ id: item.variant_id }).decrement('stock', item.quantity);
@@ -242,6 +240,28 @@ export class OrdersService {
       if (error instanceof NotFoundException || error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException(`Failed to create manual order: ${error.message}`);
     }
+  }
+
+  private async sendOrderNotifications(order: any) {
+      const customerMsg = `Dear ${order.customer_name}, your order #${order.order_number} has been placed successfully. Total: ${order.total_amount}. We will contact you soon.`;
+      const adminMsg = `New Order #${order.order_number} received from ${order.customer_name}. Total: ${order.total_amount}.`;
+      const adminPhone = process.env.ADMIN_PHONE || '01700000000';
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+
+      // Customer Notification
+      await this.notificationService.sendSMS(order.customer_phone, customerMsg);
+      // If we had customer email, we'd send email too. Assuming user might have email in users table if registered.
+      if (order.user_id) {
+          const user = await this.knex('users').where({ id: order.user_id }).first();
+          if (user && user.email) {
+              await this.notificationService.sendEmail(user.email, `Order #${order.order_number} Placed`, customerMsg);
+          }
+      }
+
+      // Admin Notification
+      await this.notificationService.sendSMS(adminPhone, adminMsg);
+      await this.notificationService.sendEmail(adminEmail, `New Order #${order.order_number}`, adminMsg);
+      await this.notificationService.sendWhatsApp(adminPhone, adminMsg);
   }
 
   async findAll(): Promise<any[]> {
@@ -277,6 +297,11 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
+    
+    // Notify customer on status change
+    const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
+    await this.notificationService.sendSMS(order.customer_phone, msg);
+    
     return order;
   }
 
@@ -289,7 +314,6 @@ export class OrdersService {
         throw new BadRequestException('Only pending orders can be cancelled');
     }
     
-    // Restore Stock and Record Movement
     const items = await this.knex('order_items').where({ order_id: id });
     await this.knex.transaction(async (trx) => {
         for (const item of items) {
@@ -300,7 +324,6 @@ export class OrdersService {
                 await trx('products').where({ id: item.product_id }).increment('stock', item.quantity);
             }
 
-            // Record Stock Movement
             await trx('stock_movements').insert({
                 product_id: item.product_id,
                 variant_id: item.variant_id,

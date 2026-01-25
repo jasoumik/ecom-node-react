@@ -7,7 +7,6 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body) {
-    // body.identifier can be phone or email
     const user = await this.authService.validateUser(body.identifier, body.password);
     if (!user) {
       throw new Error('Invalid credentials');
@@ -18,5 +17,15 @@ export class AuthController {
   @Post('register')
   async register(@Body() body) {
     return this.authService.register(body);
+  }
+
+  @Post('otp/send')
+  async sendOtp(@Body() body: { identifier: string }) {
+      return this.authService.generateOtp(body.identifier);
+  }
+
+  @Post('otp/login')
+  async loginOtp(@Body() body: { identifier: string; otp: string }) {
+      return this.authService.loginWithOtp(body.identifier, body.otp);
   }
 }
