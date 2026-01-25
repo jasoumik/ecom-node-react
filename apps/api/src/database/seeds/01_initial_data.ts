@@ -3,6 +3,11 @@ import * as bcrypt from 'bcrypt';
 
 export async function seed(knex: Knex): Promise<void> {
   // Deletes ALL existing entries
+  await knex('promises').del();
+  await knex('reviews').del();
+  await knex('contact_messages').del();
+  await knex('product_requests').del();
+  await knex('stock_requests').del();
   await knex('order_items').del();
   await knex('orders').del();
   await knex('product_batches').del();
@@ -17,6 +22,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('coupons').del();
   await knex('brands').del();
   await knex('settings').del();
+  await knex('countries').del();
 
   // Create Admin User
   const salt = await bcrypt.genSalt();
@@ -49,6 +55,10 @@ export async function seed(knex: Knex): Promise<void> {
   const [huggies] = await knex('brands').insert({ name: 'Huggies', logo: 'https://picsum.photos/seed/huggies/200/200' }).returning('id');
   const [johnsons] = await knex('brands').insert({ name: 'Johnsons', logo: 'https://picsum.photos/seed/johnsons/200/200' }).returning('id');
 
+  // Insert Countries
+  const [bangladesh] = await knex('countries').insert({ name: 'Bangladesh', code: 'BD' }).returning('id');
+  const [usa] = await knex('countries').insert({ name: 'United States', code: 'US' }).returning('id');
+
   // Insert Products with Variants
   const productsData = [
     {
@@ -59,6 +69,7 @@ export async function seed(knex: Knex): Promise<void> {
       cost_price: 2500.00,
       category_id: diapers.id,
       brand_id: huggies.id,
+      country_id: usa.id,
       stock: 150, // Total stock
       sku: 'DIA-BASE',
       has_variants: true,
@@ -69,6 +80,7 @@ export async function seed(knex: Knex): Promise<void> {
       description: 'Soft, breathable organic cotton onesies in pastel colors.',
       price: 2500.00,
       category_id: clothing.id,
+      country_id: bangladesh.id,
       stock: 60, // Total stock
       sku: 'CLOTH-BASE',
       has_variants: true,
@@ -81,6 +93,7 @@ export async function seed(knex: Knex): Promise<void> {
       cost_price: 1200.00,
       category_id: skincare.id,
       brand_id: johnsons.id,
+      country_id: usa.id,
       stock: 100,
       sku: 'SKIN-BASE',
       has_variants: true,
@@ -93,6 +106,7 @@ export async function seed(knex: Knex): Promise<void> {
       old_price: 3200.00,
       cost_price: 2000.00,
       category_id: feeding.id,
+      country_id: bangladesh.id,
       stock: 90,
       sku: 'FEED-BASE',
       has_variants: true,
@@ -180,6 +194,28 @@ export async function seed(knex: Knex): Promise<void> {
       key: 'nagad_number',
       value: '01700000000',
       description: 'Nagad Merchant/Personal Number',
+    }
+  ]);
+
+  // Insert Promises
+  await knex('promises').insert([
+    {
+      title: 'Expertly Curated',
+      description: 'Every product is vetted by pediatricians and moms.',
+      icon: '🛡️',
+      order: 1
+    },
+    {
+      title: 'Same-Day Delivery',
+      description: 'Order by 2PM and get it today. Because babies can\'t wait.',
+      icon: '🌱',
+      order: 2
+    },
+    {
+      title: '24/7 Parent Support',
+      description: 'Questions? Chat with our experts anytime.',
+      icon: '🤝',
+      order: 3
     }
   ]);
 }

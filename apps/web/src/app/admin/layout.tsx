@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@repo/ui";
+import { Button, Heading } from "@repo/ui";
 import { FullScreenLoader } from "@/components/ui/Loader";
 
 interface NavItem {
@@ -85,6 +85,7 @@ export default function AdminLayout({
       icon: "🎨",
       children: [
         { label: "Banners", href: "/admin/banners", icon: "🖼️" },
+        { label: "Promises", href: "/admin/promises", icon: "🤝" }, // Added Promises
         { label: "Media", href: "/admin/media", icon: "📁" },
       ]
     },

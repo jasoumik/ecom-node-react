@@ -274,9 +274,21 @@ export async function up(knex: Knex): Promise<void> {
     // Ensure one review per product per order
     table.unique(['product_id', 'order_id']);
   });
+
+  // Promises Table (Why Choose Us)
+  await knex.schema.createTable('promises', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('title').notNullable();
+    table.text('description').notNullable();
+    table.string('icon').notNullable(); // Emoji or URL
+    table.integer('order').defaultTo(0);
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('promises');
   await knex.schema.dropTableIfExists('reviews');
   await knex.schema.dropTableIfExists('contact_messages');
   await knex.schema.dropTableIfExists('product_requests');

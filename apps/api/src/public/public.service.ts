@@ -68,12 +68,17 @@ export class PublicService {
             },
             tag: p.total_sold > 5 ? "Best Seller" : (p.stock < 10 ? "Low Stock" : "New"),
             rating: 5.0,
-            reviewCount: 0, // Ideally fetch review count too
+            reviewCount: 0,
         };
     });
 
     // Fetch Banners
     const banners = await this.knex('banners')
+        .where({ is_active: true })
+        .orderBy('order', 'asc');
+
+    // Fetch Promises
+    const promises = await this.knex('promises')
         .where({ is_active: true })
         .orderBy('order', 'asc');
 
@@ -119,24 +124,29 @@ export class PublicService {
       },
       whyChooseUs: {
         title: "The Prithibee Promise",
-        reasons: [
+        reasons: promises.length > 0 ? promises.map(p => ({
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            iconUrl: p.icon // Assuming icon is emoji or URL, frontend handles it
+        })) : [
           {
             id: "curated",
             title: "Expertly Curated",
             description: "Every product is vetted by pediatricians and moms.",
-            iconUrl: "/icons/check.svg",
+            iconUrl: "🛡️",
           },
           {
             id: "fast",
             title: "Same-Day Delivery",
             description: "Order by 2PM and get it today. Because babies can't wait.",
-            iconUrl: "/icons/truck.svg",
+            iconUrl: "🌱",
           },
           {
             id: "support",
             title: "24/7 Parent Support",
             description: "Questions? Chat with our experts anytime.",
-            iconUrl: "/icons/chat.svg",
+            iconUrl: "🤝",
           },
         ],
       },

@@ -17,7 +17,8 @@ import { SettingsModule } from './settings/settings.module';
 import { CountriesModule } from './countries/countries.module';
 import { NotificationModule } from './notification/notification.module';
 import { RequestsModule } from './requests/requests.module';
-import { ReviewsModule } from './reviews/reviews.module'; // Added ReviewsModule
+import { ReviewsModule } from './reviews/reviews.module';
+import { PromisesModule } from './promises/promises.module'; // Added PromisesModule
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -42,6 +43,7 @@ import { join } from 'path';
     NotificationModule,
     RequestsModule,
     ReviewsModule,
+    PromisesModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
