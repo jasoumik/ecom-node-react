@@ -16,11 +16,18 @@ export default function OrderInvoicePage() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviewProduct, setReviewProduct] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
   const { t } = useLanguage();
   const settings = useSettings();
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        try {
+            setCurrentUser(JSON.parse(userStr));
+        } catch (e) {}
+    }
     fetchOrder();
   }, [id]);
 
@@ -38,6 +45,8 @@ export default function OrderInvoicePage() {
   const handlePrint = () => {
     window.print();
   };
+
+  const canReview = currentUser && currentUser.id === order.user_id;
 
   return (
     <>
@@ -108,14 +117,14 @@ export default function OrderInvoicePage() {
                                         <RatingStars rating={item.review.rating} size="sm" />
                                         <span className="text-[10px] text-slate-400 mt-1">Reviewed</span>
                                     </div>
-                                ) : (
-                                    <button
+                                ) : canReview ? (
+                                    <button 
                                         onClick={() => setReviewProduct({ id: item.product_id, name: item.product_name })}
                                         className="text-xs font-bold text-sky-600 hover:text-sky-700 hover:underline whitespace-nowrap bg-sky-50 dark:bg-sky-900/20 px-3 py-1.5 rounded-lg transition-colors"
                                     >
                                         {t('write_review')}
                                     </button>
-                                )
+                                ) : null
                             )}
                         </td>
                     </tr>
@@ -138,7 +147,7 @@ export default function OrderInvoicePage() {
                                 <div className="text-xs text-slate-500">{item.quantity} x ৳{item.price}</div>
                             </div>
                         </div>
-
+                        
                         {(order.status === 'completed' || order.status === 'delivered') && (
                             <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600 flex justify-end">
                                 {item.review ? (
@@ -146,14 +155,14 @@ export default function OrderInvoicePage() {
                                         <span className="text-xs text-slate-500">Your Review:</span>
                                         <RatingStars rating={item.review.rating} size="sm" />
                                     </div>
-                                ) : (
-                                    <button
+                                ) : canReview ? (
+                                    <button 
                                         onClick={() => setReviewProduct({ id: item.product_id, name: item.product_name })}
                                         className="text-xs font-bold text-sky-600 hover:text-sky-700 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600 w-full"
                                     >
                                         {t('write_review')}
                                     </button>
-                                )}
+                                ) : null}
                             </div>
                         )}
                     </div>
