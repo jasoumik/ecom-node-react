@@ -8,12 +8,14 @@ import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { Input } from "@/components/ui/Input";
+import Link from "next/link";
 
 export default function ProductPage() {
   const params = useParams();
   const id = params.id as string;
   const [product, setProduct] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState<string>("");
   const [isZoomed, setIsZoomed] = useState(false);
@@ -47,6 +49,17 @@ export default function ProductPage() {
         if (productRes.ok) {
           const data = await productRes.json();
           setProduct(data);
+          
+          // Fetch related products
+          if (data.category_id) {
+              fetch(`${API_URL}/products?category=${data.category_id}&limit=4`)
+                .then(res => res.json())
+                .then(related => {
+                    const list = related.data || related;
+                    setRelatedProducts(list.filter((p: any) => p.id !== data.id).slice(0, 4));
+                })
+                .catch(console.error);
+          }
           
           let media: string[] = [];
           if (Array.isArray(data.images)) {
@@ -208,6 +221,21 @@ export default function ProductPage() {
       }
   };
 
+  const handleShare = async () => {
+      if (navigator.share) {
+          try {
+              await navigator.share({
+                  title: product.name,
+                  text: product.description,
+                  url: window.location.href,
+              });
+          } catch (e) {}
+      } else {
+          navigator.clipboard.writeText(window.location.href);
+          addToast("Link copied to clipboard", "success");
+      }
+  };
+
   if (loading) return <FullScreenLoader />;
   if (!product) return <div className="min-h-screen flex items-center justify-center dark:bg-slate-900 dark:text-white">Product not found</div>;
 
@@ -243,15 +271,27 @@ export default function ProductPage() {
       return variant && variant.stock > 0;
   };
 
-  // Calculate average rating
   const avgRating = reviews.length > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
       : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-12 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-24 transition-colors duration-300">
+      {/* Breadcrumbs */}
+      <div className="bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <Link href="/" className="hover:text-sky-500">Home</Link>
+                  <span>/</span>
+                  <Link href="/products" className="hover:text-sky-500">Products</Link>
+                  <span>/</span>
+                  <span className="text-slate-900 dark:text-white font-medium truncate max-w-[200px]">{product.name}</span>
+              </div>
+          </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mb-16">
           {/* Media Gallery */}
           <div className="space-y-4">
             <div 
@@ -296,16 +336,16 @@ export default function ProductPage() {
             </div>
             
             {mediaList.length > 1 && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-5 gap-3">
                 {mediaList.map((media: string, i: number) => (
                     <div 
                         key={i} 
-                        className={`aspect-square rounded-xl overflow-hidden bg-white shadow cursor-pointer hover:opacity-80 dark:bg-slate-800 border transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-700'}`}
+                        className={`aspect-square rounded-xl overflow-hidden bg-white shadow-sm cursor-pointer hover:opacity-80 dark:bg-slate-800 border transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-700'}`}
                         onClick={() => setSelectedMedia(media)}
                     >
                         {isVideo(media) ? (
                             <div className="w-full h-full relative flex items-center justify-center bg-black">
-                                <span className="text-white text-2xl">▶</span>
+                                <span className="text-white text-xl">▶</span>
                                 <video src={media} className="absolute inset-0 w-full h-full object-cover opacity-50" />
                             </div>
                         ) : (
@@ -328,22 +368,27 @@ export default function ProductPage() {
             <div>
               <div className="flex justify-between items-start">
                   <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{product.category}</div>
-                  {product.country_id && (
-                      <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-                          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Product of {product.country_name || 'Origin'}</span>
-                          {product.country_flag && <img src={product.country_flag} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />}
-                      </div>
-                  )}
+                  <div className="flex gap-2">
+                      <button onClick={handleShare} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                      </button>
+                      {product.country_id && (
+                        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Product of {product.country_name || 'Origin'}</span>
+                            {product.country_flag && <img src={product.country_flag} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />}
+                        </div>
+                      )}
+                  </div>
               </div>
-              <Heading as="h1" size="xl" className="font-sans dark:text-white text-4xl sm:text-5xl font-bold">{product.name}</Heading>
+              <Heading as="h1" size="xl" className="font-sans dark:text-white text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{product.name}</Heading>
               
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mt-3">
                   <RatingStars rating={avgRating} />
                   <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">({reviews.length} reviews)</span>
               </div>
 
-              <div className="flex items-baseline gap-4 mt-4">
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">৳{currentPrice}</div>
+              <div className="flex items-baseline gap-4 mt-6">
+                <div className="text-4xl font-bold text-slate-900 dark:text-white">৳{currentPrice}</div>
                 {product.old_price && <div className="text-xl text-slate-400 line-through">৳{product.old_price}</div>}
               </div>
               <div className={`text-sm font-bold mt-2 ${currentStock > 0 ? 'text-green-600' : 'text-red-500'}`}>
@@ -353,10 +398,10 @@ export default function ProductPage() {
 
             {/* Variant Selectors */}
             {product.has_variants && (
-                <div className="space-y-4">
+                <div className="space-y-6 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     {sizes.length > 0 && (
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Size</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Size</label>
                             <div className="flex flex-wrap gap-2">
                                 {sizes.map((size: any) => (
                                     <button
@@ -364,8 +409,8 @@ export default function ProductPage() {
                                         onClick={() => handleSizeChange(size)}
                                         className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                             selectedSize === size 
-                                            ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400' 
-                                            : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-400'
+                                            ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400 shadow-sm ring-2 ring-sky-100 dark:ring-sky-900/30' 
+                                            : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:text-slate-400'
                                         }`}
                                     >
                                         {size}
@@ -377,7 +422,7 @@ export default function ProductPage() {
                     
                     {colors.length > 0 && (
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Color</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Color</label>
                             <div className="flex flex-wrap gap-2">
                                 {colors.map((color: any) => {
                                     const isAvailable = isColorAvailableForSize(color);
@@ -387,10 +432,10 @@ export default function ProductPage() {
                                             onClick={() => handleColorChange(color)}
                                             className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                                 selectedColor === color 
-                                                ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400' 
+                                                ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400 shadow-sm ring-2 ring-sky-100 dark:ring-sky-900/30' 
                                                 : isAvailable 
-                                                    ? 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-400'
-                                                    : 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50 dark:bg-slate-800 dark:border-slate-800 dark:text-slate-600'
+                                                    ? 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:text-slate-400'
+                                                    : 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50 dark:bg-slate-800 dark:border-slate-800 dark:text-slate-600 opacity-50'
                                             }`}
                                         >
                                             {color}
@@ -402,6 +447,24 @@ export default function ProductPage() {
                     )}
                 </div>
             )}
+
+            {/* Delivery Info */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="text-2xl">🚚</div>
+                    <div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Standard Delivery</div>
+                        <div className="text-[10px] text-slate-500">2-3 Days</div>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="text-2xl">🛡️</div>
+                    <div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">100% Authentic</div>
+                        <div className="text-[10px] text-slate-500">Original Products</div>
+                    </div>
+                </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100 dark:border-slate-800">
                 {product.sku && (
@@ -422,7 +485,8 @@ export default function ProductPage() {
               {product.description}
             </Text>
 
-            <div className="pt-4 flex flex-col sm:flex-row gap-4">
+            {/* Desktop Actions */}
+            <div className="hidden sm:flex flex-col sm:flex-row gap-4 pt-4">
               {currentStock > 0 ? (
                   <>
                     <Button 
@@ -449,6 +513,44 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+            <div className="mb-16">
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">You Might Also Like</Heading>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+                    {relatedProducts.map((p: any) => {
+                        let imageUrl = "https://picsum.photos/seed/default/800/800";
+                        try {
+                            const parsed = JSON.parse(p.images);
+                            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+                        } catch (e) {}
+                        
+                        return (
+                            <div key={p.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all">
+                                <div className="relative aspect-square overflow-hidden rounded-xl bg-[#f8f8f8] mb-3 dark:bg-slate-700">
+                                    <Link href={`/products/${p.id}`} className="block w-full h-full">
+                                        <ResponsiveImage
+                                            src={imageUrl}
+                                            alt={p.name}
+                                            width={400}
+                                            height={400}
+                                            className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
+                                        />
+                                    </Link>
+                                </div>
+                                <div className="space-y-1 text-center">
+                                    <h3 className="text-sm font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
+                                        <Link href={`/products/${p.id}`}>{p.name}</Link>
+                                    </h3>
+                                    <div className="text-lg font-bold text-slate-900 dark:text-white">৳{p.price}</div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        )}
 
         {/* Reviews Section */}
         <div className="border-t border-slate-100 dark:border-slate-800 pt-12">
@@ -499,6 +601,35 @@ export default function ProductPage() {
                 </div>
             )}
         </div>
+      </div>
+
+      {/* Sticky Mobile Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 sm:hidden z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div className="flex gap-3">
+              {currentStock > 0 ? (
+                  <>
+                    <Button 
+                        className="flex-1 py-3 text-base rounded-xl bg-sky-500 text-white font-bold shadow-lg shadow-sky-500/20"
+                        onClick={handleAddToCart}
+                    >
+                        Add to Cart
+                    </Button>
+                    <Button 
+                        className="flex-1 py-3 text-base rounded-xl bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20"
+                        onClick={handleOrderNow}
+                    >
+                        Buy Now
+                    </Button>
+                  </>
+              ) : (
+                  <Button 
+                    className="w-full py-3 text-base rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/20"
+                    onClick={() => setShowNotifyModal(true)}
+                  >
+                    Notify Me
+                  </Button>
+              )}
+          </div>
       </div>
 
       {/* Notify Me Modal */}
