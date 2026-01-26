@@ -27,11 +27,11 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-0 relative">
-      <HeroSection {...data.hero} />
+    <div className="flex flex-col gap-0 relative bg-gradient-to-br from-blue-50 via-sky-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-black">
       {data.hero.banners && data.hero.banners.length > 0 && (
         <BannerSection banners={data.hero.banners} />
       )}
+      <HeroSection {...data.hero} />
       <CategoriesSection categories={data.categories} />
       <FeaturedProductsSection {...data.featuredProducts} />
       <WhyChooseUsSection {...data.whyChooseUs} />
