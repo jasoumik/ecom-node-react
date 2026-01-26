@@ -19,6 +19,8 @@ export function Header() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [expandedMobileCategories, setExpandedMobileCategories] = useState<string[]>([]);
+  const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(true);
   
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -72,6 +74,14 @@ export function Header() {
       } catch (e) {
           console.error("Failed to fetch categories");
       }
+  };
+
+  const toggleMobileCategory = (categoryId: string) => {
+      setExpandedMobileCategories(prev => 
+          prev.includes(categoryId) 
+              ? prev.filter(id => id !== categoryId) 
+              : [...prev, categoryId]
+      );
   };
 
   // Debounce search suggestions
@@ -235,7 +245,7 @@ export function Header() {
                   </svg>
                 </button>
               </form>
-              {/* Suggestions Dropdown */}
+              {/* Suggestions Dropdown (Same as before) */}
               {showSuggestions && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
                       {suggestions.length > 0 ? (
@@ -373,34 +383,46 @@ export function Header() {
                       <Link href="/" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
                       
                       <div className="space-y-2">
-                          <div className="text-lg font-bold text-slate-800 dark:text-white">Categories</div>
-                          <div className="pl-4 space-y-2 border-l-2 border-slate-100 dark:border-slate-800">
-                              {categories.map(cat => (
-                                  <div key={cat.id}>
-                                      <Link 
-                                        href={`/products?category=${cat.id}`}
-                                        className="block text-sm font-medium text-slate-600 dark:text-slate-400 py-1"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                      >
-                                          {cat.name}
-                                      </Link>
-                                      {cat.children && cat.children.length > 0 && (
-                                          <div className="pl-4 space-y-1 mt-1">
-                                              {cat.children.map((sub: any) => (
-                                                  <Link 
-                                                    key={sub.id}
-                                                    href={`/products?category=${sub.id}`}
-                                                    className="block text-xs text-slate-500 dark:text-slate-500 py-1"
-                                                    onClick={() => setIsMobileMenuOpen(false)}
-                                                  >
-                                                      {sub.name}
-                                                  </Link>
-                                              ))}
-                                          </div>
-                                      )}
-                                  </div>
-                              ))}
-                          </div>
+                          <button 
+                            onClick={() => setIsMobileCategoriesOpen(!isMobileCategoriesOpen)}
+                            className="flex items-center justify-between w-full text-lg font-bold text-slate-800 dark:text-white"
+                          >
+                              Categories
+                              <span className={`text-sm transition-transform duration-200 ${isMobileCategoriesOpen ? 'rotate-180' : ''}`}>▼</span>
+                          </button>
+                          
+                          {isMobileCategoriesOpen && (
+                              <div className="pl-4 space-y-2 border-l-2 border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2">
+                                  {categories.map(cat => (
+                                      <div key={cat.id}>
+                                          <button 
+                                            onClick={() => toggleMobileCategory(cat.id)}
+                                            className="flex items-center justify-between w-full text-left text-sm font-medium text-slate-600 dark:text-slate-400 py-1"
+                                          >
+                                              {cat.name}
+                                              {cat.children && cat.children.length > 0 && (
+                                                  <span className={`text-xs transition-transform ${expandedMobileCategories.includes(cat.id) ? 'rotate-180' : ''}`}>▼</span>
+                                              )}
+                                          </button>
+                                          
+                                          {cat.children && cat.children.length > 0 && expandedMobileCategories.includes(cat.id) && (
+                                              <div className="pl-4 space-y-1 mt-1 animate-in slide-in-from-top-1">
+                                                  {cat.children.map((sub: any) => (
+                                                      <Link 
+                                                        key={sub.id}
+                                                        href={`/products?category=${sub.id}`}
+                                                        className="block text-xs text-slate-500 dark:text-slate-500 py-1"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                      >
+                                                          {sub.name}
+                                                      </Link>
+                                                  ))}
+                                              </div>
+                                          )}
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
                       </div>
 
                       <Link href="/products" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>Shop All</Link>
