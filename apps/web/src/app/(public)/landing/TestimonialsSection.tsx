@@ -4,11 +4,15 @@ import type { Testimonial } from "./types";
 interface TestimonialsSectionProps {
   title: string;
   testimonials: Testimonial[];
+  averageRating?: string;
+  totalReviews?: number;
 }
 
 export function TestimonialsSection({
   title,
   testimonials,
+  averageRating = "5.0",
+  totalReviews = 0,
 }: TestimonialsSectionProps) {
   // Fallback if no testimonials
   const items = testimonials && testimonials.length > 0 ? testimonials : [
@@ -51,8 +55,8 @@ export function TestimonialsSection({
             </Heading>
           </div>
           <div className="flex gap-2 items-center">
-            <div className="text-3xl sm:text-4xl font-sans font-bold text-sky-500">4.9/5</div>
-            <div className="text-xs text-slate-600 max-w-[100px] leading-tight font-medium dark:text-slate-400">Average rating from 10k+ reviews</div>
+            <div className="text-3xl sm:text-4xl font-sans font-bold text-sky-500">{averageRating}/5</div>
+            <div className="text-xs text-slate-600 max-w-[100px] leading-tight font-medium dark:text-slate-400">Average rating from {totalReviews}+ reviews</div>
           </div>
         </div>
         

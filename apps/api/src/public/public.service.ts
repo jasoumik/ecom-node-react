@@ -90,11 +90,21 @@ export class PublicService {
             'reviews.comment as quote',
             'reviews.rating',
             'users.name as authorName',
-            'users.role as authorRole' // Just using role as placeholder, ideally user profile has title
+            'users.role as authorRole'
         )
         .where({ 'reviews.status': 'approved', 'reviews.rating': 5 })
         .orderBy('reviews.created_at', 'desc')
         .limit(3);
+
+    // Calculate Average Rating & Total Reviews
+    const ratingStats = await this.knex('reviews')
+        .where({ status: 'approved' })
+        .avg('rating as average')
+        .count('* as count')
+        .first();
+
+    const averageRating = parseFloat(ratingStats?.average as string || '5.0').toFixed(1);
+    const totalReviews = parseInt(ratingStats?.count as string || '0', 10);
 
     return {
       hero: {
@@ -147,13 +157,15 @@ export class PublicService {
       },
       testimonials: {
         title: "Parents Love Prithibee",
+        averageRating: averageRating,
+        totalReviews: totalReviews,
         items: reviews.length > 0 ? reviews.map(r => ({
             id: r.id,
             quote: r.quote,
             authorName: r.authorName,
-            authorRole: "Verified Buyer", // Static for now
+            authorRole: "Verified Buyer",
             rating: r.rating
-        })) : [], // Fallback handled in frontend component
+        })) : [],
       },
       callToAction: {
         title: "Start Your Journey with Prithibee",
