@@ -5,7 +5,6 @@ import { WhyChooseUsSection } from "./landing/WhyChooseUsSection";
 import { TestimonialsSection } from "./landing/TestimonialsSection";
 import { API_URL } from "@/lib/config";
 import { BannerSection } from "./landing/BannerSection";
-import { ProductRequestButton } from "@/components/ui/ProductRequestButton";
 
 async function getLandingData() {
   try {
@@ -37,8 +36,6 @@ export default async function LandingPage() {
       <FeaturedProductsSection {...data.featuredProducts} />
       <WhyChooseUsSection {...data.whyChooseUs} />
       <TestimonialsSection {...data.testimonials} />
-      
-      <ProductRequestButton />
     </div>
   );
 }

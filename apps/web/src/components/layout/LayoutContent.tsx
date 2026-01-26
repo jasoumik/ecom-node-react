@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { SettingsProvider } from "@/lib/settings-context";
-import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { FloatingActionGroup } from "@/components/ui/FloatingActionGroup";
 
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -19,7 +19,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
       {!isAdmin && (
         <>
             <Footer />
-            <WhatsAppButton />
+            <FloatingActionGroup />
         </>
       )}
     </SettingsProvider>

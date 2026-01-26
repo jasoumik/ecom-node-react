@@ -13,10 +13,13 @@ import { useSettings } from "@/lib/settings-context";
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { totalItems } = useCart();
@@ -52,6 +55,7 @@ export function Header() {
     }
 
     checkUser();
+    fetchCategories();
     window.addEventListener("storage", checkUser);
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -59,6 +63,16 @@ export function Header() {
         document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const fetchCategories = async () => {
+      try {
+          const res = await fetch(`${API_URL}/categories`);
+          const data = await res.json();
+          setCategories(Array.isArray(data) ? data : []);
+      } catch (e) {
+          console.error("Failed to fetch categories");
+      }
+  };
 
   // Debounce search suggestions
   useEffect(() => {
@@ -144,7 +158,15 @@ export function Header() {
 
       <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md shadow-sm dark:bg-slate-950/95 dark:border-b dark:border-slate-800 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between gap-2">
+          <div className="flex h-20 items-center justify-between gap-4">
+            {/* Mobile Menu Button */}
+            <button 
+                className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg dark:text-slate-300 dark:hover:bg-slate-800"
+                onClick={() => setIsMobileMenuOpen(true)}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+
             {/* Logo */}
             <div className="flex items-center shrink-0">
               <Link href="/" className="text-2xl sm:text-3xl font-sans font-bold text-sky-500 dark:text-sky-400 tracking-tight hover:text-sky-600 transition-colors">
@@ -152,35 +174,72 @@ export function Header() {
               </Link>
             </div>
 
-            {/* Desktop Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-lg mx-auto relative" ref={searchRef}>
+            {/* Desktop Navigation - Left Side */}
+            <nav className="hidden lg:flex items-center gap-6 ml-4">
+                {/* Categories Dropdown */}
+                <div className="relative group">
+                    <button className="flex items-center gap-1 text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400 py-4">
+                        Categories
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div className="absolute top-full left-0 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
+                        {categories.map((cat) => (
+                            <div key={cat.id} className="relative group/sub">
+                                <Link 
+                                    href={`/products?category=${cat.id}`}
+                                    className="flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400"
+                                >
+                                    {cat.name}
+                                    {cat.children && cat.children.length > 0 && (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="-rotate-90"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    )}
+                                </Link>
+                                {cat.children && cat.children.length > 0 && (
+                                    <div className="absolute top-0 left-full ml-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 p-2 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-200">
+                                        {cat.children.map((sub: any) => (
+                                            <Link 
+                                                key={sub.id}
+                                                href={`/products?category=${sub.id}`}
+                                                className="block px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400"
+                                            >
+                                                {sub.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <Link href="/products" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">Shop</Link>
+            </nav>
+
+            {/* Desktop Search Bar - Center */}
+            <div className="hidden lg:flex flex-1 max-w-md mx-auto relative" ref={searchRef}>
               <form onSubmit={handleSearch} className="w-full relative">
                 <input
                   type="text"
-                  placeholder="Search for products..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setShowSuggestions(true)}
-                  className="w-full px-5 py-2.5 rounded-2xl border border-sky-100 bg-sky-50/50 text-sky-900 placeholder-sky-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-sky-500 dark:focus:ring-sky-900"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-500"
                 />
                 <button 
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-500 transition-colors p-1"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
                 </button>
               </form>
-
-              {/* Search Suggestions Dropdown */}
+              {/* Suggestions Dropdown */}
               {showSuggestions && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
                       {suggestions.length > 0 ? (
-                          <>
-                            <div className="p-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Suggestions</div>
-                            <ul>
+                          <ul>
                                 {suggestions.map((product) => (
                                     <li key={product.id}>
                                         <Link 
@@ -199,39 +258,22 @@ export function Header() {
                                     </li>
                                 ))}
                             </ul>
-                          </>
-                      ) : searchQuery.length > 1 ? (
-                          <div className="p-4 text-center text-sm text-slate-500">No matches found</div>
-                      ) : recentSearches.length > 0 ? (
-                          <>
-                            <div className="p-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Searches</div>
-                            <ul>
-                                {recentSearches.map((term, index) => (
-                                    <li key={index}>
-                                        <button 
-                                            className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
-                                            onClick={() => {
-                                                setSearchQuery(term);
-                                                performSearch(term);
-                                            }}
-                                        >
-                                            <span className="text-slate-400">🕒</span>
-                                            {term}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                          </>
                       ) : null}
                   </div>
               )}
             </div>
+
+            {/* Desktop Navigation - Right Side */}
+            <nav className="hidden lg:flex items-center gap-6 mr-4">
+                <Link href="/about" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">About</Link>
+                <Link href="/contact" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">Contact</Link>
+            </nav>
             
             {/* Actions */}
-            <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Mobile Search Toggle */}
               <button 
-                className="md:hidden p-2 rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors dark:bg-slate-800 dark:text-sky-400"
+                className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -241,7 +283,7 @@ export function Header() {
               </button>
 
               {/* Wishlist Icon */}
-              <Link href="/wishlist" className="relative p-2 rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors dark:bg-slate-800 dark:text-sky-400">
+              <Link href="/wishlist" className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
@@ -253,7 +295,7 @@ export function Header() {
               </Link>
 
               {/* Cart Icon */}
-              <Link href="/cart" className="relative p-2 rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors dark:bg-slate-800 dark:text-sky-400">
+              <Link href="/cart" className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="9" cy="21" r="1"></circle>
                   <circle cx="20" cy="21" r="1"></circle>
@@ -266,18 +308,9 @@ export function Header() {
                 )}
               </Link>
 
-              <nav className="hidden lg:flex items-center gap-6 mr-2">
-                <Link href="/products" className="text-sm font-bold text-sky-500 hover:text-sky-700 transition-colors dark:text-sky-400 dark:hover:text-sky-300">
-                  Shop
-                </Link>
-                <Link href="/about" className="text-sm font-bold text-sky-500 hover:text-sky-700 transition-colors dark:text-sky-400 dark:hover:text-sky-300">
-                  About
-                </Link>
-              </nav>
-
-              <div className="flex items-center gap-1 sm:gap-3">
+              <div className="flex items-center gap-1 sm:gap-2">
                 {isLoggedIn ? (
-                  <div className="flex items-center gap-1 sm:gap-3">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Link href="/profile" className="flex items-center gap-2 group">
                         <div className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-sm border border-sky-200 dark:border-sky-800 group-hover:border-sky-400 transition-colors">
                             {user.avatar ? (
@@ -286,13 +319,10 @@ export function Header() {
                                 user.name.charAt(0).toUpperCase()
                             )}
                         </div>
-                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300 hidden sm:inline group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-                        {user.name.split(' ')[0]}
-                        </span>
                     </Link>
                     <button 
                       onClick={handleLogout}
-                      className="p-2 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 shadow-sm dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 border border-red-100 dark:border-red-900 transition-colors"
+                      className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
                       title="Logout"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -305,7 +335,7 @@ export function Header() {
                 ) : (
                   <Link href="/login">
                     {/* Mobile: Icon Button */}
-                    <span className="sm:hidden inline-flex p-2 rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors dark:bg-slate-800 dark:text-sky-400">
+                    <span className="lg:hidden inline-flex p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                             <polyline points="10 17 15 12 10 7"></polyline>
@@ -313,23 +343,77 @@ export function Header() {
                         </svg>
                     </span>
                     {/* Desktop: Text Button */}
-                    <span className="hidden sm:inline-flex">
-                        <Button className="text-sm font-bold py-2.5 px-6 h-auto rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 shadow-lg shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-500">
+                    <span className="hidden lg:inline-flex">
+                        <Button className="text-xs font-bold py-2 px-5 h-auto rounded-xl bg-sky-50 text-white hover:bg-sky-600 shadow-md shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-500">
                         Login
                         </Button>
                     </span>
                   </Link>
                 )}
               </div>
-              <ThemeToggle className="hover:bg-sky-50 dark:hover:bg-slate-800 p-2 rounded-2xl text-sky-500 dark:text-yellow-400" />
+              <ThemeToggle className="hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-xl text-slate-600 dark:text-yellow-400" />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile Search Overlay - Just a bar below header */}
+      {/* Mobile Menu Drawer */}
+      {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+              <div className="absolute top-0 left-0 bottom-0 w-3/4 max-w-xs bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-left duration-300">
+                  <div className="flex justify-between items-center mb-8">
+                      <Link href="/" className="text-2xl font-sans font-bold text-sky-500 dark:text-sky-400" onClick={() => setIsMobileMenuOpen(false)}>
+                        {settings.shop_name}
+                      </Link>
+                      <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+                  </div>
+                  
+                  <nav className="space-y-4">
+                      <Link href="/" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+                      
+                      <div className="space-y-2">
+                          <div className="text-lg font-bold text-slate-800 dark:text-white">Categories</div>
+                          <div className="pl-4 space-y-2 border-l-2 border-slate-100 dark:border-slate-800">
+                              {categories.map(cat => (
+                                  <div key={cat.id}>
+                                      <Link 
+                                        href={`/products?category=${cat.id}`}
+                                        className="block text-sm font-medium text-slate-600 dark:text-slate-400 py-1"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                      >
+                                          {cat.name}
+                                      </Link>
+                                      {cat.children && cat.children.length > 0 && (
+                                          <div className="pl-4 space-y-1 mt-1">
+                                              {cat.children.map((sub: any) => (
+                                                  <Link 
+                                                    key={sub.id}
+                                                    href={`/products?category=${sub.id}`}
+                                                    className="block text-xs text-slate-500 dark:text-slate-500 py-1"
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                  >
+                                                      {sub.name}
+                                                  </Link>
+                                              ))}
+                                          </div>
+                                      )}
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+
+                      <Link href="/products" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>Shop All</Link>
+                      <Link href="/about" className="block text-lg font-bold text-slate-800 dark:text-slate-400" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                      <Link href="/contact" className="block text-lg font-bold text-slate-800 dark:text-slate-400" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+                  </nav>
+              </div>
+          </div>
+      )}
+
+      {/* Mobile Search Overlay */}
       {isSearchOpen && (
-        <div className="fixed top-20 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 p-4 md:hidden animate-in slide-in-from-top-2 duration-200 dark:bg-slate-950/95 dark:border-slate-800 shadow-lg">
+        <div className="fixed top-20 left-0 right-0 z-[60] bg-white/95 backdrop-blur-md border-b border-sky-100 p-4 lg:hidden animate-in slide-in-from-top-2 duration-200 dark:bg-slate-950/95 dark:border-slate-800 shadow-lg">
           <form onSubmit={handleSearch} className="w-full relative">
             <input
               type="text"

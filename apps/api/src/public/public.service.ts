@@ -13,7 +13,8 @@ export class PublicService {
 
   async getLandingPageData(tenant: string) {
     const categories = await this.categoriesService.findAll();
-    const displayCategories = categories.slice(0, 4).map(cat => ({
+    // Return top 8 categories instead of 4
+    const displayCategories = categories.slice(0, 8).map(cat => ({
         id: cat.id,
         name: cat.name,
         image: cat.image || "https://picsum.photos/seed/default/800/800"
