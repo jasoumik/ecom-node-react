@@ -1,8 +1,10 @@
 export type HeroContent = {
   headline: string;
+  headline_bn?: string;
   subheadline: string;
-  primaryCta: { label: string; href: string };
-  secondaryCta?: { label: string; href: string };
+  subheadline_bn?: string;
+  primaryCta: { label: string; label_bn?: string; href: string };
+  secondaryCta?: { label: string; label_bn?: string; href: string };
   image?: {
     src: string;
     alt: string;
@@ -10,12 +12,14 @@ export type HeroContent = {
     height: number;
     priority?: boolean;
   };
-  stats?: Array<{ label: string; value: string }>;
+  stats?: Array<{ label: string; label_bn?: string; value: string }>;
+  banners?: Array<{ id: string; src: string; alt: string; alt_bn?: string; link?: string }>;
 };
 
 export type TrustBadge = {
   id: string;
   label: string;
+  label_bn?: string;
   iconUrl?: string;
   description?: string;
 };
@@ -23,6 +27,7 @@ export type TrustBadge = {
 export type FeaturedProduct = {
   id: string;
   name: string;
+  name_bn?: string;
   price: string;
   href: string;
   image: {
@@ -36,11 +41,13 @@ export type FeaturedProduct = {
   reviewCount?: number;
 };
 
-export type WhyReason = {
+export type Reason = {
   id: string;
-  iconUrl?: string;
+  iconUrl: string;
   title: string;
+  title_bn?: string;
   description: string;
+  description_bn?: string;
 };
 
 export type Testimonial = {
@@ -59,37 +66,46 @@ export type Testimonial = {
 
 export type CallToActionContent = {
   title: string;
+  title_bn?: string;
   subtitle?: string;
-  primaryCta: { label: string; href: string };
+  subtitle_bn?: string;
+  primaryCta: { label: string; label_bn?: string; href: string };
   secondaryText?: string;
 };
 
 export type Category = {
   id: string;
   name: string;
+  name_bn?: string;
   image: string;
 };
 
 export type LandingPageContent = {
   hero: HeroContent;
-  categories?: Category[]; // Added categories
+  categories?: Category[];
   trustBadges: {
     title?: string;
     badges: TrustBadge[];
   };
   featuredProducts: {
     title: string;
+    title_bn?: string;
     subtitle?: string;
+    subtitle_bn?: string;
     products: FeaturedProduct[];
     viewAllHref?: string;
   };
   whyChooseUs: {
     title: string;
-    reasons: WhyReason[];
+    title_bn?: string;
+    reasons: Reason[];
   };
   testimonials: {
     title: string;
+    title_bn?: string;
     items: Testimonial[];
+    averageRating?: string;
+    totalReviews?: number;
   };
   callToAction: CallToActionContent;
 };

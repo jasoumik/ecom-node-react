@@ -7,6 +7,8 @@ import { API_URL } from "@/lib/config";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { formatDate } from "@/lib/utils";
 import { ReviewModal } from "@/components/ui/ReviewModal";
+import { useLanguage } from "@/lib/language-context";
+import { useSettings } from "@/lib/settings-context";
 
 export default function OrderInvoicePage() {
   const params = useParams();
@@ -15,6 +17,8 @@ export default function OrderInvoicePage() {
   const [loading, setLoading] = useState(true);
   const [reviewProduct, setReviewProduct] = useState<any>(null);
   const router = useRouter();
+  const { t } = useLanguage();
+  const settings = useSettings();
 
   useEffect(() => {
     fetchOrder();
@@ -40,23 +44,23 @@ export default function OrderInvoicePage() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 print:bg-white print:p-0 print:min-h-0">
         <div className="max-w-4xl mx-auto px-4 print:max-w-none print:px-0 print:mx-0">
           <div className="flex justify-between items-start mb-8 print:hidden">
-            <Button variant="outline" onClick={() => router.back()}>← Back</Button>
-            <Button onClick={handlePrint}>Print Invoice</Button>
+            <Button variant="outline" onClick={() => router.back()}>← {t('back')}</Button>
+            <Button onClick={handlePrint}>{t('print_invoice')}</Button>
           </div>
 
           <div id="invoice-content" className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 print:shadow-none print:border-0 print:rounded-none print:bg-white print:text-black print:p-0">
             {/* Header */}
             <div className="flex justify-between items-start mb-8 border-b border-slate-100 dark:border-slate-700 pb-8 print:border-slate-200">
               <div>
-                <h1 className="text-3xl font-bold text-sky-500 mb-2 print:text-sky-600">Prithibee</h1>
-                <p className="text-sm text-slate-500 print:text-slate-600">Your trusted partner in parenting</p>
-                <p className="text-sm text-slate-500 print:text-slate-600">Dhaka, Bangladesh</p>
+                <h1 className="text-3xl font-bold text-sky-500 mb-2 print:text-sky-600">{settings.shop_name}</h1>
+                <p className="text-sm text-slate-500 print:text-slate-600">{t('footer_desc')}</p>
+                <p className="text-sm text-slate-500 print:text-slate-600">{settings.shop_address}</p>
                 <p className="text-sm text-slate-500 print:text-slate-600">support@prithibee.com</p>
               </div>
               <div className="text-right">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 print:text-black">INVOICE</h2>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 print:text-black">{t('invoice')}</h2>
                 <p className="text-slate-600 dark:text-slate-300 font-medium print:text-slate-700">#{order.order_number}</p>
-                <p className="text-sm text-slate-500 print:text-slate-600">Date: {formatDate(order.created_at)}</p>
+                <p className="text-sm text-slate-500 print:text-slate-600">{t('date')}: {formatDate(order.created_at)}</p>
                 <div className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold capitalize border print:border-slate-300 print:bg-transparent print:text-black ${
                     order.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
                     order.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
@@ -69,7 +73,7 @@ export default function OrderInvoicePage() {
 
             {/* Bill To */}
             <div className="mb-8">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2 print:text-slate-500">Bill To</h3>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2 print:text-slate-500">{t('bill_to')}</h3>
               <div className="text-slate-900 dark:text-white font-bold text-lg print:text-black">{order.customer_name}</div>
               <div className="text-slate-600 dark:text-slate-300 print:text-slate-700">{order.customer_phone}</div>
               <div className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap max-w-md print:text-slate-700">{order.customer_address}</div>
@@ -79,10 +83,10 @@ export default function OrderInvoicePage() {
             <table className="w-full mb-8">
               <thead>
                 <tr className="border-b-2 border-slate-100 dark:border-slate-700 print:border-slate-200">
-                  <th className="text-left py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Item</th>
-                  <th className="text-center py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Quantity</th>
-                  <th className="text-right py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Price</th>
-                  <th className="text-right py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Total</th>
+                  <th className="text-left py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">{t('item')}</th>
+                  <th className="text-center py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">{t('quantity')}</th>
+                  <th className="text-right py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">{t('price')}</th>
+                  <th className="text-right py-3 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">{t('total')}</th>
                   <th className="print:hidden w-24"></th>
                 </tr>
               </thead>
@@ -102,7 +106,7 @@ export default function OrderInvoicePage() {
                                 onClick={() => setReviewProduct({ id: item.product_id, name: item.product_name })}
                                 className="text-xs font-bold text-sky-600 hover:underline"
                             >
-                                Review
+                                {t('write_review')}
                             </button>
                         )}
                     </td>
@@ -115,21 +119,21 @@ export default function OrderInvoicePage() {
             <div className="flex justify-end">
               <div className="w-64 space-y-3">
                 <div className="flex justify-between text-slate-600 dark:text-slate-400 print:text-slate-700">
-                  <span>Subtotal</span>
+                  <span>{t('subtotal')}</span>
                   <span>৳{order.subtotal}</span>
                 </div>
                 <div className="flex justify-between text-slate-600 dark:text-slate-400 print:text-slate-700">
-                  <span>Delivery</span>
+                  <span>{t('delivery')}</span>
                   <span>৳{order.delivery_charge}</span>
                 </div>
                 {parseFloat(order.discount) > 0 && (
                     <div className="flex justify-between text-green-600 print:text-slate-700">
-                    <span>Discount</span>
+                    <span>{t('discount')}</span>
                     <span>-৳{order.discount}</span>
                     </div>
                 )}
                 <div className="flex justify-between text-xl font-bold text-slate-900 dark:text-white border-t-2 border-slate-100 dark:border-slate-700 pt-3 print:border-slate-200 print:text-black">
-                  <span>Total</span>
+                  <span>{t('total')}</span>
                   <span>৳{order.total_amount}</span>
                 </div>
               </div>
@@ -137,8 +141,8 @@ export default function OrderInvoicePage() {
 
             {/* Footer */}
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 text-center text-slate-500 text-sm print:border-slate-200 print:text-slate-600">
-              <p>Thank you for shopping with Prithibee!</p>
-              <p className="mt-1">For any queries, please contact us at +880 1616-684803</p>
+              <p>{t('thank_you')}</p>
+              <p className="mt-1">{t('queries_contact')} {settings.shop_phone}</p>
             </div>
           </div>
         </div>

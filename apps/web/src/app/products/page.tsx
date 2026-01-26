@@ -8,6 +8,9 @@ import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
+import { useLanguage } from "@/lib/language-context";
+import { getLocalizedField } from "@/lib/utils";
+import Link from "next/link";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -21,6 +24,7 @@ export default function ProductsPage() {
   const { addItem } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     // Reset when filters change
@@ -99,12 +103,12 @@ export default function ProductsPage() {
 
     addItem({
       id: product.id,
-      name: product.name,
+      name: getLocalizedField(product, 'name', language),
       price: parseFloat(product.price),
       image: imageUrl,
       quantity: 1,
     });
-    addToast(`Added ${product.name} to cart`);
+    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
   const toggleWishlist = (product: any) => {
@@ -124,7 +128,7 @@ export default function ProductsPage() {
     } else {
         addToWishlist({
             id: product.id,
-            name: product.name,
+            name: getLocalizedField(product, 'name', language),
             price: parseFloat(product.price),
             image: imageUrl
         });
@@ -140,12 +144,12 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-12 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">Shop All Products</Heading>
-          <Text className="text-slate-600 dark:text-slate-400">Discover our curated collection of premium baby essentials.</Text>
+          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">{t('shop_all_products')}</Heading>
+          <Text className="text-slate-600 dark:text-slate-400">{t('discover_collection')}</Text>
         </div>
 
         {products.length === 0 ? (
-            <div className="text-center text-slate-500 dark:text-slate-400 py-20">No products found.</div>
+            <div className="text-center text-slate-500 dark:text-slate-400 py-20">{t('no_products_found')}</div>
         ) : (
             <>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
@@ -181,7 +185,7 @@ export default function ProductsPage() {
                         <a href={`/products/${product.id}`} className="block w-full h-full">
                             <ResponsiveImage
                             src={imageUrl}
-                            alt={product.name}
+                            alt={getLocalizedField(product, 'name', language)}
                             width={400}
                             height={400}
                             className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -192,7 +196,7 @@ export default function ProductsPage() {
                         <div className="flex flex-col flex-grow space-y-2">
                         <div className="space-y-1 text-center">
                             <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
-                                <a href={`/products/${product.id}`}>{product.name}</a>
+                                <a href={`/products/${product.id}`}>{getLocalizedField(product, 'name', language)}</a>
                             </h3>
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                                 <div className="flex items-center gap-1">
@@ -211,7 +215,7 @@ export default function ProductsPage() {
                             className="w-full bg-sky-400 text-white hover:bg-sky-500 shadow-md font-bold py-2.5 rounded-2xl text-sm"
                             onClick={() => handleAddToCart(product)}
                             >
-                            Add to Cart
+                            {t('add_to_cart')}
                             </Button>
                         </div>
                         </div>
@@ -228,7 +232,7 @@ export default function ProductsPage() {
                             disabled={loadingMore}
                             className="rounded-xl px-8 py-3"
                         >
-                            {loadingMore ? "Loading..." : "Load More Products"}
+                            {loadingMore ? t('loading') : t('load_more')}
                         </Button>
                     </div>
                 )}

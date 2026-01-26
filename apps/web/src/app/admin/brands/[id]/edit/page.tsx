@@ -70,7 +70,10 @@ export default function EditBrandPage() {
                 </label>
           </div>
 
-          <Input label="Name" value={brand.name} onChange={e => setBrand({...brand, name: e.target.value})} required className="bg-slate-50/50" />
+          <div className="grid md:grid-cols-2 gap-6">
+            <Input label="Name (English)" value={brand.name} onChange={e => setBrand({...brand, name: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Name (Bangla)" value={brand.name_bn || ""} onChange={e => setBrand({...brand, name_bn: e.target.value})} className="bg-slate-50/50" />
+          </div>
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Logo URL</label>

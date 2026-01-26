@@ -1,22 +1,28 @@
+"use client";
+
 import { Section, Heading, ResponsiveImage } from "@repo/ui";
 import type { Category } from "./types";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
+import { getLocalizedField } from "@/lib/utils";
 
 interface CategoriesSectionProps {
   categories: Category[];
 }
 
 export function CategoriesSection({ categories }: CategoriesSectionProps) {
+  const { t, language } = useLanguage();
+
   return (
     <Section className="py-12 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-end mb-8">
             <div>
-                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl">Browse Categories</Heading>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Explore our wide range of products</p>
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl">{t('browse_categories')}</Heading>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t('explore_range')}</p>
             </div>
             <Link href="/products" className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline">
-                View All →
+                {t('view_all')} →
             </Link>
         </div>
         
@@ -30,7 +36,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
                 {/* Image */}
                 <ResponsiveImage
                     src={category.image}
-                    alt={category.name}
+                    alt={getLocalizedField(category, 'name', language)}
                     width={200}
                     height={200}
                     className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
@@ -38,8 +44,8 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
                 
                 {/* Overlay for Text */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4 text-white">
-                    <h3 className="font-bold text-sm sm:text-base group-hover:text-sky-300 transition-colors line-clamp-1">{category.name}</h3>
-                    <span className="text-xs opacity-80 group-hover:opacity-100 transition-opacity">Shop Now →</span>
+                    <h3 className="font-bold text-sm sm:text-base group-hover:text-sky-300 transition-colors line-clamp-1">{getLocalizedField(category, 'name', language)}</h3>
+                    <span className="text-xs opacity-80 group-hover:opacity-100 transition-opacity">{t('shop_now')} →</span>
                 </div>
             </Link>
             ))}

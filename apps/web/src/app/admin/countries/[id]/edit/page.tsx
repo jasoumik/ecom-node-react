@@ -71,9 +71,10 @@ export default function EditCountryPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Country Name" value={country.name} onChange={e => setCountry({...country, name: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="ISO Code (e.g. BD)" value={country.code} onChange={e => setCountry({...country, code: e.target.value.toUpperCase()})} required maxLength={3} className="bg-slate-50/50" />
+            <Input label="Country Name (English)" value={country.name} onChange={e => setCountry({...country, name: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Country Name (Bangla)" value={country.name_bn || ""} onChange={e => setCountry({...country, name_bn: e.target.value})} className="bg-slate-50/50" />
           </div>
+          <Input label="ISO Code (e.g. BD)" value={country.code} onChange={e => setCountry({...country, code: e.target.value.toUpperCase()})} required maxLength={3} className="bg-slate-50/50" />
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Flag Image</label>

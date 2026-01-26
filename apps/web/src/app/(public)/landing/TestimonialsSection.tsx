@@ -1,8 +1,12 @@
+"use client";
+
 import { Section, Heading, Text, RatingStars } from "@repo/ui";
 import type { Testimonial } from "./types";
+import { useLanguage } from "@/lib/language-context";
 
 interface TestimonialsSectionProps {
   title: string;
+  title_bn?: string;
   testimonials: Testimonial[];
   averageRating?: string;
   totalReviews?: number;
@@ -10,10 +14,13 @@ interface TestimonialsSectionProps {
 
 export function TestimonialsSection({
   title,
+  title_bn,
   testimonials,
   averageRating = "5.0",
   totalReviews = 0,
 }: TestimonialsSectionProps) {
+  const { t, language } = useLanguage();
+
   // Fallback if no testimonials
   const items = testimonials && testimonials.length > 0 ? testimonials : [
       {
@@ -48,15 +55,15 @@ export function TestimonialsSection({
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-sky-100 text-sky-600 text-[10px] font-bold uppercase tracking-wider animate-fade-in-up dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
-              Love Notes
+              {t('love_notes')}
             </div>
             <Heading size="lg" className="font-sans text-2xl sm:text-3xl text-slate-900 leading-tight dark:text-white font-bold">
-              {title || "Parents Love Prithibee"}
+              {title || t('customer_reviews')}
             </Heading>
           </div>
           <div className="flex gap-2 items-center">
             <div className="text-3xl sm:text-4xl font-sans font-bold text-sky-500">{averageRating}/5</div>
-            <div className="text-xs text-slate-600 max-w-[100px] leading-tight font-medium dark:text-slate-400">Average rating from {totalReviews}+ reviews</div>
+            <div className="text-xs text-slate-600 max-w-[100px] leading-tight font-medium dark:text-slate-400">{t('avg_rating_from', { count: totalReviews.toString() })}</div>
           </div>
         </div>
         

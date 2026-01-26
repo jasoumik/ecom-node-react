@@ -79,7 +79,10 @@ export default function EditBannerPage() {
                 </label>
           </div>
 
-          <Input label="Title" value={banner.title} onChange={e => setBanner({...banner, title: e.target.value})} required className="bg-slate-50/50" />
+          <div className="grid md:grid-cols-2 gap-6">
+            <Input label="Title (English)" value={banner.title} onChange={e => setBanner({...banner, title: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Title (Bangla)" value={banner.title_bn || ""} onChange={e => setBanner({...banner, title_bn: e.target.value})} className="bg-slate-50/50" />
+          </div>
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image URL</label>

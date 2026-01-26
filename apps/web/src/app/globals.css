@@ -6,11 +6,8 @@
 
 :root {
   /* Baby Blue Theme */
-  /* Primary: A calming, trustworthy blue */
   --color-primary: #0EA5E9;
-  /* Secondary: A soft, baby blue for backgrounds */
   --color-secondary: #E6F4FF;
-  /* Accent: A gentle yellow/orange for highlights */
   --color-accent: #FDBA74;
 
   --background: #ffffff;
@@ -26,7 +23,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-poppins); /* Use Poppins as default sans font */
+
+  /* Update font stack to include Hind Siliguri for Bangla */
+  --font-sans: var(--font-poppins), var(--font-hind), sans-serif;
 
   /* Custom colors matching Baby Blue theme */
   --color-brand-primary: #0EA5E9; /* Sky 500 */
@@ -38,5 +37,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-poppins), sans-serif;
+  font-family: var(--font-poppins), var(--font-hind), sans-serif;
 }

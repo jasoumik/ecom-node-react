@@ -3,11 +3,14 @@
 import { useState, useEffect } from "react";
 import { ResponsiveImage, Button } from "@repo/ui";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
+import { getLocalizedField } from "@/lib/utils";
 
 interface Banner {
   id: string;
   src: string;
   alt: string;
+  alt_bn?: string;
   link?: string;
 }
 
@@ -17,6 +20,7 @@ interface BannerSectionProps {
 
 export function BannerSection({ banners }: BannerSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     if (banners.length > 1) {
@@ -32,7 +36,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
   const currentBanner = banners[currentIndex];
 
   return (
-    <section className="w-full bg-transparent"> {/* Changed to bg-transparent */}
+    <section className="w-full bg-slate-50 dark:bg-slate-950">
       <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden group">
         {currentBanner && (
             <div className="relative w-full h-full">
@@ -40,7 +44,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
                 <div key={currentIndex} className="absolute inset-0 animate-fade-in">
                     <ResponsiveImage
                         src={currentBanner.src}
-                        alt={currentBanner.alt}
+                        alt={getLocalizedField(currentBanner, 'alt', language)}
                         width={1920}
                         height={800}
                         className="object-cover w-full h-full"
@@ -54,15 +58,15 @@ export function BannerSection({ banners }: BannerSectionProps) {
                 <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:px-24 z-10">
                     <div className="max-w-xl space-y-6">
                         <div className="inline-block px-3 py-1 bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-md mb-2 animate-slide-in-from-bottom-2">
-                            Featured
+                            {t('featured')}
                         </div>
                         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-md animate-slide-in-from-bottom-4">
-                            {currentBanner.alt}
+                            {getLocalizedField(currentBanner, 'alt', language)}
                         </h1>
                         <div className="pt-4 animate-slide-in-from-bottom-8">
                             <Link href={currentBanner.link || '/products'}>
                                 <Button className="bg-sky-500 text-white hover:bg-sky-600 border-none font-bold px-8 py-3.5 rounded-xl shadow-lg text-base">
-                                    Shop Now
+                                    {t('shop_now')}
                                 </Button>
                             </Link>
                         </div>
@@ -113,13 +117,29 @@ export function BannerSection({ banners }: BannerSectionProps) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
                   {[
-                      { icon: "🚚", title: "Fast Delivery", desc: "All over Bangladesh" },
-                      { icon: "🛡️", title: "100% Authentic", desc: "Guaranteed products" },
-                      { icon: "💰", title: "Best Price", desc: "Factory direct rates" },
-                      { icon: "📞", title: "24/7 Support", desc: "Always here for you" },
+                      { 
+                          icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>, 
+                          title: t('fast_delivery'), 
+                          desc: t('all_over_bangladesh') 
+                      },
+                      { 
+                          icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>, 
+                          title: t('authentic'), 
+                          desc: t('guaranteed_products') 
+                      },
+                      { 
+                          icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>, 
+                          title: t('best_price'), 
+                          desc: t('factory_direct_rates') 
+                      },
+                      { 
+                          icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>, 
+                          title: t('support'), 
+                          desc: t('always_here_for_you') 
+                      },
                   ].map((feature, i) => (
                       <div key={i} className="p-6 flex items-center justify-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                          <div className="text-3xl">{feature.icon}</div>
+                          <div className="text-sky-500">{feature.icon}</div>
                           <div>
                               <div className="font-bold text-slate-900 dark:text-white text-sm">{feature.title}</div>
                               <div className="text-xs text-slate-500 dark:text-slate-400">{feature.desc}</div>

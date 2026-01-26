@@ -5,10 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
+import { getLocalizedField } from "@/lib/utils";
 
 export default function ProductPage() {
   const params = useParams();
@@ -35,6 +38,7 @@ export default function ProductPage() {
   const { addItem } = useCart();
   const { addToast } = useToast();
   const router = useRouter();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -179,12 +183,12 @@ export default function ProductPage() {
     addItem({
       id: product.id,
       variantId: selectedVariant?.id,
-      name: `${product.name} ${selectedVariant ? `(${[selectedSize, selectedColor].filter(Boolean).join(' ')})` : ''}`,
+      name: `${getLocalizedField(product, 'name', language)} ${selectedVariant ? `(${[selectedSize, selectedColor].filter(Boolean).join(' ')})` : ''}`,
       price: finalPrice,
       image: imageUrl,
       quantity: 1,
     });
-    addToast(`Added to cart`);
+    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
   const handleOrderNow = () => {
@@ -225,8 +229,8 @@ export default function ProductPage() {
       if (navigator.share) {
           try {
               await navigator.share({
-                  title: product.name,
-                  text: product.description,
+                  title: getLocalizedField(product, 'name', language),
+                  text: getLocalizedField(product, 'description', language),
                   url: window.location.href,
               });
           } catch (e) {}
@@ -237,7 +241,7 @@ export default function ProductPage() {
   };
 
   if (loading) return <FullScreenLoader />;
-  if (!product) return <div className="min-h-screen flex items-center justify-center dark:bg-slate-900 dark:text-white">Product not found</div>;
+  if (!product) return <div className="min-h-screen flex items-center justify-center dark:bg-slate-900 dark:text-white">{t('no_products_found')}</div>;
 
   let mediaList: string[] = [];
   if (Array.isArray(product.images)) {
@@ -281,11 +285,11 @@ export default function ProductPage() {
       <div className="bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                  <Link href="/" className="hover:text-sky-500">Home</Link>
+                  <Link href="/" className="hover:text-sky-500">{t('home')}</Link>
                   <span>/</span>
-                  <Link href="/products" className="hover:text-sky-500">Products</Link>
+                  <Link href="/products" className="hover:text-sky-500">{t('products')}</Link>
                   <span>/</span>
-                  <span className="text-slate-900 dark:text-white font-medium truncate max-w-[200px]">{product.name}</span>
+                  <span className="text-slate-900 dark:text-white font-medium truncate max-w-[200px]">{getLocalizedField(product, 'name', language)}</span>
               </div>
           </div>
       </div>
@@ -325,7 +329,7 @@ export default function ProductPage() {
                     />
                     <img 
                         src={selectedMedia} 
-                        alt={product.name} 
+                        alt={getLocalizedField(product, 'name', language)} 
                         className={`w-full h-full object-cover absolute inset-0 pointer-events-none ${isZoomed ? 'opacity-0' : 'opacity-100'}`} 
                     />
                     <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -351,7 +355,7 @@ export default function ProductPage() {
                         ) : (
                             <ResponsiveImage 
                                 src={media} 
-                                alt={`${product.name} ${i+1}`} 
+                                alt={`${getLocalizedField(product, 'name', language)} ${i+1}`} 
                                 width={200} 
                                 height={200} 
                                 className="w-full h-full object-cover" 
@@ -367,24 +371,24 @@ export default function ProductPage() {
           <div className="space-y-8">
             <div>
               <div className="flex justify-between items-start">
-                  <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{product.category}</div>
+                  <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{getLocalizedField(product, 'category', language)}</div>
                   <div className="flex gap-2">
                       <button onClick={handleShare} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                       </button>
                       {product.country_id && (
                         <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Product of {product.country_name || 'Origin'}</span>
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t('product_of')} {getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
                             {product.country_flag && <img src={product.country_flag} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />}
                         </div>
                       )}
                   </div>
               </div>
-              <Heading as="h1" size="xl" className="font-sans dark:text-white text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{product.name}</Heading>
+              <Heading as="h1" size="xl" className="font-sans dark:text-white text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{getLocalizedField(product, 'name', language)}</Heading>
               
               <div className="flex items-center gap-2 mt-3">
                   <RatingStars rating={avgRating} />
-                  <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">({reviews.length} reviews)</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">({reviews.length} {t('reviews')})</span>
               </div>
 
               <div className="flex items-baseline gap-4 mt-6">
@@ -392,7 +396,7 @@ export default function ProductPage() {
                 {product.old_price && <div className="text-xl text-slate-400 line-through">৳{product.old_price}</div>}
               </div>
               <div className={`text-sm font-bold mt-2 ${currentStock > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                  {currentStock > 0 ? `In Stock (${currentStock})` : 'Out of Stock'}
+                  {currentStock > 0 ? `${t('in_stock')} (${currentStock})` : t('out_of_stock')}
               </div>
             </div>
 
@@ -401,7 +405,7 @@ export default function ProductPage() {
                 <div className="space-y-6 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     {sizes.length > 0 && (
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Size</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">{t('size')}</label>
                             <div className="flex flex-wrap gap-2">
                                 {sizes.map((size: any) => (
                                     <button
@@ -422,7 +426,7 @@ export default function ProductPage() {
                     
                     {colors.length > 0 && (
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Color</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">{t('color')}</label>
                             <div className="flex flex-wrap gap-2">
                                 {colors.map((color: any) => {
                                     const isAvailable = isColorAvailableForSize(color);
@@ -453,15 +457,15 @@ export default function ProductPage() {
                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                     <div className="text-2xl">🚚</div>
                     <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">Standard Delivery</div>
-                        <div className="text-[10px] text-slate-500">2-3 Days</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">{t('standard_delivery')}</div>
+                        <div className="text-[10px] text-slate-500">2-3 {t('days')}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                     <div className="text-2xl">🛡️</div>
                     <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">100% Authentic</div>
-                        <div className="text-[10px] text-slate-500">Original Products</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">{t('authentic_100')}</div>
+                        <div className="text-[10px] text-slate-500">{t('original_products')}</div>
                     </div>
                 </div>
             </div>
@@ -469,20 +473,20 @@ export default function ProductPage() {
             <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100 dark:border-slate-800">
                 {product.sku && (
                     <div>
-                        <span className="text-xs text-slate-500 uppercase font-bold">SKU</span>
+                        <span className="text-xs text-slate-500 uppercase font-bold">{t('sku')}</span>
                         <p className="text-slate-900 dark:text-white font-medium">{selectedVariant?.sku || product.sku}</p>
                     </div>
                 )}
                 {product.material && (
                     <div>
-                        <span className="text-xs text-slate-500 uppercase font-bold">Material</span>
+                        <span className="text-xs text-slate-500 uppercase font-bold">{t('material')}</span>
                         <p className="text-slate-900 dark:text-white font-medium">{selectedVariant?.material || product.material}</p>
                     </div>
                 )}
             </div>
 
             <Text className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-              {product.description}
+              {getLocalizedField(product, 'description', language)}
             </Text>
 
             {/* Desktop Actions */}
@@ -493,13 +497,13 @@ export default function ProductPage() {
                         className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 font-bold"
                         onClick={handleAddToCart}
                     >
-                        Add to Cart
+                        {t('add_to_cart')}
                     </Button>
                     <Button 
                         className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-emerald-500/20 bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 transition-all duration-300 font-bold"
                         onClick={handleOrderNow}
                     >
-                        Order Now
+                        {t('buy_now')}
                     </Button>
                   </>
               ) : (
@@ -507,7 +511,7 @@ export default function ProductPage() {
                     className="w-full py-4 text-lg rounded-2xl shadow-xl shadow-amber-500/20 bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 transition-all duration-300 font-bold"
                     onClick={() => setShowNotifyModal(true)}
                   >
-                    Notify Me When Available
+                    {t('notify_me')}
                   </Button>
               )}
             </div>
@@ -517,7 +521,7 @@ export default function ProductPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
             <div className="mb-16">
-                <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">You Might Also Like</Heading>
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">{t('you_might_like')}</Heading>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                     {relatedProducts.map((p: any) => {
                         let imageUrl = "https://picsum.photos/seed/default/800/800";
@@ -532,7 +536,7 @@ export default function ProductPage() {
                                     <Link href={`/products/${p.id}`} className="block w-full h-full">
                                         <ResponsiveImage
                                             src={imageUrl}
-                                            alt={p.name}
+                                            alt={getLocalizedField(p, 'name', language)}
                                             width={400}
                                             height={400}
                                             className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -541,7 +545,7 @@ export default function ProductPage() {
                                 </div>
                                 <div className="space-y-1 text-center">
                                     <h3 className="text-sm font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
-                                        <Link href={`/products/${p.id}`}>{p.name}</Link>
+                                        <Link href={`/products/${p.id}`}>{getLocalizedField(p, 'name', language)}</Link>
                                     </h3>
                                     <div className="text-lg font-bold text-slate-900 dark:text-white">৳{p.price}</div>
                                 </div>
@@ -554,11 +558,11 @@ export default function ProductPage() {
 
         {/* Reviews Section */}
         <div className="border-t border-slate-100 dark:border-slate-800 pt-12">
-            <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">Customer Reviews</Heading>
+            <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">{t('customer_reviews')}</Heading>
             
             {reviews.length === 0 ? (
                 <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-3xl">
-                    <p className="text-slate-500 dark:text-slate-400">No reviews yet. Be the first to review this product!</p>
+                    <p className="text-slate-500 dark:text-slate-400">{t('no_reviews')}</p>
                 </div>
             ) : (
                 <div className="grid gap-6">
@@ -612,13 +616,13 @@ export default function ProductPage() {
                         className="flex-1 py-3 text-base rounded-xl bg-sky-500 text-white font-bold shadow-lg shadow-sky-500/20"
                         onClick={handleAddToCart}
                     >
-                        Add to Cart
+                        {t('add_to_cart')}
                     </Button>
                     <Button 
                         className="flex-1 py-3 text-base rounded-xl bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20"
                         onClick={handleOrderNow}
                     >
-                        Buy Now
+                        {t('buy_now')}
                     </Button>
                   </>
               ) : (
@@ -626,7 +630,7 @@ export default function ProductPage() {
                     className="w-full py-3 text-base rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/20"
                     onClick={() => setShowNotifyModal(true)}
                   >
-                    Notify Me
+                    {t('notify_me')}
                   </Button>
               )}
           </div>
@@ -637,13 +641,13 @@ export default function ProductPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
               <div className="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-3xl shadow-2xl relative">
                   <button onClick={() => setShowNotifyModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
-                  <Heading size="lg" className="mb-2 text-slate-900 dark:text-white">Request Stock</Heading>
-                  <p className="text-slate-500 dark:text-slate-400 mb-6">We'll notify you when this product is back in stock.</p>
+                  <Heading size="lg" className="mb-2 text-slate-900 dark:text-white">{t('request_stock')}</Heading>
+                  <p className="text-slate-500 dark:text-slate-400 mb-6">{t('notify_when_available')}</p>
                   
                   <form onSubmit={handleNotifyRequest} className="space-y-4">
-                      <Input label="Phone Number" value={notifyPhone} onChange={e => setNotifyPhone(e.target.value)} required placeholder="017..." />
-                      <Input label="Email (Optional)" value={notifyEmail} onChange={e => setNotifyEmail(e.target.value)} placeholder="you@example.com" />
-                      <Button fullWidth type="submit" className="rounded-xl py-3 mt-2">Submit Request</Button>
+                      <Input label={t('phone_number')} value={notifyPhone} onChange={e => setNotifyPhone(e.target.value)} required placeholder="017..." />
+                      <Input label={t('email_optional')} value={notifyEmail} onChange={e => setNotifyEmail(e.target.value)} placeholder="you@example.com" />
+                      <Button fullWidth type="submit" className="rounded-xl py-3 mt-2">{t('submit_request')}</Button>
                   </form>
               </div>
           </div>

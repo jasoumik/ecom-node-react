@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { API_URL } from "./config";
 
 interface Settings {
   shop_name: string;
+  shop_name_bn: string; // Added Bangla Name
   shop_phone: string;
   shop_address: string;
   facebook_link: string;
@@ -15,6 +16,7 @@ interface Settings {
 
 const defaultSettings: Settings = {
   shop_name: "Prithibee",
+  shop_name_bn: "পৃথিবী",
   shop_phone: "+880 1616-684803",
   shop_address: "House 12, Road 5, Dhanmondi, Dhaka-1209",
   facebook_link: "https://www.facebook.com/prithibeeofficial",

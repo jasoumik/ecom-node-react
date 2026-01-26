@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateCategoryPage() {
-  const [newCategory, setNewCategory] = useState({ name: "", description: "", image: "", parent_id: "", is_active: true });
+  const [newCategory, setNewCategory] = useState({ name: "", name_bn: "", description: "", description_bn: "", image: "", parent_id: "", is_active: true });
   const [categories, setCategories] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
@@ -80,23 +80,24 @@ export default function CreateCategoryPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Name" value={newCategory.name} onChange={e => setNewCategory({...newCategory, name: e.target.value})} required className="bg-slate-50/50" />
-            
-            <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Parent Category</label>
-                <select 
-                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
-                    value={newCategory.parent_id}
-                    onChange={e => setNewCategory({...newCategory, parent_id: e.target.value})}
-                >
-                    <option value="">None (Root Category)</option>
-                    {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>
-                            {'\u00A0'.repeat(cat.level * 4)}{cat.name}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <Input label="Name (English)" value={newCategory.name} onChange={e => setNewCategory({...newCategory, name: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Name (Bangla)" value={newCategory.name_bn} onChange={e => setNewCategory({...newCategory, name_bn: e.target.value})} className="bg-slate-50/50" />
+          </div>
+          
+          <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Parent Category</label>
+              <select 
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                  value={newCategory.parent_id}
+                  onChange={e => setNewCategory({...newCategory, parent_id: e.target.value})}
+              >
+                  <option value="">None (Root Category)</option>
+                  {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                          {'\u00A0'.repeat(cat.level * 4)}{cat.name}
+                      </option>
+                  ))}
+              </select>
           </div>
 
           <div>
@@ -112,14 +113,25 @@ export default function CreateCategoryPage() {
             </div>
           </div>
           
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <textarea 
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
-              value={newCategory.description} 
-              onChange={e => setNewCategory({...newCategory, description: e.target.value})} 
-              rows={3}
-            />
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
+                <textarea 
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                value={newCategory.description} 
+                onChange={e => setNewCategory({...newCategory, description: e.target.value})} 
+                rows={3}
+                />
+            </div>
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
+                <textarea 
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                value={newCategory.description_bn} 
+                onChange={e => setNewCategory({...newCategory, description_bn: e.target.value})} 
+                rows={3}
+                />
+            </div>
           </div>
         </form>
       </div>

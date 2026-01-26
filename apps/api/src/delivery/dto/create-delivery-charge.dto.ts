@@ -1,7 +1,6 @@
-export class CreateCountryDto {
+export class CreateDeliveryChargeDto {
   name: string;
   name_bn?: string; // Added Bangla Name
-  code: string;
-  flag?: string;
+  amount: number;
   is_active?: boolean;
 }

@@ -10,7 +10,7 @@ import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ 
-      name: "", price: "", old_price: "", cost_price: "", description: "", images: "", category_id: "", stock: "", sku: "",
+      name: "", name_bn: "", price: "", old_price: "", cost_price: "", description: "", description_bn: "", images: "", category_id: "", stock: "", sku: "",
       size: "", weight: "", color: "", material: "", is_active: true, country_id: "" 
   });
   const [categories, setCategories] = useState<any[]>([]);
@@ -65,7 +65,7 @@ export default function CreateProductPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
-        <Heading size="lg" className="font-sans text-slate-900 dark:text-white">Add Product</Heading>
+        <Heading size="md" className="font-sans text-slate-900 dark:text-white">Add Product</Heading>
         <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-lg py-2 px-4 text-sm h-auto">Cancel</Button>
             <Button type="submit" form="product-form" className="rounded-lg shadow-md shadow-sky-500/20 py-2 px-6 text-sm h-auto">Save Product</Button>
@@ -90,17 +90,31 @@ export default function CreateProductPage() {
                 </div>
                 
                 <div className="space-y-4">
-                    <Input label="Product Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Input label="Product Name (English)" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50" />
+                        <Input label="Product Name (Bangla)" value={newProduct.name_bn} onChange={e => setNewProduct({...newProduct, name_bn: e.target.value})} className="bg-slate-50/50" />
+                    </div>
                     
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-                        <textarea 
-                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
-                        value={newProduct.description} 
-                        onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
-                        required 
-                        rows={4}
-                        />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
+                            <textarea 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            value={newProduct.description} 
+                            onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
+                            required 
+                            rows={4}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
+                            <textarea 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            value={newProduct.description_bn} 
+                            onChange={e => setNewProduct({...newProduct, description_bn: e.target.value})} 
+                            rows={4}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

@@ -18,7 +18,7 @@ const AVAILABLE_ROUTES = [
 ];
 
 export default function CreateBannerPage() {
-  const [newBanner, setNewBanner] = useState({ title: "", image: "", link: "", order: "0", is_active: true });
+  const [newBanner, setNewBanner] = useState({ title: "", title_bn: "", image: "", link: "", order: "0", is_active: true });
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
@@ -68,7 +68,10 @@ export default function CreateBannerPage() {
                 </label>
           </div>
 
-          <Input label="Title" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} required className="bg-slate-50/50" />
+          <div className="grid md:grid-cols-2 gap-6">
+            <Input label="Title (English)" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Title (Bangla)" value={newBanner.title_bn} onChange={e => setNewBanner({...newBanner, title_bn: e.target.value})} className="bg-slate-50/50" />
+          </div>
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image URL</label>

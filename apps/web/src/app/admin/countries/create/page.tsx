@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateCountryPage() {
-  const [newCountry, setNewCountry] = useState({ name: "", code: "", flag: "", is_active: true });
+  const [newCountry, setNewCountry] = useState({ name: "", name_bn: "", code: "", flag: "", is_active: true });
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
@@ -60,9 +60,10 @@ export default function CreateCountryPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Country Name" value={newCountry.name} onChange={e => setNewCountry({...newCountry, name: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="ISO Code (e.g. BD)" value={newCountry.code} onChange={e => setNewCountry({...newCountry, code: e.target.value.toUpperCase()})} required maxLength={3} className="bg-slate-50/50" />
+            <Input label="Country Name (English)" value={newCountry.name} onChange={e => setNewCountry({...newCountry, name: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Country Name (Bangla)" value={newCountry.name_bn} onChange={e => setNewCountry({...newCountry, name_bn: e.target.value})} className="bg-slate-50/50" />
           </div>
+          <Input label="ISO Code (e.g. BD)" value={newCountry.code} onChange={e => setNewCountry({...newCountry, code: e.target.value.toUpperCase()})} required maxLength={3} className="bg-slate-50/50" />
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Flag Image</label>

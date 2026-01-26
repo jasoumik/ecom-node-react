@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { useLanguage } from "@/lib/language-context";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
@@ -25,6 +26,7 @@ export default function CartPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const { addToast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -90,7 +92,6 @@ export default function CartPage() {
   const calculateTotal = () => {
       let total = totalPrice();
       
-      // Free shipping logic
       const isFreeShipping = total >= freeShippingThreshold;
       
       const delivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
@@ -167,9 +168,9 @@ export default function CartPage() {
         <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-4xl shadow-inner">
             🛒
         </div>
-        <Heading className="mb-2 dark:text-white text-2xl font-bold">Your Cart is Empty</Heading>
+        <Heading className="mb-2 dark:text-white text-2xl font-bold">{t('your_cart_empty')}</Heading>
         <Text className="text-slate-500 mb-8 text-center max-w-md">Looks like you haven't added anything to your cart yet.</Text>
-        <Button onClick={() => router.push("/products")} className="rounded-xl px-8 py-3 shadow-lg shadow-sky-500/20">Start Shopping</Button>
+        <Button onClick={() => router.push("/products")} className="rounded-xl px-8 py-3 shadow-lg shadow-sky-500/20">{t('start_shopping')}</Button>
       </div>
     );
   }
@@ -193,7 +194,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-slate-950 py-12 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-8 font-bold">Shopping Cart <span className="text-slate-400 font-medium text-lg ml-2">({items.length} items)</span></Heading>
+        <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-8 font-bold">{t('shopping_cart')} <span className="text-slate-400 font-medium text-lg ml-2">({items.length} {t('items')})</span></Heading>
         
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Cart Items */}
@@ -202,7 +203,7 @@ export default function CartPage() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                        {isFreeShipping ? "🎉 You've unlocked Free Shipping!" : `Add ৳${amountToFreeShipping} more for Free Shipping`}
+                        {isFreeShipping ? t('free_shipping_unlocked') : t('add_more_free_shipping', { amount: amountToFreeShipping.toString() })}
                     </span>
                     <span className="text-xs font-bold text-sky-500">{Math.round(progressPercent)}%</span>
                 </div>
@@ -258,15 +259,15 @@ export default function CartPage() {
           {/* Checkout Summary */}
           <div className="w-full lg:w-[400px] shrink-0">
             <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 sticky top-24">
-                <Heading size="lg" className="mb-6 dark:text-white font-sans font-bold text-xl">Order Summary</Heading>
+                <Heading size="lg" className="mb-6 dark:text-white font-sans font-bold text-xl">{t('order_summary')}</Heading>
                 
                 <div className="space-y-3 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                        <span>Subtotal</span>
+                        <span>{t('subtotal')}</span>
                         <span className="font-medium">৳{totalPrice()}</span>
                     </div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                        <span>Delivery</span>
+                        <span>{t('delivery')}</span>
                         <span className={`font-medium ${isFreeShipping ? 'text-emerald-600 line-through' : ''}`}>
                             ৳{selectedDelivery ? parseFloat(selectedDelivery.amount) : 0}
                         </span>
@@ -274,19 +275,19 @@ export default function CartPage() {
                     </div>
                     {appliedCoupon && (
                         <div className="flex justify-between text-green-600 font-medium">
-                            <span>Discount ({appliedCoupon.code})</span>
+                            <span>{t('discount')} ({appliedCoupon.code})</span>
                             <span>-৳{discountAmount}</span>
                         </div>
                     )}
                     <div className="flex justify-between text-xl font-bold text-slate-900 dark:text-white pt-2">
-                        <span>Total</span>
+                        <span>{t('total')}</span>
                         <span>৳{calculateTotal()}</span>
                     </div>
                 </div>
 
                 {/* Coupon Input */}
                 <div className="mb-6">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Coupon Code</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">{t('coupon_code')}</label>
                     <div className="flex gap-2">
                         <input 
                             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
@@ -294,13 +295,13 @@ export default function CartPage() {
                             value={couponCode}
                             onChange={(e) => setCouponCode(e.target.value)}
                         />
-                        <Button variant="secondary" onClick={handleApplyCoupon} className="rounded-xl">Apply</Button>
+                        <Button variant="secondary" onClick={handleApplyCoupon} className="rounded-xl">{t('apply')}</Button>
                     </div>
                 </div>
 
                 <form onSubmit={handleCheckout} className="space-y-5">
                     <div className="space-y-4">
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider">Delivery Area</h4>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider">{t('delivery_area')}</h4>
                         <div className="space-y-2">
                             {deliveryCharges.map(charge => (
                                 <label key={charge.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedDeliveryId === charge.id ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
@@ -320,12 +321,12 @@ export default function CartPage() {
                             ))}
                         </div>
 
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">Payment Method</h4>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">{t('payment_method')}</h4>
                         <div className="grid grid-cols-3 gap-2">
                             <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
                                 <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
                                 <span className="text-2xl mb-1">💵</span>
-                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight">Cash on Delivery</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight">{t('cod')}</span>
                             </label>
                             <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
                                 <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="hidden" />
@@ -355,16 +356,16 @@ export default function CartPage() {
                             </div>
                         )}
 
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">Shipping Details</h4>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">{t('shipping_details')}</h4>
                         <Input 
-                            label="Full Name" 
+                            label={t('full_name')} 
                             value={customerName} 
                             onChange={(e) => setCustomerName(e.target.value)} 
                             required 
                             className="bg-slate-50/50"
                         />
                         <Input 
-                            label="Phone Number" 
+                            label={t('phone_number')} 
                             value={customerPhone} 
                             onChange={(e) => setCustomerPhone(e.target.value)} 
                             placeholder="017..." 
@@ -372,7 +373,7 @@ export default function CartPage() {
                             className="bg-slate-50/50"
                         />
                         <div className="w-full">
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Address</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('address')}</label>
                             <textarea 
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 resize-none"
                             value={customerAddress} 
@@ -390,11 +391,11 @@ export default function CartPage() {
                         disabled={isSubmitting}
                         className="py-4 text-lg shadow-xl shadow-sky-500/20 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl font-bold mt-4"
                     >
-                        {isSubmitting ? "Processing..." : "Place Order"}
+                        {isSubmitting ? t('loading') : t('place_order')}
                     </Button>
                     
                     <p className="text-xs text-center text-slate-400 mt-4">
-                        Secure checkout powered by Prithibee
+                        {t('secure_checkout')}
                     </p>
                 </form>
             </div>

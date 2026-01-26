@@ -6,35 +6,42 @@ import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useToast } from "@/components/ui/Toast";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
+import { getLocalizedField } from "@/lib/utils";
 
 interface FeaturedProductsSectionProps {
   title: string;
+  title_bn?: string;
   subtitle?: string;
+  subtitle_bn?: string;
   products: FeaturedProduct[];
   viewAllHref?: string;
 }
 
 export function FeaturedProductsSection({
   title,
+  title_bn,
   subtitle,
+  subtitle_bn,
   products,
   viewAllHref,
 }: FeaturedProductsSectionProps) {
   const { addItem } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
+  const { t, language } = useLanguage();
 
   const handleAddToCart = (product: FeaturedProduct) => {
     const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
     
     addItem({
       id: product.id,
-      name: product.name,
+      name: getLocalizedField(product, 'name', language),
       price: isNaN(priceValue) ? 0 : priceValue,
       image: product.image.src,
       quantity: 1,
     });
-    addToast(`Added ${product.name} to cart`);
+    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
   const toggleWishlist = (product: FeaturedProduct) => {
@@ -46,7 +53,7 @@ export function FeaturedProductsSection({
     } else {
         addToWishlist({
             id: product.id,
-            name: product.name,
+            name: getLocalizedField(product, 'name', language),
             price: isNaN(priceValue) ? 0 : priceValue,
             image: product.image.src
         });
@@ -59,12 +66,12 @@ export function FeaturedProductsSection({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-end mb-8">
             <div>
-                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl">{title}</Heading>
-                {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{subtitle}</p>}
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl">{getLocalizedField({title, title_bn}, 'title', language)}</Heading>
+                {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{getLocalizedField({subtitle, subtitle_bn}, 'subtitle', language)}</p>}
             </div>
             {viewAllHref && (
                 <Link href={viewAllHref} className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline">
-                    View All →
+                    {t('view_all')} →
                 </Link>
             )}
         </div>
@@ -80,7 +87,7 @@ export function FeaturedProductsSection({
                         <Link href={product.href} className="block w-full h-full">
                             <ResponsiveImage
                                 src={product.image.src}
-                                alt={product.image.alt}
+                                alt={getLocalizedField(product, 'name', language)}
                                 width={300}
                                 height={300}
                                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
@@ -120,7 +127,7 @@ export function FeaturedProductsSection({
                             </div>
                             <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-snug min-h-[2.5em]">
                                 <Link href={product.href} className="hover:text-sky-600 transition-colors">
-                                    {product.name}
+                                    {getLocalizedField(product, 'name', language)}
                                 </Link>
                             </h3>
                         </div>
@@ -133,7 +140,7 @@ export function FeaturedProductsSection({
                                 onClick={() => handleAddToCart(product)}
                                 className="w-full py-2 text-xs font-bold bg-sky-500 text-white hover:bg-sky-600 shadow-md rounded-lg"
                             >
-                                Add to Cart
+                                {t('add_to_cart')}
                             </Button>
                         </div>
                     </div>

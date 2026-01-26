@@ -190,17 +190,31 @@ export default function EditProductPage() {
                 </div>
                 
                 <div className="space-y-4">
-                    <Input label="Product Name" value={product.name} onChange={e => setProduct({...product, name: e.target.value})} required className="bg-slate-50/50" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Input label="Product Name (English)" value={product.name} onChange={e => setProduct({...product, name: e.target.value})} required className="bg-slate-50/50" />
+                        <Input label="Product Name (Bangla)" value={product.name_bn || ""} onChange={e => setProduct({...product, name_bn: e.target.value})} className="bg-slate-50/50" />
+                    </div>
                     
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-                        <textarea 
-                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
-                        value={product.description} 
-                        onChange={e => setProduct({...product, description: e.target.value})} 
-                        required 
-                        rows={4}
-                        />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
+                            <textarea 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            value={product.description} 
+                            onChange={e => setProduct({...product, description: e.target.value})} 
+                            required 
+                            rows={4}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
+                            <textarea 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            value={product.description_bn || ""} 
+                            onChange={e => setProduct({...product, description_bn: e.target.value})} 
+                            rows={4}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
