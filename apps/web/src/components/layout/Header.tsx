@@ -163,9 +163,12 @@ export function Header() {
               </svg>
               <span>{settings.shop_phone}</span>
             </a>
-            <div className="sm:hidden text-[10px] opacity-80">
-                {t('free_shipping_offer', { threshold: settings.free_shipping_threshold }).split('•')[0]}
-            </div>
+              <a href={settings.facebook_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-sky-100 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.333-4.669 1.212 0 2.493.216 2.493.216v2.733h-1.406c-1.492 0-1.956.926-1.956 1.874v2.25h3.072l-.487 3.47h-2.585v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span>Facebook</span>
+              </a>
           </div>
         </div>
       </div>
