@@ -27,7 +27,7 @@ export function CallToActionSection({
   const settings = useSettings();
 
   return (
-    <Section className="py-16 bg-gradient-to-br from-sky-500 to-blue-600 text-white relative overflow-hidden">
+    <Section className="py-16 bg-gradient-to-br from-sky-200 to-sky-400 text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")' }}></div>
       <div className="max-w-4xl mx-auto text-center relative z-10 px-4">
         <Heading size="xl" className="font-sans font-bold text-white mb-4">

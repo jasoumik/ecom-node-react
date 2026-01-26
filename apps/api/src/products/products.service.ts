@@ -13,18 +13,45 @@ export class ProductsService {
     private readonly requestsService: RequestsService
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10, categoryId?: string): Promise<any> {
+  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string): Promise<any> {
     const offset = (page - 1) * limit;
     
     const baseQuery = this.knex('products');
     if (categoryId) {
       baseQuery.where({ category_id: categoryId });
     }
+    if (search) {
+        baseQuery.where('name', 'ilike', `%${search}%`);
+    }
 
     const [countResult] = await baseQuery.clone().count('* as total');
     const total = parseInt(countResult.total as string, 10);
 
-    const data = await baseQuery.clone().select('*').limit(limit).offset(offset).orderBy('created_at', 'desc');
+    const products = await baseQuery.clone().select('*').limit(limit).offset(offset).orderBy('created_at', 'desc');
+
+    // Fetch ratings for these products
+    const productIds = products.map(p => p.id);
+    const ratings = await this.knex('reviews')
+        .whereIn('product_id', productIds)
+        .where('status', 'approved')
+        .select('product_id')
+        .count('* as count')
+        .avg('rating as average')
+        .groupBy('product_id');
+
+    const ratingsMap = ratings.reduce((acc, r) => {
+        acc[r.product_id] = {
+            count: parseInt(r.count as string, 10),
+            average: parseFloat(r.average as string).toFixed(1)
+        };
+        return acc;
+    }, {});
+
+    const data = products.map(p => ({
+        ...p,
+        reviewCount: ratingsMap[p.id]?.count || 0,
+        rating: ratingsMap[p.id]?.average || 0
+    }));
 
     return {
       data,

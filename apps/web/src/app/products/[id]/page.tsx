@@ -241,6 +241,16 @@ export default function ProductPage() {
       }
   };
 
+  const parseReviewImages = (images: any) => {
+      if (!images) return [];
+      if (Array.isArray(images)) return images;
+      try {
+          return JSON.parse(images);
+      } catch (e) {
+          return [];
+      }
+  };
+
   if (loading) return <FullScreenLoader />;
   if (!product) return <div className="min-h-screen flex items-center justify-center dark:bg-slate-900 dark:text-white">{t('no_products_found')}</div>;
 
@@ -295,12 +305,12 @@ export default function ProductPage() {
           </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mb-16">
           {/* Media Gallery */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div 
-                className="aspect-square rounded-2xl overflow-hidden bg-white shadow-sm dark:bg-slate-800 border border-slate-100 dark:border-slate-700 relative group cursor-zoom-in"
+                className="aspect-square rounded-3xl overflow-hidden bg-white shadow-lg dark:bg-slate-800 border border-slate-100 dark:border-slate-700 relative group cursor-zoom-in"
                 ref={imageRef}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsZoomed(true)}
@@ -341,11 +351,11 @@ export default function ProductPage() {
             </div>
             
             {mediaList.length > 1 && (
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-3">
                 {mediaList.map((media: string, i: number) => (
                     <div 
                         key={i} 
-                        className={`aspect-square rounded-lg overflow-hidden bg-white shadow-sm cursor-pointer hover:opacity-80 dark:bg-slate-800 border transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-700'}`}
+                        className={`aspect-square rounded-xl overflow-hidden bg-white shadow-sm cursor-pointer hover:opacity-80 dark:bg-slate-800 border transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-700'}`}
                         onClick={() => setSelectedMedia(media)}
                     >
                         {isVideo(media) ? (
@@ -369,22 +379,22 @@ export default function ProductPage() {
           </div>
 
           {/* Product Details */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <div className="flex justify-between items-start mb-2">
-                  <div className="text-xs font-bold text-sky-500 uppercase tracking-wider">{getLocalizedField(product, 'category_name', language)}</div>
+              <div className="flex justify-between items-start">
+                  <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{getLocalizedField(product, 'category_name', language)}</div>
                   <div className="flex gap-2">
-                      <button onClick={handleShare} className="p-1.5 rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                      <button onClick={handleShare} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                       </button>
                       {product.country_id && (
-                        <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-full border border-slate-100 dark:border-slate-700">
-                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
+                        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t('product_of')} {getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
                             {product.country_flag && (
                                 product.country_flag.startsWith('http') || product.country_flag.startsWith('/') ? (
-                                    <img src={getImageUrl(product.country_flag)} alt="Flag" className="w-4 h-2.5 object-cover rounded-sm" />
+                                    <img src={getImageUrl(product.country_flag)} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />
                                 ) : (
-                                    <div className="w-4 h-2.5 overflow-hidden rounded-sm">
+                                    <div className="w-5 h-3 overflow-hidden rounded-sm">
                                         <FlagIcon code={product.country_flag} className="w-full h-full" />
                                     </div>
                                 )
@@ -393,37 +403,37 @@ export default function ProductPage() {
                       )}
                   </div>
               </div>
-              <Heading as="h1" size="lg" className="font-sans dark:text-white text-2xl sm:text-3xl font-bold leading-tight mb-2">{getLocalizedField(product, 'name', language)}</Heading>
+              <Heading as="h1" size="xl" className="font-sans dark:text-white text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{getLocalizedField(product, 'name', language)}</Heading>
               
-              <div className="flex items-center gap-2 mb-4">
-                  <RatingStars rating={avgRating} size="sm" />
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">({reviews.length} {t('reviews')})</span>
+              <div className="flex items-center gap-2 mt-3">
+                  <RatingStars rating={avgRating} />
+                  <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">({reviews.length} {t('reviews')})</span>
               </div>
 
-              <div className="flex items-baseline gap-3">
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">৳{currentPrice}</div>
-                {product.old_price && <div className="text-lg text-slate-400 line-through">৳{product.old_price}</div>}
+              <div className="flex items-baseline gap-4 mt-6">
+                <div className="text-4xl font-bold text-slate-900 dark:text-white">৳{currentPrice}</div>
+                {product.old_price && <div className="text-xl text-slate-400 line-through">৳{product.old_price}</div>}
               </div>
-              <div className={`text-xs font-bold mt-1 ${currentStock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <div className={`text-sm font-bold mt-2 ${currentStock > 0 ? 'text-green-600' : 'text-red-500'}`}>
                   {currentStock > 0 ? `${t('in_stock')} (${currentStock})` : t('out_of_stock')}
               </div>
             </div>
 
             {/* Variant Selectors */}
             {product.has_variants && (
-                <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                <div className="space-y-6 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     {sizes.length > 0 && (
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">{t('size')}</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">{t('size')}</label>
                             <div className="flex flex-wrap gap-2">
                                 {sizes.map((size: any) => (
                                     <button
                                         key={size}
                                         onClick={() => handleSizeChange(size)}
-                                        className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                                        className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                             selectedSize === size 
-                                            ? 'border-sky-500 bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm ring-1 ring-sky-100 dark:ring-sky-900/30' 
-                                            : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800'
+                                            ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400 shadow-sm ring-2 ring-sky-100 dark:ring-sky-900/30' 
+                                            : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:text-slate-400'
                                         }`}
                                     >
                                         {size}
@@ -435,7 +445,7 @@ export default function ProductPage() {
                     
                     {colors.length > 0 && (
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">{t('color')}</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">{t('color')}</label>
                             <div className="flex flex-wrap gap-2">
                                 {colors.map((color: any) => {
                                     const isAvailable = isColorAvailableForSize(color);
@@ -443,11 +453,11 @@ export default function ProductPage() {
                                         <button
                                             key={color}
                                             onClick={() => handleColorChange(color)}
-                                            className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                                            className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all ${
                                                 selectedColor === color 
-                                                ? 'border-sky-500 bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm ring-1 ring-sky-100 dark:ring-sky-900/30' 
+                                                ? 'border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400 shadow-sm ring-2 ring-sky-100 dark:ring-sky-900/30' 
                                                 : isAvailable 
-                                                    ? 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800'
+                                                    ? 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:text-slate-400'
                                                     : 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50 dark:bg-slate-800 dark:border-slate-800 dark:text-slate-600 opacity-50'
                                             }`}
                                         >
@@ -462,16 +472,16 @@ export default function ProductPage() {
             )}
 
             {/* Delivery Info */}
-            <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <div className="text-xl">🚚</div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="text-2xl">🚚</div>
                     <div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white">{t('standard_delivery')}</div>
                         <div className="text-[10px] text-slate-500">2-3 {t('days')}</div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <div className="text-xl">🛡️</div>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="text-2xl">🛡️</div>
                     <div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white">{t('authentic_100')}</div>
                         <div className="text-[10px] text-slate-500">{t('original_products')}</div>
@@ -479,37 +489,37 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 py-3 border-y border-slate-100 dark:border-slate-800">
+            <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100 dark:border-slate-800">
                 {product.sku && (
                     <div>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold">{t('sku')}</span>
-                        <p className="text-sm text-slate-900 dark:text-white font-medium">{selectedVariant?.sku || product.sku}</p>
+                        <span className="text-xs text-slate-500 uppercase font-bold">{t('sku')}</span>
+                        <p className="text-slate-900 dark:text-white font-medium">{selectedVariant?.sku || product.sku}</p>
                     </div>
                 )}
                 {product.material && (
                     <div>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold">{t('material')}</span>
-                        <p className="text-sm text-slate-900 dark:text-white font-medium">{selectedVariant?.material || product.material}</p>
+                        <span className="text-xs text-slate-500 uppercase font-bold">{t('material')}</span>
+                        <p className="text-slate-900 dark:text-white font-medium">{selectedVariant?.material || product.material}</p>
                     </div>
                 )}
             </div>
 
-            <Text className="text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            <Text className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
               {getLocalizedField(product, 'description', language)}
             </Text>
 
             {/* Desktop Actions */}
-            <div className="hidden sm:flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="hidden sm:flex flex-col sm:flex-row gap-4 pt-4">
               {currentStock > 0 ? (
                   <>
                     <Button 
-                        className="flex-1 py-3 text-base rounded-xl shadow-lg shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 font-bold"
+                        className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-sky-500/20 bg-sky-500 text-white hover:bg-sky-600 hover:scale-105 transition-all duration-300 font-bold"
                         onClick={handleAddToCart}
                     >
                         {t('add_to_cart')}
                     </Button>
                     <Button 
-                        className="flex-1 py-3 text-base rounded-xl shadow-lg shadow-emerald-500/20 bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 transition-all duration-300 font-bold"
+                        className="flex-1 py-4 text-lg rounded-2xl shadow-xl shadow-emerald-500/20 bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 transition-all duration-300 font-bold"
                         onClick={handleOrderNow}
                     >
                         {t('buy_now')}
@@ -517,7 +527,7 @@ export default function ProductPage() {
                   </>
               ) : (
                   <Button 
-                    className="w-full py-3 text-base rounded-xl shadow-lg shadow-amber-500/20 bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 transition-all duration-300 font-bold"
+                    className="w-full py-4 text-lg rounded-2xl shadow-xl shadow-amber-500/20 bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 transition-all duration-300 font-bold"
                     onClick={() => setShowNotifyModal(true)}
                   >
                     {t('notify_me')}
@@ -529,9 +539,9 @@ export default function ProductPage() {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-            <div className="mb-12">
-                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('you_might_like')}</Heading>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="mb-16">
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">{t('you_might_like')}</Heading>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                     {relatedProducts.map((p: any) => {
                         let imageUrl = "https://picsum.photos/seed/default/800/800";
                         try {
@@ -540,23 +550,23 @@ export default function ProductPage() {
                         } catch (e) {}
                         
                         return (
-                            <div key={p.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm hover:shadow-md transition-all border border-slate-100 dark:border-slate-700">
-                                <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f8f8f8] mb-2 dark:bg-slate-700">
+                            <div key={p.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all">
+                                <div className="relative aspect-square overflow-hidden rounded-xl bg-[#f8f8f8] mb-3 dark:bg-slate-700">
                                     <Link href={`/products/${p.id}`} className="block w-full h-full">
                                         <ResponsiveImage
                                             src={imageUrl}
                                             alt={getLocalizedField(p, 'name', language)}
-                                            width={300}
-                                            height={300}
+                                            width={400}
+                                            height={400}
                                             className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
                                         />
                                     </Link>
                                 </div>
                                 <div className="space-y-1 text-center">
-                                    <h3 className="text-xs font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
+                                    <h3 className="text-sm font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
                                         <Link href={`/products/${p.id}`}>{getLocalizedField(p, 'name', language)}</Link>
                                     </h3>
-                                    <div className="text-sm font-bold text-slate-900 dark:text-white">৳{p.price}</div>
+                                    <div className="text-lg font-bold text-slate-900 dark:text-white">৳{p.price}</div>
                                 </div>
                             </div>
                         );
@@ -566,43 +576,43 @@ export default function ProductPage() {
         )}
 
         {/* Reviews Section */}
-        <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-            <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('customer_reviews')}</Heading>
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-12">
+            <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8">{t('customer_reviews')}</Heading>
             
             {reviews.length === 0 ? (
-                <div className="text-center py-8 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('no_reviews')}</p>
+                <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-3xl">
+                    <p className="text-slate-500 dark:text-slate-400">{t('no_reviews')}</p>
                 </div>
             ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-6">
                     {reviews.map((review) => (
-                        <div key={review.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                            <div className="flex items-start justify-between mb-3">
+                        <div key={review.id} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                            <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
                                         {review.user_avatar ? (
                                             <img src={getImageUrl(review.user_avatar)} alt={review.user_name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs">
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">
                                                 {review.user_name?.charAt(0)}
                                             </div>
                                         )}
                                     </div>
                                     <div>
-                                        <div className="font-bold text-slate-900 dark:text-white text-sm">{review.user_name}</div>
-                                        <div className="text-[10px] text-slate-500">{new Date(review.created_at).toLocaleDateString()}</div>
+                                        <div className="font-bold text-slate-900 dark:text-white">{review.user_name}</div>
+                                        <div className="text-xs text-slate-500">{new Date(review.created_at).toLocaleDateString()}</div>
                                     </div>
                                 </div>
-                                <RatingStars rating={review.rating} size="sm" />
+                                <RatingStars rating={review.rating} />
                             </div>
                             
                             {review.comment && (
-                                <p className="text-slate-600 dark:text-slate-300 text-sm mb-3">{review.comment}</p>
+                                <p className="text-slate-600 dark:text-slate-300 mb-4">{review.comment}</p>
                             )}
                             
                             {review.images && (
                                 <div className="flex gap-2">
-                                    {JSON.parse(review.images).map((img: string, i: number) => (
+                                    {parseReviewImages(review.images).map((img: string, i: number) => (
                                         <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
                                             <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
                                         </div>
@@ -617,18 +627,18 @@ export default function ProductPage() {
       </div>
 
       {/* Sticky Mobile Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 sm:hidden z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 sm:hidden z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
           <div className="flex gap-3">
               {currentStock > 0 ? (
                   <>
                     <Button 
-                        className="flex-1 py-2.5 text-sm rounded-xl bg-sky-500 text-white font-bold shadow-lg shadow-sky-500/20"
+                        className="flex-1 py-3 text-base rounded-xl bg-sky-500 text-white font-bold shadow-lg shadow-sky-500/20"
                         onClick={handleAddToCart}
                     >
                         {t('add_to_cart')}
                     </Button>
                     <Button 
-                        className="flex-1 py-2.5 text-sm rounded-xl bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20"
+                        className="flex-1 py-3 text-base rounded-xl bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20"
                         onClick={handleOrderNow}
                     >
                         {t('buy_now')}
@@ -636,7 +646,7 @@ export default function ProductPage() {
                   </>
               ) : (
                   <Button 
-                    className="w-full py-2.5 text-sm rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/20"
+                    className="w-full py-3 text-base rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/20"
                     onClick={() => setShowNotifyModal(true)}
                   >
                     {t('notify_me')}

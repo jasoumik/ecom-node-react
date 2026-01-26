@@ -22,8 +22,9 @@ export function getLocalizedField(obj: any, field: string, language: 'en' | 'bn'
   return obj[field] || '';
 }
 
-export function getImageUrl(url: string) {
-  if (!url) return "https://picsum.photos/seed/default/800/800";
+export function getImageUrl(url: any) {
+  if (!url || typeof url !== 'string') return "https://picsum.photos/seed/default/800/800";
+  
   if (url.startsWith("http") || url.startsWith("https")) {
     return url;
   }
@@ -32,7 +33,6 @@ export function getImageUrl(url: string) {
   let baseUrl = API_URL.replace(/\/api\/?$/, '');
   
   // FORCE port 3001 for local development if it's pointing to 3000
-  // This handles the case where API_URL is set to 3000 (frontend) but files are on 3001 (backend)
   if (baseUrl.includes('localhost:3000') || baseUrl.includes('127.0.0.1:3000')) {
       baseUrl = baseUrl.replace('3000', '3001');
   }
