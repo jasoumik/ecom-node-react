@@ -184,6 +184,31 @@ export async function seed(knex: Knex): Promise<void> {
   // Insert Settings
   await knex('settings').insert([
     {
+      key: 'shop_name',
+      value: 'Prithibee',
+      description: 'Name of the shop displayed in header/footer',
+    },
+    {
+      key: 'shop_phone',
+      value: '+880 1616-684803',
+      description: 'Primary contact number',
+    },
+    {
+      key: 'shop_address',
+      value: 'House 12, Road 5, Dhanmondi, Dhaka-1209',
+      description: 'Physical store address',
+    },
+    {
+      key: 'facebook_link',
+      value: 'https://www.facebook.com/prithibeeofficial',
+      description: 'Facebook page URL',
+    },
+    {
+      key: 'whatsapp_number',
+      value: '+8801616684803',
+      description: 'WhatsApp number for chat button',
+    },
+    {
       key: 'inventory_method',
       value: 'FIFO',
       description: 'Inventory valuation method: FIFO or LIFO',
@@ -197,6 +222,11 @@ export async function seed(knex: Knex): Promise<void> {
       key: 'nagad_number',
       value: '01700000000',
       description: 'Nagad Merchant/Personal Number',
+    },
+    {
+      key: 'free_shipping_threshold',
+      value: '5000',
+      description: 'Minimum order amount for free shipping',
     }
   ]);
 

@@ -20,6 +20,7 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [transactionId, setTransactionId] = useState("");
   const [paymentNumbers, setPaymentNumbers] = useState<any>({});
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(5000);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -58,6 +59,7 @@ export default function CartPage() {
           data.forEach((s: any) => {
               if (s.key === 'bkash_number') numbers.bkash = s.value;
               if (s.key === 'nagad_number') numbers.nagad = s.value;
+              if (s.key === 'free_shipping_threshold') setFreeShippingThreshold(parseFloat(s.value));
           });
           setPaymentNumbers(numbers);
       } catch (e) {}
@@ -87,8 +89,12 @@ export default function CartPage() {
 
   const calculateTotal = () => {
       let total = totalPrice();
+      
+      // Free shipping logic
+      const isFreeShipping = total >= freeShippingThreshold;
+      
       const delivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
-      if (delivery) total += parseFloat(delivery.amount);
+      if (delivery && !isFreeShipping) total += parseFloat(delivery.amount);
       
       if (appliedCoupon) {
           let discount = 0;
@@ -169,7 +175,11 @@ export default function CartPage() {
   }
 
   const selectedDelivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
-  const deliveryAmount = selectedDelivery ? parseFloat(selectedDelivery.amount) : 0;
+  const currentTotal = totalPrice();
+  const isFreeShipping = currentTotal >= freeShippingThreshold;
+  const deliveryAmount = isFreeShipping ? 0 : (selectedDelivery ? parseFloat(selectedDelivery.amount) : 0);
+  const amountToFreeShipping = Math.max(0, freeShippingThreshold - currentTotal);
+  const progressPercent = Math.min(100, (currentTotal / freeShippingThreshold) * 100);
   
   let discountAmount = 0;
   if (appliedCoupon) {
@@ -187,44 +197,62 @@ export default function CartPage() {
         
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Cart Items */}
-          <div className="flex-1 space-y-4">
-            {items.map((item) => (
-              <div key={`${item.id}-${item.variantId}`} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          <div className="flex-1 space-y-6">
+            {/* Free Shipping Progress */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                        {isFreeShipping ? "🎉 You've unlocked Free Shipping!" : `Add ৳${amountToFreeShipping} more for Free Shipping`}
+                    </span>
+                    <span className="text-xs font-bold text-sky-500">{Math.round(progressPercent)}%</span>
                 </div>
-                
-                <div className="flex-1 w-full text-center sm:text-left">
-                  <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{item.name}</h3>
-                  <p className="text-sky-500 font-bold text-xl">৳{item.price}</p>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div 
+                        className={`h-full rounded-full transition-all duration-500 ${isFreeShipping ? 'bg-emerald-500' : 'bg-sky-500'}`} 
+                        style={{ width: `${progressPercent}%` }}
+                    ></div>
                 </div>
+            </div>
 
-                <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
+            <div className="space-y-4">
+                {items.map((item) => (
+                <div key={`${item.id}-${item.variantId}`} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                    
+                    <div className="flex-1 w-full text-center sm:text-left">
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{item.name}</h3>
+                    <p className="text-sky-500 font-bold text-xl">৳{item.price}</p>
+                    </div>
+
+                    <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
+                            <button 
+                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)} 
+                                className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                            >
+                                -
+                            </button>
+                            <span className="font-bold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
+                            <button 
+                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)} 
+                                className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                            >
+                                +
+                            </button>
+                        </div>
                         <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)} 
-                            className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                            onClick={() => removeItem(item.id, item.variantId)} 
+                            className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
+                            title="Remove Item"
                         >
-                            -
-                        </button>
-                        <span className="font-bold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
-                        <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)} 
-                            className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
-                        >
-                            +
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </div>
-                    <button 
-                        onClick={() => removeItem(item.id, item.variantId)} 
-                        className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
-                        title="Remove Item"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
                 </div>
-              </div>
-            ))}
+                ))}
+            </div>
           </div>
 
           {/* Checkout Summary */}
@@ -239,7 +267,10 @@ export default function CartPage() {
                     </div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
                         <span>Delivery</span>
-                        <span className="font-medium">৳{deliveryAmount}</span>
+                        <span className={`font-medium ${isFreeShipping ? 'text-emerald-600 line-through' : ''}`}>
+                            ৳{selectedDelivery ? parseFloat(selectedDelivery.amount) : 0}
+                        </span>
+                        {isFreeShipping && <span className="text-emerald-600 font-bold">FREE</span>}
                     </div>
                     {appliedCoupon && (
                         <div className="flex justify-between text-green-600 font-medium">
