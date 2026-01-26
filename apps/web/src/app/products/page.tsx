@@ -34,24 +34,10 @@ export default function ProductsPage() {
     if (isInitial) setLoading(true);
     else setLoadingMore(true);
 
-    let url = `${API_URL}/products?page=${pageNum}&limit=12`; // Fetch 12 per page for better grid alignment
+    let url = `${API_URL}/products?page=${pageNum}&limit=12`;
     
-    const params = new URLSearchParams();
-    if (categoryId) params.append("category", categoryId);
-    
-    // Append existing params to url
     if (categoryId) url += `&category=${categoryId}`;
     
-    // Note: Backend search param might not be fully implemented in controller yet, 
-    // but we are filtering client side for now if backend returns all.
-    // However, with pagination, client side filtering is tricky. 
-    // Ideally backend should handle search. 
-    // Let's assume backend ignores search param for now and we filter client side? 
-    // No, that breaks pagination. 
-    // I will assume backend returns paginated data and I will append to list.
-    // If search is present, we might need to fetch all or backend needs search support.
-    // For now, let's just fetch and append.
-
     try {
       const res = await fetch(url);
       if (res.ok) {
@@ -67,14 +53,11 @@ export default function ProductsPage() {
             total = data.length;
         }
 
-        // Client-side search filtering (Temporary fix until backend search is robust)
         if (searchQuery) {
             const lowerQuery = searchQuery.toLowerCase();
             newProducts = newProducts.filter((p: any) => 
                 p.name.toLowerCase().includes(lowerQuery)
             );
-            // Note: This is imperfect with pagination as matches might be on next pages.
-            // But without backend search, it's the best we can do without fetching all.
         }
 
         if (isInitial) {
@@ -83,7 +66,6 @@ export default function ProductsPage() {
             setProducts(prev => [...prev, ...newProducts]);
         }
 
-        // Check if we have loaded all
         if (newProducts.length === 0 || (isInitial && newProducts.length < 12) || (products.length + newProducts.length >= total)) {
             setHasMore(false);
         } else {
@@ -184,9 +166,15 @@ export default function ProductsPage() {
                     <div key={product.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all relative">
                         <button 
                             onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-                            className={`absolute top-5 right-5 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-colors shadow-sm ${isWishlisted ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+                            className={`absolute top-5 right-5 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm ${
+                                isWishlisted 
+                                ? 'bg-rose-50 text-rose-500 scale-110' 
+                                : 'bg-white/80 text-slate-400 hover:bg-white hover:text-rose-500 hover:scale-110 dark:bg-slate-800/80 dark:text-slate-400'
+                            }`}
                         >
-                            {isWishlisted ? '♥' : '♡'}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
                         </button>
 
                         <div className="relative aspect-square sm:aspect-[3/4] overflow-hidden rounded-xl bg-[#f8f8f8] mb-3 dark:bg-slate-700">

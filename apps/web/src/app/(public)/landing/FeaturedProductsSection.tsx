@@ -98,14 +98,18 @@ export function FeaturedProductsSection({
                   />
                 </a>
                 
-                <div className="absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
-                  <button 
-                    onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-                    className={`w-7 h-7 rounded-lg bg-white/80 sm:bg-white shadow-lg flex items-center justify-center transition-colors backdrop-blur-sm ${isWishlisted ? 'text-rose-500' : 'text-sky-500 hover:bg-sky-500 hover:text-white dark:bg-slate-700/80 dark:text-sky-400'}`}
-                  >
-                    {isWishlisted ? '♥' : '♡'}
-                  </button>
-                </div>
+                <button 
+                  onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
+                  className={`absolute top-2 right-2 z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm ${
+                      isWishlisted 
+                      ? 'bg-rose-50 text-rose-500 scale-110' 
+                      : 'bg-white/80 text-slate-400 hover:bg-white hover:text-rose-500 hover:scale-110 dark:bg-slate-800/80 dark:text-slate-400'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </button>
               </div>
               
               <div className="flex flex-col flex-grow space-y-1.5">
