@@ -53,24 +53,28 @@ export class ReviewsService {
 
   async findAll(page: number = 1, limit: number = 10, status?: string) {
     const offset = (page - 1) * limit;
-    const query = this.knex('reviews')
+    
+    const baseQuery = this.knex('reviews')
         .join('users', 'reviews.user_id', 'users.id')
-        .join('products', 'reviews.product_id', 'products.id')
+        .join('products', 'reviews.product_id', 'products.id');
+
+    if (status) {
+        baseQuery.where('reviews.status', status);
+    }
+
+    const [countResult] = await baseQuery.clone().count('* as total');
+    const total = parseInt(countResult.total as string, 10);
+
+    const data = await baseQuery.clone()
         .select(
             'reviews.*',
             'users.name as user_name',
             'products.name as product_name',
             'products.images as product_image'
-        );
-
-    if (status) {
-        query.where('reviews.status', status);
-    }
-
-    const [countResult] = await query.clone().count('* as total');
-    const total = parseInt(countResult.total as string, 10);
-
-    const data = await query.limit(limit).offset(offset).orderBy('reviews.created_at', 'desc');
+        )
+        .limit(limit)
+        .offset(offset)
+        .orderBy('reviews.created_at', 'desc');
 
     return {
         data,

@@ -146,9 +146,10 @@ export default function CartPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         addToast("Order placed successfully!", "success");
         clearCart();
-        router.push("/");
+        router.push(`/thank-you?orderId=${data.id}`); // Redirect to Thank You page
       } else {
         const errorData = await res.json();
         console.error("Order error:", errorData);

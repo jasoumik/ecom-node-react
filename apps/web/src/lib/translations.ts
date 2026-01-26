@@ -94,6 +94,7 @@ export const translations = {
     // Cart
     shopping_cart: "Shopping Cart",
     your_cart_empty: "Your Cart is Empty",
+    start_shopping: "Start Shopping",
     order_summary: "Order Summary",
     subtotal: "Subtotal",
     delivery: "Delivery",
@@ -192,6 +193,7 @@ export const translations = {
     product_name_placeholder: "e.g. Specific Brand Diapers",
     description_optional: "Description (Optional)",
     description_placeholder: "Any specific details...",
+    submit_request: "Submit Request",
 
     // Login/Register
     welcome_back: "Welcome Back",
@@ -219,6 +221,13 @@ export const translations = {
     invalid_otp: "Invalid OTP",
     register_success: "Account created successfully!",
     register_failed: "Registration failed.",
+    
+    // Thank You Page
+    thank_you_title: "Thank You for Your Order!",
+    thank_you_subtitle: "We have received your order and will process it shortly.",
+    order_number: "Order Number",
+    continue_shopping: "Continue Shopping",
+    view_order: "View Order",
     
     // Common
     loading: "Loading...",
@@ -281,6 +290,7 @@ export const translations = {
     notify_when_available: "পণ্যটি স্টকে আসলে আমরা আপনাকে জানাব।",
     phone_number: "ফোন নম্বর",
     email_optional: "ইমেল (ঐচ্ছিক)",
+    submit_request: "অনুরোধ জমা দিন",
 
     // Bundles
     bundles_sets: "বান্ডেল এবং সেট",
@@ -387,6 +397,7 @@ export const translations = {
     join_family: "পৃথিবী পরিবারে যোগ দিন",
     join_family_subtitle: "প্রশ্ন বা পরামর্শ আছে? আমরা আপনার কথা শুনতে চাই।",
     contact_us: "যোগাযোগ করুন",
+    start_shopping: "কেনাকাটা শুরু করুন",
 
     // Contact
     contact_hero_subtitle: "আমরা সাহায্য করতে এখানে আছি। যেকোনো প্রশ্ন, সহায়তা বা মতামতের জন্য আমাদের সাথে যোগাযোগ করুন।",
@@ -445,6 +456,13 @@ export const translations = {
     invalid_otp: "ভুল ওটিপি",
     register_success: "অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!",
     register_failed: "নিবন্ধন ব্যর্থ হয়েছে।",
+    
+    // Thank You Page
+    thank_you_title: "আপনার অর্ডারের জন্য ধন্যবাদ!",
+    thank_you_subtitle: "আমরা আপনার অর্ডার পেয়েছি এবং শীঘ্রই এটি প্রক্রিয়া করব।",
+    order_number: "অর্ডার নম্বর",
+    continue_shopping: "কেনাকাটা চালিয়ে যান",
+    view_order: "অর্ডার দেখুন",
 
     // Common
     loading: "লোড হচ্ছে...",

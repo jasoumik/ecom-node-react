@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { API_URL } from "./config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,4 +20,25 @@ export function getLocalizedField(obj: any, field: string, language: 'en' | 'bn'
     return obj[`${field}_bn`] || obj[field] || '';
   }
   return obj[field] || '';
+}
+
+export function getImageUrl(url: string) {
+  if (!url) return "https://picsum.photos/seed/default/800/800";
+  if (url.startsWith("http") || url.startsWith("https")) {
+    return url;
+  }
+  
+  // Remove /api suffix if present
+  let baseUrl = API_URL.replace(/\/api\/?$/, '');
+  
+  // FORCE port 3001 for local development if it's pointing to 3000
+  // This handles the case where API_URL is set to 3000 (frontend) but files are on 3001 (backend)
+  if (baseUrl.includes('localhost:3000') || baseUrl.includes('127.0.0.1:3000')) {
+      baseUrl = baseUrl.replace('3000', '3001');
+  }
+  
+  // Ensure url starts with /
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  
+  return `${baseUrl}${cleanPath}`;
 }

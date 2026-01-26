@@ -11,7 +11,8 @@ import { FullScreenLoader } from "@/components/ui/Loader";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
-import { getLocalizedField } from "@/lib/utils";
+import { getLocalizedField, getImageUrl } from "@/lib/utils";
+import { FlagIcon } from "@/components/ui/FlagIcon";
 
 export default function ProductPage() {
   const params = useParams();
@@ -172,11 +173,11 @@ export default function ProductPage() {
 
     let imageUrl = "https://picsum.photos/seed/default/800/800";
     if (Array.isArray(product.images) && product.images.length > 0) {
-        imageUrl = product.images[0];
+        imageUrl = getImageUrl(product.images[0]);
     } else if (typeof product.images === 'string') {
         try {
             const parsed = JSON.parse(product.images);
-            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = getImageUrl(parsed[0]);
         } catch (e) {}
     }
 
@@ -308,7 +309,7 @@ export default function ProductPage() {
             >
               {isVideo(selectedMedia) ? (
                   <video 
-                    src={selectedMedia} 
+                    src={getImageUrl(selectedMedia)} 
                     controls 
                     className="w-full h-full object-cover"
                     autoPlay 
@@ -320,7 +321,7 @@ export default function ProductPage() {
                     <div 
                         className="w-full h-full"
                         style={{
-                            backgroundImage: `url(${selectedMedia})`,
+                            backgroundImage: `url(${getImageUrl(selectedMedia)})`,
                             backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
                             backgroundSize: isZoomed ? '200%' : 'cover',
                             backgroundRepeat: 'no-repeat',
@@ -328,7 +329,7 @@ export default function ProductPage() {
                         }}
                     />
                     <img 
-                        src={selectedMedia} 
+                        src={getImageUrl(selectedMedia)} 
                         alt={getLocalizedField(product, 'name', language)} 
                         className={`w-full h-full object-cover absolute inset-0 pointer-events-none ${isZoomed ? 'opacity-0' : 'opacity-100'}`} 
                     />
@@ -350,11 +351,11 @@ export default function ProductPage() {
                         {isVideo(media) ? (
                             <div className="w-full h-full relative flex items-center justify-center bg-black">
                                 <span className="text-white text-xl">▶</span>
-                                <video src={media} className="absolute inset-0 w-full h-full object-cover opacity-50" />
+                                <video src={getImageUrl(media)} className="absolute inset-0 w-full h-full object-cover opacity-50" />
                             </div>
                         ) : (
                             <ResponsiveImage 
-                                src={media} 
+                                src={getImageUrl(media)} 
                                 alt={`${getLocalizedField(product, 'name', language)} ${i+1}`} 
                                 width={200} 
                                 height={200} 
@@ -371,7 +372,7 @@ export default function ProductPage() {
           <div className="space-y-8">
             <div>
               <div className="flex justify-between items-start">
-                  <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{getLocalizedField(product, 'category', language)}</div>
+                  <div className="text-sm font-bold text-sky-500 uppercase tracking-wider mb-2">{getLocalizedField(product, 'category_name', language)}</div>
                   <div className="flex gap-2">
                       <button onClick={handleShare} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
@@ -379,7 +380,15 @@ export default function ProductPage() {
                       {product.country_id && (
                         <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t('product_of')} {getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
-                            {product.country_flag && <img src={product.country_flag} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />}
+                            {product.country_flag && (
+                                product.country_flag.startsWith('http') || product.country_flag.startsWith('/') ? (
+                                    <img src={getImageUrl(product.country_flag)} alt="Flag" className="w-5 h-3 object-cover rounded-sm" />
+                                ) : (
+                                    <div className="w-5 h-3 overflow-hidden rounded-sm">
+                                        <FlagIcon code={product.country_flag} className="w-full h-full" />
+                                    </div>
+                                )
+                            )}
                         </div>
                       )}
                   </div>
@@ -527,7 +536,7 @@ export default function ProductPage() {
                         let imageUrl = "https://picsum.photos/seed/default/800/800";
                         try {
                             const parsed = JSON.parse(p.images);
-                            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+                            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = getImageUrl(parsed[0]);
                         } catch (e) {}
                         
                         return (
@@ -572,7 +581,7 @@ export default function ProductPage() {
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
                                         {review.user_avatar ? (
-                                            <img src={review.user_avatar} alt={review.user_name} className="w-full h-full object-cover" />
+                                            <img src={getImageUrl(review.user_avatar)} alt={review.user_name} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">
                                                 {review.user_name?.charAt(0)}
@@ -595,7 +604,7 @@ export default function ProductPage() {
                                 <div className="flex gap-2">
                                     {JSON.parse(review.images).map((img: string, i: number) => (
                                         <div key={i} className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
-                                            <ResponsiveImage src={img} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
+                                            <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
                                         </div>
                                     ))}
                                 </div>

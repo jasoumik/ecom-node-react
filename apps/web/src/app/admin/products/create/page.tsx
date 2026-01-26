@@ -91,15 +91,15 @@ export default function CreateProductPage() {
                 
                 <div className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-6">
-                        <Input label="Product Name (English)" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50" />
-                        <Input label="Product Name (Bangla)" value={newProduct.name_bn} onChange={e => setNewProduct({...newProduct, name_bn: e.target.value})} className="bg-slate-50/50" />
+                        <Input label="Product Name (English)" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+                        <Input label="Product Name (Bangla)" value={newProduct.name_bn} onChange={e => setNewProduct({...newProduct, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                     </div>
                     
                     <div className="grid md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
                             <textarea 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
                             value={newProduct.description} 
                             onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
                             required 
@@ -109,7 +109,7 @@ export default function CreateProductPage() {
                         <div>
                             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
                             <textarea 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
                             value={newProduct.description_bn} 
                             onChange={e => setNewProduct({...newProduct, description_bn: e.target.value})} 
                             rows={4}
@@ -122,21 +122,21 @@ export default function CreateProductPage() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Pricing & Inventory</h3>
                 <div className="grid grid-cols-2 gap-4">
-                    <Input label="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required className="bg-slate-50/50" />
-                    <Input label="Old Price" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} className="bg-slate-50/50" />
-                    <Input label="Cost Price" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} className="bg-slate-50/50" />
-                    <Input label="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required className="bg-slate-50/50" />
-                    <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} className="bg-slate-50/50" />
+                    <Input label="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Old Price" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Cost Price" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                 </div>
             </div>
 
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Attributes</h3>
                 <div className="grid grid-cols-2 gap-4">
-                    <Input label="Size" placeholder="e.g. M, L, XL" value={newProduct.size} onChange={e => setNewProduct({...newProduct, size: e.target.value})} className="bg-slate-50/50" />
-                    <Input label="Weight" placeholder="e.g. 500g" value={newProduct.weight} onChange={e => setNewProduct({...newProduct, weight: e.target.value})} className="bg-slate-50/50" />
-                    <Input label="Color" placeholder="e.g. Red" value={newProduct.color} onChange={e => setNewProduct({...newProduct, color: e.target.value})} className="bg-slate-50/50" />
-                    <Input label="Material" placeholder="e.g. Cotton" value={newProduct.material} onChange={e => setNewProduct({...newProduct, material: e.target.value})} className="bg-slate-50/50" />
+                    <Input label="Size" placeholder="e.g. M, L, XL" value={newProduct.size} onChange={e => setNewProduct({...newProduct, size: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Weight" placeholder="e.g. 500g" value={newProduct.weight} onChange={e => setNewProduct({...newProduct, weight: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Color" placeholder="e.g. Red" value={newProduct.color} onChange={e => setNewProduct({...newProduct, color: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Material" placeholder="e.g. Cotton" value={newProduct.material} onChange={e => setNewProduct({...newProduct, material: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                 </div>
             </div>
         </div>
@@ -149,7 +149,7 @@ export default function CreateProductPage() {
                     <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
                         <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
                             value={newProduct.category_id}
                             onChange={e => setNewProduct({...newProduct, category_id: e.target.value})}
                             required
@@ -165,7 +165,7 @@ export default function CreateProductPage() {
                     <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Country of Origin</label>
                         <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
                             value={newProduct.country_id}
                             onChange={e => setNewProduct({...newProduct, country_id: e.target.value})}
                         >

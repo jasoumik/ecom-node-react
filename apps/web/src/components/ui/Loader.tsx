@@ -14,7 +14,6 @@ export function Loader() {
         
         {/* Heart Center */}
         <div className="absolute inset-0 flex items-center justify-center animate-pulse">
-          <span className="text-2xl">💙</span>
         </div>
       </div>
       <p className="text-sky-500 font-bold text-sm animate-pulse">Loading...</p>

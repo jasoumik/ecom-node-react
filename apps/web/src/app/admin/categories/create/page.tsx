@@ -80,14 +80,14 @@ export default function CreateCategoryPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Name (English)" value={newCategory.name} onChange={e => setNewCategory({...newCategory, name: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="Name (Bangla)" value={newCategory.name_bn} onChange={e => setNewCategory({...newCategory, name_bn: e.target.value})} className="bg-slate-50/50" />
+            <Input label="Name (English)" value={newCategory.name} onChange={e => setNewCategory({...newCategory, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+            <Input label="Name (Bangla)" value={newCategory.name_bn} onChange={e => setNewCategory({...newCategory, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
           </div>
           
           <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Parent Category</label>
               <select 
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
                   value={newCategory.parent_id}
                   onChange={e => setNewCategory({...newCategory, parent_id: e.target.value})}
               >
@@ -104,7 +104,7 @@ export default function CreateCategoryPage() {
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image</label>
             <div className="flex gap-2">
                 <Input 
-                    className="flex-1 bg-slate-50/50 text-sm" 
+                    className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
                     value={newCategory.image} 
                     onChange={e => setNewCategory({...newCategory, image: e.target.value})} 
                     placeholder="Image URL..."
@@ -117,7 +117,7 @@ export default function CreateCategoryPage() {
             <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
                 <textarea 
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
                 value={newCategory.description} 
                 onChange={e => setNewCategory({...newCategory, description: e.target.value})} 
                 rows={3}
@@ -126,7 +126,7 @@ export default function CreateCategoryPage() {
             <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
                 <textarea 
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
                 value={newCategory.description_bn} 
                 onChange={e => setNewCategory({...newCategory, description_bn: e.target.value})} 
                 rows={3}
