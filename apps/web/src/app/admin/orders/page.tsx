@@ -8,9 +8,12 @@ import { useToast } from "@/components/ui/Toast";
 import { Table } from "@/components/ui/Table";
 import { FilterBar } from "@/components/ui/FilterBar";
 
+const STATUS_OPTIONS = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -19,10 +22,16 @@ export default function AdminOrdersPage() {
   }, []);
 
   const fetchOrders = async () => {
-    const res = await fetch(`${API_URL}/orders`);
-    const data = await res.json();
-    setOrders(data);
-    setFilteredOrders(data);
+    try {
+        const res = await fetch(`${API_URL}/orders`);
+        const data = await res.json();
+        setOrders(data);
+        setFilteredOrders(data);
+    } catch (e) {
+        setOrders([]);
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleSearch = (query: string) => {
@@ -70,65 +79,70 @@ export default function AdminOrdersPage() {
 
       <FilterBar onSearch={handleSearch} placeholder="Search orders..." />
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <tr>
-                <th className="px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">ID</th>
-                <th className="px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">Source</th>
-                <th className="px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">Customer</th>
-                <th className="px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                {filteredOrders.length === 0 ? (
-                    <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-slate-500 text-xs">No orders found.</td>
-                    </tr>
-                ) : (
-                    filteredOrders.map((order) => (
-                    <tr key={order.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300 text-xs">#{order.order_number}</td>
-                        <td className="px-4 py-3">
-                            <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                                {order.order_source || 'Website'}
-                            </span>
-                        </td>
-                        <td className="px-4 py-3">
-                        <div className="font-bold text-slate-900 dark:text-white text-xs">{order.customer_name}</div>
-                        <div className="text-[10px] text-slate-500">{order.customer_phone}</div>
-                        </td>
-                        <td className="px-4 py-3 font-bold text-slate-900 dark:text-white text-xs">৳{order.total_amount}</td>
-                        <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold capitalize tracking-wide ${
-                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
-                            order.status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
-                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                        }`}>
-                            {order.status}
-                        </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                        {order.status === 'pending' && (
-                            <button 
-                            onClick={() => handleStatusUpdate(order.id, 'completed')}
-                            className="p-1.5 rounded text-emerald-600 hover:bg-emerald-50 transition-colors"
-                            title="Mark as Completed"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            </button>
-                        )}
-                        </td>
-                    </tr>
-                    ))
-                )}
-            </tbody>
-            </table>
-        </div>
-      </div>
+      <Table
+        data={filteredOrders}
+        columns={[
+          {
+            header: "ID",
+            cell: (order) => <span className="font-medium text-slate-700 dark:text-slate-300 text-xs">#{order.order_number}</span>
+          },
+          {
+            header: "Source",
+            cell: (order) => (
+                <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                    {order.order_source || 'Website'}
+                </span>
+            )
+          },
+          {
+            header: "Customer",
+            cell: (order) => (
+                <div>
+                    <div className="font-bold text-slate-900 dark:text-white text-xs">{order.customer_name}</div>
+                    <div className="text-[10px] text-slate-500">{order.customer_phone}</div>
+                </div>
+            )
+          },
+          {
+            header: "Total",
+            cell: (order) => <span className="font-bold text-slate-900 dark:text-white text-xs">৳{order.total_amount}</span>
+          },
+          {
+            header: "Status",
+            cell: (order) => (
+                <select
+                    value={order.status}
+                    onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                    className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded border-none focus:ring-0 cursor-pointer ${
+                        order.status === 'completed' || order.status === 'delivered' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                        order.status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
+                        order.status === 'cancelled' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                        'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+                >
+                    {STATUS_OPTIONS.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                    ))}
+                </select>
+            )
+          },
+          {
+            header: "Actions",
+            className: "text-right",
+            cell: (order) => (
+              <div className="flex justify-end gap-1">
+                  <button 
+                    onClick={() => router.push(`/profile/orders/${order.id}`)} // Reusing public invoice view for now
+                    className="p-1.5 rounded text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition-colors"
+                    title="View Invoice"
+                  >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+              </div>
+            )
+          }
+        ]}
+      />
     </div>
   );
 }

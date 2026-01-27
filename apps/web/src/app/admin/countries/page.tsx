@@ -8,6 +8,8 @@ import { useToast } from "@/components/ui/Toast";
 import { Table } from "@/components/ui/Table";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { FilterBar } from "@/components/ui/FilterBar";
+import { FlagIcon } from "@/components/ui/FlagIcon";
+import { getImageUrl } from "@/lib/utils";
 
 export default function AdminCountriesPage() {
   const [countries, setCountries] = useState<any[]>([]);
@@ -40,10 +42,7 @@ export default function AdminCountriesPage() {
           return;
       }
       const lower = query.toLowerCase();
-      setFilteredCountries(countries.filter(c => 
-          c.name.toLowerCase().includes(lower) || 
-          c.code.toLowerCase().includes(lower)
-      ));
+      setFilteredCountries(countries.filter(c => c.name.toLowerCase().includes(lower) || c.code.toLowerCase().includes(lower)));
   };
 
   const handleDelete = async (id: string) => {
@@ -83,13 +82,11 @@ export default function AdminCountriesPage() {
           {
             header: "Flag",
             cell: (country) => (
-              <div className="w-8 h-6 rounded overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
-                {country.flag ? (
-                    <img src={country.flag} alt={country.name} className="w-full h-full object-cover" />
+              <div className="w-10 h-6 rounded overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700">
+                {country.flag && (country.flag.startsWith('http') || country.flag.startsWith('/')) ? (
+                    <img src={getImageUrl(country.flag)} alt={country.name} className="w-full h-full object-cover" />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px] font-bold">
-                        {country.code}
-                    </div>
+                    <FlagIcon code={country.flag || country.code} className="w-full h-full" />
                 )}
               </div>
             )
@@ -101,8 +98,7 @@ export default function AdminCountriesPage() {
           },
           {
             header: "Code",
-            accessorKey: "code",
-            className: "text-slate-600 dark:text-slate-300 text-xs font-mono"
+            cell: (country) => <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{country.code}</span>
           },
           {
             header: "Status",

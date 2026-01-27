@@ -6,6 +6,8 @@ import { Button, Heading, Text } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { useLanguage } from "@/lib/language-context";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -14,8 +16,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const { addToast } = useToast();
+  const { t } = useLanguage();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
@@ -25,15 +28,17 @@ export default function RegisterPage() {
       });
       
       if (res.ok) {
-        addToast("Registration successful! Please login.", "success");
-        router.push("/login");
-      } else {
         const data = await res.json();
-        addToast(data.message || "Registration failed", "error");
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.dispatchEvent(new Event("storage"));
+        addToast(t('register_success'), "success");
+        router.push("/");
+      } else {
+        addToast(t('register_failed'), "error");
       }
     } catch (error) {
-      console.error(error);
-      addToast("Error registering", "error");
+      addToast(t('error'), "error");
     }
   };
 
@@ -41,21 +46,21 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700">
         <div className="text-center mb-8">
-          <Heading className="text-3xl font-serif text-slate-900 dark:text-white mb-2">Join Prithibee</Heading>
-          <Text className="text-slate-500 dark:text-slate-400">Create an account to start your journey.</Text>
+          <Heading className="text-3xl font-serif text-slate-900 dark:text-white mb-2">{t('create_account_title')}</Heading>
+          <Text className="text-slate-500 dark:text-slate-400">{t('create_account_subtitle')}</Text>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        
+        <form onSubmit={handleRegister} className="space-y-6">
           <Input
-            label="Full Name"
+            label={t('full_name')}
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
+            placeholder={t('full_name_placeholder')}
             required
           />
           <Input
-            label="Phone Number (Required)"
+            label={t('phone_number')}
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -63,28 +68,30 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Email Address (Optional)"
+            label={t('email_address')}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
+            required
           />
           <Input
-            label="Password"
+            label={t('password')}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder={t('password_placeholder')}
             required
           />
+          
           <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
-            Create Account
+            {t('register')}
           </Button>
         </form>
         
         <div className="mt-8 text-center">
             <Text className="text-slate-500 dark:text-slate-400">
-              Already have an account? <a href="/login" className="text-sky-600 font-bold hover:text-sky-700 hover:underline dark:text-sky-400">Sign in</a>
+              {t('already_have_account')} <Link href="/login" className="text-sky-600 font-bold hover:text-sky-700 hover:underline dark:text-sky-400">{t('login')}</Link>
             </Text>
         </div>
       </div>

@@ -13,21 +13,45 @@ export class ProductsService {
     private readonly requestsService: RequestsService
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10, categoryId?: string): Promise<any> {
+  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string): Promise<any> {
     const offset = (page - 1) * limit;
     
-    const countQuery = this.knex('products');
+    const baseQuery = this.knex('products');
     if (categoryId) {
-      countQuery.where({ category_id: categoryId });
+      baseQuery.where({ category_id: categoryId });
     }
-    const [countResult] = await countQuery.count('* as total');
+    if (search) {
+        baseQuery.where('name', 'ilike', `%${search}%`);
+    }
+
+    const [countResult] = await baseQuery.clone().count('* as total');
     const total = parseInt(countResult.total as string, 10);
 
-    const dataQuery = this.knex('products').select('*');
-    if (categoryId) {
-      dataQuery.where({ category_id: categoryId });
-    }
-    const data = await dataQuery.limit(limit).offset(offset).orderBy('created_at', 'desc');
+    const products = await baseQuery.clone().select('*').limit(limit).offset(offset).orderBy('created_at', 'desc');
+
+    // Fetch ratings for these products
+    const productIds = products.map(p => p.id);
+    const ratings = await this.knex('reviews')
+        .whereIn('product_id', productIds)
+        .where('status', 'approved')
+        .select('product_id')
+        .count('* as count')
+        .avg('rating as average')
+        .groupBy('product_id');
+
+    const ratingsMap = ratings.reduce((acc, r) => {
+        acc[r.product_id] = {
+            count: parseInt(r.count as string, 10),
+            average: parseFloat(r.average as string).toFixed(1)
+        };
+        return acc;
+    }, {});
+
+    const data = products.map(p => ({
+        ...p,
+        reviewCount: ratingsMap[p.id]?.count || 0,
+        rating: ratingsMap[p.id]?.average || 0
+    }));
 
     return {
       data,
@@ -45,7 +69,20 @@ export class ProductsService {
   }
 
   async findOne(id: string): Promise<any> {
-    const product = await this.knex('products').where({ id }).first();
+    const product = await this.knex('products')
+        .leftJoin('countries', 'products.country_id', 'countries.id')
+        .leftJoin('categories', 'products.category_id', 'categories.id')
+        .select(
+            'products.*',
+            'countries.name as country_name',
+            'countries.name_bn as country_name_bn',
+            'countries.flag as country_flag',
+            'categories.name as category_name',
+            'categories.name_bn as category_name_bn'
+        )
+        .where('products.id', id)
+        .first();
+
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
@@ -118,6 +155,16 @@ export class ProductsService {
         updated_at, 
         // @ts-ignore
         id: _id,
+        // @ts-ignore
+        country_name,
+        // @ts-ignore
+        country_name_bn,
+        // @ts-ignore
+        country_flag,
+        // @ts-ignore
+        category_name,
+        // @ts-ignore
+        category_name_bn,
         ...updateData 
     } = updateProductDto as any;
 
@@ -221,10 +268,12 @@ export class ProductsService {
   async getAllBatches(page: number = 1, limit: number = 20): Promise<any> {
     const offset = (page - 1) * limit;
     
-    const [countResult] = await this.knex('product_batches').count('* as total');
+    const baseQuery = this.knex('product_batches');
+    
+    const [countResult] = await baseQuery.clone().count('* as total');
     const total = parseInt(countResult.total as string, 10);
 
-    const data = await this.knex('product_batches')
+    const data = await baseQuery
         .join('products', 'product_batches.product_id', 'products.id')
         .select(
             'product_batches.*',
@@ -266,21 +315,21 @@ export class ProductsService {
   async getStockMovements(page: number = 1, limit: number = 20, productId?: string): Promise<any> {
       const offset = (page - 1) * limit;
       
-      const query = this.knex('stock_movements')
+      const baseQuery = this.knex('stock_movements');
+        
+      if (productId) {
+          baseQuery.where('stock_movements.product_id', productId);
+      }
+      
+      const [countResult] = await baseQuery.clone().count('* as total');
+      const total = parseInt(countResult.total as string, 10);
+      
+      const data = await baseQuery
         .join('products', 'stock_movements.product_id', 'products.id')
         .select(
             'stock_movements.*',
             'products.name as product_name'
-        );
-        
-      if (productId) {
-          query.where('stock_movements.product_id', productId);
-      }
-      
-      const [countResult] = await query.clone().count('* as total');
-      const total = parseInt(countResult.total as string, 10);
-      
-      const data = await query
+        )
         .limit(limit)
         .offset(offset)
         .orderBy('stock_movements.created_at', 'desc');

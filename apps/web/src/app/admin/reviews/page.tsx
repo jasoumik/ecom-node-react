@@ -8,6 +8,7 @@ import { Table } from "@/components/ui/Table";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { RatingStars } from "@repo/ui";
+import { getImageUrl } from "@/lib/utils";
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -86,6 +87,17 @@ export default function AdminReviewsPage() {
     }
   };
 
+  const getProductImage = (imageStr: string) => {
+      if (!imageStr) return "https://picsum.photos/seed/default/800/800";
+      try {
+          const parsed = JSON.parse(imageStr);
+          if (Array.isArray(parsed) && parsed.length > 0) return getImageUrl(parsed[0]);
+          return getImageUrl(imageStr); // Fallback if parse works but not array (unlikely)
+      } catch (e) {
+          return getImageUrl(imageStr); // It's a plain string URL
+      }
+  };
+
   if (loading && reviews.length === 0) return <FullScreenLoader />;
 
   return (
@@ -105,13 +117,11 @@ export default function AdminReviewsPage() {
             cell: (review) => (
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-slate-100 overflow-hidden shrink-0">
-                        {review.product_image && (
-                            <img 
-                                src={JSON.parse(review.product_image)[0]} 
-                                alt={review.product_name} 
-                                className="w-full h-full object-cover" 
-                            />
-                        )}
+                        <img 
+                            src={getProductImage(review.product_image)} 
+                            alt={review.product_name} 
+                            className="w-full h-full object-cover" 
+                        />
                     </div>
                     <div className="font-bold text-slate-900 dark:text-white text-xs max-w-[150px] truncate" title={review.product_name}>
                         {review.product_name}
@@ -126,7 +136,7 @@ export default function AdminReviewsPage() {
           },
           {
             header: "Rating",
-            cell: (review) => <RatingStars rating={review.rating} />
+            cell: (review) => <RatingStars rating={review.rating} size="sm" />
           },
           {
             header: "Comment",

@@ -49,24 +49,42 @@ export async function seed(knex: Knex): Promise<void> {
   ]).returning('id');
 
   // Insert Categories
-  const [diapers] = await knex('categories').insert({ name: 'Diapers & Wipes', image: 'https://picsum.photos/seed/diapers/800/800' }).returning('id');
-  const [skincare] = await knex('categories').insert({ name: 'Skincare', image: 'https://picsum.photos/seed/skincare/800/800' }).returning('id');
-  const [feeding] = await knex('categories').insert({ name: 'Feeding', image: 'https://picsum.photos/seed/feeding/800/800' }).returning('id');
-  const [clothing] = await knex('categories').insert({ name: 'Clothing', image: 'https://picsum.photos/seed/clothing/800/800' }).returning('id');
+  const [diapers] = await knex('categories').insert({ 
+      name: 'Diapers & Wipes', 
+      name_bn: 'ডায়াপার এবং ওয়াইপস',
+      image: 'https://picsum.photos/seed/diapers/800/800' 
+  }).returning('id');
+  const [skincare] = await knex('categories').insert({ 
+      name: 'Skincare', 
+      name_bn: 'স্কিনকেয়ার',
+      image: 'https://picsum.photos/seed/skincare/800/800' 
+  }).returning('id');
+  const [feeding] = await knex('categories').insert({ 
+      name: 'Feeding', 
+      name_bn: 'ফিডিং',
+      image: 'https://picsum.photos/seed/feeding/800/800' 
+  }).returning('id');
+  const [clothing] = await knex('categories').insert({ 
+      name: 'Clothing', 
+      name_bn: 'পোশাক',
+      image: 'https://picsum.photos/seed/clothing/800/800' 
+  }).returning('id');
 
   // Insert Brands
-  const [huggies] = await knex('brands').insert({ name: 'Huggies', logo: 'https://picsum.photos/seed/huggies/200/200' }).returning('id');
-  const [johnsons] = await knex('brands').insert({ name: 'Johnsons', logo: 'https://picsum.photos/seed/johnsons/200/200' }).returning('id');
+  const [huggies] = await knex('brands').insert({ name: 'Huggies', name_bn: 'হাগিস', logo: 'https://picsum.photos/seed/huggies/200/200' }).returning('id');
+  const [johnsons] = await knex('brands').insert({ name: 'Johnsons', name_bn: 'জনসনস', logo: 'https://picsum.photos/seed/johnsons/200/200' }).returning('id');
 
   // Insert Countries
-  const [bangladesh] = await knex('countries').insert({ name: 'Bangladesh', code: 'BD' }).returning('id');
-  const [usa] = await knex('countries').insert({ name: 'United States', code: 'US' }).returning('id');
+  const [bangladesh] = await knex('countries').insert({ name: 'Bangladesh', name_bn: 'বাংলাদেশ', code: 'BD' }).returning('id');
+  const [usa] = await knex('countries').insert({ name: 'United States', name_bn: 'যুক্তরাষ্ট্র', code: 'US' }).returning('id');
 
   // Insert Products with Variants
   const productsData = [
     {
       name: 'Premium Soft Diapers',
+      name_bn: 'প্রিমিয়াম সফট ডায়াপার',
       description: 'Ultra-soft, absorbent diapers for sensitive skin. Leak-proof protection for up to 12 hours.',
+      description_bn: 'সংবেদনশীল ত্বকের জন্য আল্ট্রা-সফট, শোষক ডায়াপার। ১২ ঘণ্টা পর্যন্ত লিক-প্রুফ সুরক্ষা।',
       price: 3200.00,
       old_price: 3500.00,
       cost_price: 2500.00,
@@ -80,7 +98,9 @@ export async function seed(knex: Knex): Promise<void> {
     },
     {
       name: 'Organic Cotton Onesie Set',
+      name_bn: 'অর্গানিক কটন ওয়ানসি সেট',
       description: 'Soft, breathable organic cotton onesies in pastel colors.',
+      description_bn: 'প্যাস্টেল রঙে নরম, আরামদায়ক অর্গানিক কটন ওয়ানসি।',
       price: 2500.00,
       category_id: clothing.id,
       country_id: bangladesh.id,
@@ -91,7 +111,9 @@ export async function seed(knex: Knex): Promise<void> {
     },
     {
       name: 'Organic Baby Lotion',
+      name_bn: 'অর্গানিক বেবি লোশন',
       description: 'Gentle moisturizing lotion with aloe and chamomile. Keeps skin soft and hydrated.',
+      description_bn: 'অ্যালো এবং ক্যামোমাইল সহ জেন্টল ময়েশ্চারাইজিং লোশন। ত্বক নরম এবং হাইড্রেটেড রাখে।',
       price: 1800.00,
       cost_price: 1200.00,
       category_id: skincare.id,
@@ -104,7 +126,9 @@ export async function seed(knex: Knex): Promise<void> {
     },
     {
       name: 'Silicone Feeding Set',
+      name_bn: 'সিলিকন ফিডিং সেট',
       description: 'BPA-free silicone bowl, spoon, and bib set. Suction base prevents spills.',
+      description_bn: 'বিপিএ-মুক্ত সিলিকন বাটি, চামচ এবং বিব সেট। সাকশন বেস ছিটকে পড়া রোধ করে।',
       price: 2800.00,
       old_price: 3200.00,
       cost_price: 2000.00,
@@ -154,6 +178,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('banners').insert([
     {
       title: 'Summer Sale',
+      title_bn: 'গ্রীষ্মকালীন সেল',
       image: 'https://picsum.photos/seed/banner1/1200/400',
       link: '/products',
       is_active: true,
@@ -161,6 +186,7 @@ export async function seed(knex: Knex): Promise<void> {
     },
     {
       title: 'New Arrivals',
+      title_bn: 'নতুন কালেকশন',
       image: 'https://picsum.photos/seed/banner2/1200/400',
       link: '/products?sort=new',
       is_active: true,
@@ -170,9 +196,9 @@ export async function seed(knex: Knex): Promise<void> {
 
   // Insert Delivery Charges
   await knex('delivery_charges').insert([
-    { name: 'Inside Dhaka', amount: 60.00 },
-    { name: 'Outside Dhaka Metro', amount: 100.00 },
-    { name: 'Outside Dhaka', amount: 130.00 },
+    { name: 'Inside Dhaka', name_bn: 'ঢাকার ভিতরে', amount: 60.00 },
+    { name: 'Outside Dhaka Metro', name_bn: 'ঢাকা মেট্রোর বাইরে', amount: 100.00 },
+    { name: 'Outside Dhaka', name_bn: 'ঢাকার বাইরে', amount: 130.00 },
   ]);
 
   // Insert Coupons
@@ -184,9 +210,34 @@ export async function seed(knex: Knex): Promise<void> {
   // Insert Settings
   await knex('settings').insert([
     {
+      key: 'inventory_method',
+      value: 'FIFO',
+      description: 'Inventory valuation method: FIFO or LIFO',
+    },
+    {
+      key: 'bkash_number',
+      value: '01700000000',
+      description: 'Bkash Merchant/Personal Number',
+    },
+    {
+      key: 'nagad_number',
+      value: '01700000000',
+      description: 'Nagad Merchant/Personal Number',
+    },
+    {
+      key: 'free_shipping_threshold',
+      value: '5000',
+      description: 'Minimum order amount for free shipping',
+    },
+    {
       key: 'shop_name',
       value: 'Prithibee',
       description: 'Name of the shop displayed in header/footer',
+    },
+    {
+      key: 'shop_name_bn',
+      value: 'পৃথিবী',
+      description: 'Name of the shop in Bangla',
     },
     {
       key: 'shop_phone',
@@ -207,26 +258,6 @@ export async function seed(knex: Knex): Promise<void> {
       key: 'whatsapp_number',
       value: '+8801616684803',
       description: 'WhatsApp number for chat button',
-    },
-    {
-      key: 'inventory_method',
-      value: 'FIFO',
-      description: 'Inventory valuation method: FIFO or LIFO',
-    },
-    {
-      key: 'bkash_number',
-      value: '01700000000',
-      description: 'Bkash Merchant/Personal Number',
-    },
-    {
-      key: 'nagad_number',
-      value: '01700000000',
-      description: 'Nagad Merchant/Personal Number',
-    },
-    {
-      key: 'free_shipping_threshold',
-      value: '5000',
-      description: 'Minimum order amount for free shipping',
     }
   ]);
 
@@ -234,19 +265,25 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('promises').insert([
     {
       title: 'Expertly Curated',
+      title_bn: 'বিশেষজ্ঞ দ্বারা বাছাইকৃত',
       description: 'Every product is vetted by pediatricians and moms.',
+      description_bn: 'প্রতিটি পণ্য শিশু বিশেষজ্ঞ এবং মায়েদের দ্বারা পরীক্ষিত।',
       icon: '🛡️',
       order: 1
     },
     {
       title: 'Same-Day Delivery',
+      title_bn: 'সেম-ডে ডেলিভারি',
       description: 'Order by 2PM and get it today. Because babies can\'t wait.',
+      description_bn: 'দুপুর ২টার মধ্যে অর্ডার করুন এবং আজই পান।',
       icon: '🌱',
       order: 2
     },
     {
       title: '24/7 Parent Support',
+      title_bn: '২৪/৭ প্যারেন্ট সাপোর্ট',
       description: 'Questions? Chat with our experts anytime.',
+      description_bn: 'প্রশ্ন আছে? আমাদের বিশেষজ্ঞদের সাথে চ্যাট করুন।',
       icon: '🤝',
       order: 3
     }

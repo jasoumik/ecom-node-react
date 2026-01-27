@@ -10,14 +10,16 @@ export class CreateVariantDto {
 
 export class CreateProductDto {
   name: string;
+  name_bn?: string; // Added Bangla Name
   description: string;
+  description_bn?: string; // Added Bangla Description
   price: number;
   old_price?: number;
   cost_price?: number;
   images: string[];
   category_id: string;
   brand_id?: string;
-  country_id?: string; // Added country_id
+  country_id?: string;
   stock: number;
   sku?: string;
   size?: string;

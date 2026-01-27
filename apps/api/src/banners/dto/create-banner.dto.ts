@@ -1,7 +1,8 @@
 export class CreateBannerDto {
   title: string;
+  title_bn?: string; // Added Bangla Title
   image: string;
   link?: string;
-  is_active?: boolean;
   order?: number;
+  is_active?: boolean;
 }

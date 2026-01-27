@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         <StatCard 
             title="Total Revenue" 
             value={`৳${totalRevenue.toLocaleString()}`} 
-            icon="💰" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>}
             color="from-emerald-400 to-teal-500" 
             trend="+12.5%" 
             trendUp={true}
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
         <StatCard 
             title="Total Orders" 
             value={totalOrders} 
-            icon="📦" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>}
             color="from-blue-400 to-indigo-500" 
             trend="+5.2%" 
             trendUp={true}
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
         <StatCard 
             title="Total Products" 
             value={totalProducts} 
-            icon="🛍️" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>}
             color="from-violet-400 to-purple-500" 
             trend="+2.1%" 
             trendUp={true}
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
         <StatCard 
             title="Total Customers" 
             value={totalUsers} 
-            icon="👥" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
             color="from-amber-400 to-orange-500" 
             trend="+8.4%" 
             trendUp={true}
@@ -122,7 +122,9 @@ export default function AdminDashboard() {
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">🛒</div>
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        </div>
                         <div>
                             <div className="text-xs font-medium text-slate-500">Sales</div>
                             <div className="font-bold text-slate-900 dark:text-white text-sm">Total Sales</div>
@@ -139,7 +141,9 @@ export default function AdminDashboard() {
                 
                 <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm">👥</div>
+                        <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
                         <div>
                             <div className="text-xs font-medium text-slate-500">Users</div>
                             <div className="font-bold text-slate-900 dark:text-white text-sm">New Customers</div>

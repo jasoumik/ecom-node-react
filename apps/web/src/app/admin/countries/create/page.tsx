@@ -6,11 +6,10 @@ import { Button, Heading } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
-import { MediaPicker } from "@/components/ui/MediaPicker";
+import { FlagIcon, FLAGS } from "@/components/ui/FlagIcon";
 
 export default function CreateCountryPage() {
-  const [newCountry, setNewCountry] = useState({ name: "", code: "", flag: "", is_active: true });
-  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [newCountry, setNewCountry] = useState({ name: "", name_bn: "", code: "", flag: "", is_active: true });
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -60,34 +59,38 @@ export default function CreateCountryPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Country Name" value={newCountry.name} onChange={e => setNewCountry({...newCountry, name: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="ISO Code (e.g. BD)" value={newCountry.code} onChange={e => setNewCountry({...newCountry, code: e.target.value.toUpperCase()})} required maxLength={3} className="bg-slate-50/50" />
+            <Input label="Country Name (English)" value={newCountry.name} onChange={e => setNewCountry({...newCountry, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+            <Input label="Country Name (Bangla)" value={newCountry.name_bn} onChange={e => setNewCountry({...newCountry, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
           </div>
           
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Flag Image</label>
-            <div className="flex gap-2">
-                <Input 
-                    className="flex-1 bg-slate-50/50 text-sm" 
-                    value={newCountry.flag} 
-                    onChange={e => setNewCountry({...newCountry, flag: e.target.value})} 
-                    placeholder="Image URL..."
-                />
-                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Input label="ISO Code (e.g. BD)" value={newCountry.code} onChange={e => setNewCountry({...newCountry, code: e.target.value.toUpperCase()})} required maxLength={3} className="bg-slate-50/50 dark:bg-slate-800/50" />
+            
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Flag Icon</label>
+                <select 
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                    value={newCountry.flag}
+                    onChange={e => setNewCountry({...newCountry, flag: e.target.value})}
+                >
+                    <option value="">Select Flag</option>
+                    {Object.keys(FLAGS).filter(k => k !== 'DEFAULT').map(code => (
+                        <option key={code} value={code}>{code}</option>
+                    ))}
+                </select>
             </div>
           </div>
+
+          {newCountry.flag && (
+            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                <div className="w-16 h-10 shadow-sm rounded overflow-hidden">
+                    <FlagIcon code={newCountry.flag} className="w-full h-full" />
+                </div>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Selected Flag Preview</span>
+            </div>
+          )}
         </form>
       </div>
-
-      {showMediaPicker && (
-        <MediaPicker 
-            onSelect={(url) => {
-                setNewCountry({ ...newCountry, flag: url });
-                setShowMediaPicker(false);
-            }}
-            onClose={() => setShowMediaPicker(false)}
-        />
-      )}
     </div>
   );
 }

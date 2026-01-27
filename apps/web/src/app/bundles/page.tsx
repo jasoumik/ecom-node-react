@@ -8,6 +8,8 @@ import { useWishlist } from "@/lib/wishlist";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
+import { getLocalizedField } from "@/lib/utils";
 
 export default function BundlesPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -15,6 +17,7 @@ export default function BundlesPage() {
   const { addItem } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const fetchBundles = async () => {
@@ -58,12 +61,12 @@ export default function BundlesPage() {
 
     addItem({
       id: product.id,
-      name: product.name,
+      name: getLocalizedField(product, 'name', language),
       price: parseFloat(product.price),
       image: imageUrl,
       quantity: 1,
     });
-    addToast(`Added ${product.name} to cart`);
+    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
   const toggleWishlist = (product: any) => {
@@ -83,7 +86,7 @@ export default function BundlesPage() {
     } else {
         addToWishlist({
             id: product.id,
-            name: product.name,
+            name: getLocalizedField(product, 'name', language),
             price: parseFloat(product.price),
             image: imageUrl
         });
@@ -100,19 +103,19 @@ export default function BundlesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-100 text-sky-700 text-xs font-bold uppercase tracking-wider mb-4 dark:bg-sky-900/30 dark:text-sky-400">
-            Save More
+            {t('save_more')}
           </div>
-          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">Bundles & Sets</Heading>
+          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">{t('bundles_sets')}</Heading>
           <Text className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Get the best value with our curated bundles and discounted sets. Perfect for gifting or stocking up.
+            {t('bundles_desc')}
           </Text>
         </div>
 
         {products.length === 0 ? (
             <div className="text-center text-slate-500 dark:text-slate-400 py-20 bg-white dark:bg-slate-800 rounded-3xl shadow-sm">
-                <p className="text-lg mb-4">No bundles available at the moment.</p>
+                <p className="text-lg mb-4">{t('no_bundles')}</p>
                 <Link href="/products">
-                    <Button variant="outline" className="rounded-xl">Browse All Products</Button>
+                    <Button variant="outline" className="rounded-xl">{t('browse_all')}</Button>
                 </Link>
             </div>
         ) : (
@@ -135,20 +138,14 @@ export default function BundlesPage() {
                 <div key={product.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all relative border border-slate-100 dark:border-slate-700">
                     <button 
                         onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-                        className={`absolute top-5 right-5 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm ${
-                            isWishlisted 
-                            ? 'bg-rose-50 text-rose-500 scale-110' 
-                            : 'bg-white/80 text-slate-400 hover:bg-white hover:text-rose-500 hover:scale-110 dark:bg-slate-800/80 dark:text-slate-400'
-                        }`}
+                        className={`absolute top-5 right-5 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-colors shadow-sm ${isWishlisted ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
+                        {isWishlisted ? '♥' : '♡'}
                     </button>
 
                     {discount > 0 && (
                         <div className="absolute top-5 left-5 z-10 bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">
-                            -{discount}% OFF
+                            -{discount}% {t('off')}
                         </div>
                     )}
 
@@ -156,7 +153,7 @@ export default function BundlesPage() {
                     <Link href={`/products/${product.id}`} className="block w-full h-full">
                         <ResponsiveImage
                         src={imageUrl}
-                        alt={product.name}
+                        alt={getLocalizedField(product, 'name', language)}
                         width={400}
                         height={400}
                         className="object-cover w-full h-full sm:group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -167,7 +164,7 @@ export default function BundlesPage() {
                     <div className="flex flex-col flex-grow space-y-2">
                       <div className="space-y-1 text-center">
                         <h3 className="text-sm sm:text-lg font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
-                            <Link href={`/products/${product.id}`}>{product.name}</Link>
+                            <Link href={`/products/${product.id}`}>{getLocalizedField(product, 'name', language)}</Link>
                         </h3>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                             <div className="flex items-center gap-1">
@@ -193,7 +190,7 @@ export default function BundlesPage() {
                         className="w-full bg-sky-400 text-white hover:bg-sky-500 shadow-md font-bold py-2.5 rounded-2xl text-sm"
                         onClick={() => handleAddToCart(product)}
                         >
-                        Add to Cart
+                        {t('add_to_cart')}
                         </Button>
                       </div>
                     </div>

@@ -1,15 +1,23 @@
-import { Heading, Text, Section, ResponsiveImage } from "@repo/ui";
+"use client";
+
+import { Heading, Text, Section, ResponsiveImage, Button } from "@repo/ui";
+import { useLanguage } from "@/lib/language-context";
+import { useSettings } from "@/lib/settings-context";
+import Link from "next/link";
 
 export default function AboutPage() {
+  const { t } = useLanguage();
+  const settings = useSettings();
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero Section */}
-      <div className="relative py-20 bg-sky-50 dark:bg-slate-900 overflow-hidden">
+      <div className="relative py-16 bg-sky-50 dark:bg-slate-900 overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0ea5e9 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-6 font-bold">About Prithibee</Heading>
+          <Heading size="xl" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">{t('about')} {settings.shop_name}</Heading>
           <Text className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            We are on a mission to provide the safest, most comfortable, and sustainable products for mothers and babies across Bangladesh.
+            {t('about_hero_subtitle')}
           </Text>
         </div>
       </div>
@@ -28,16 +36,14 @@ export default function AboutPage() {
           </div>
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-100 text-sky-700 text-xs font-bold uppercase tracking-wider dark:bg-sky-900/30 dark:text-sky-400">
-              Our Story
+              {t('our_story')}
             </div>
-            <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold">Born from Love, Built for Trust</Heading>
+            <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold">{t('story_headline')}</Heading>
             <Text className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Prithibee started with a simple question: "Why is it so hard to find genuine, safe baby products?" 
-              As parents ourselves, we understood the anxiety of choosing the right diaper, the right lotion, or the right food for our little ones.
+              {t('story_paragraph_1')}
             </Text>
             <Text className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We decided to change that. We curate only the best global and local brands, ensuring every item on our shelf meets strict safety standards. 
-              Because your baby deserves the world (Prithibee).
+              {t('story_paragraph_2')}
             </Text>
           </div>
         </div>
@@ -46,15 +52,15 @@ export default function AboutPage() {
       {/* Values Section */}
       <Section className="bg-slate-50 dark:bg-slate-900/50">
         <div className="text-center mb-16">
-            <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">Our Core Values</Heading>
-            <Text className="text-slate-600 dark:text-slate-400">The principles that guide everything we do.</Text>
+            <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-4 font-bold">{t('our_core_values')}</Heading>
+            <Text className="text-slate-600 dark:text-slate-400">{t('values_tagline')}</Text>
         </div>
         
         <div className="grid md:grid-cols-3 gap-8">
             {[
-                { icon: "🛡️", title: "Safety First", desc: "We never compromise on quality. Every product is vetted for safety." },
-                { icon: "🌱", title: "Sustainability", desc: "We prioritize eco-friendly and organic options for a better future." },
-                { icon: "🤝", title: "Community", desc: "We are more than a shop; we are a community of parents supporting parents." }
+                { icon: "🛡️", title: t('safety_first'), desc: t('safety_first_desc') },
+                { icon: "🌱", title: t('sustainability'), desc: t('sustainability_desc') },
+                { icon: "🤝", title: t('community'), desc: t('community_desc') }
             ].map((value, i) => (
                 <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 text-center hover:-translate-y-2 transition-transform duration-300">
                     <div className="w-16 h-16 bg-sky-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-3xl mb-6 mx-auto shadow-inner">
@@ -72,17 +78,21 @@ export default function AboutPage() {
         <div className="bg-gradient-to-br from-sky-500 to-blue-600 rounded-3xl p-12 text-center text-white shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")' }}></div>
             <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-                <Heading size="xl" className="font-sans font-bold text-white">Join the Prithibee Family</Heading>
+                <Heading size="xl" className="font-sans font-bold text-white">{t('join_family')}</Heading>
                 <p className="text-sky-100 text-lg">
-                    Have questions or suggestions? We'd love to hear from you.
+                    {t('join_family_subtitle')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                    <a href="/contact" className="inline-block bg-white text-sky-600 px-8 py-3 rounded-xl font-bold hover:bg-sky-50 transition-colors shadow-lg">
-                        Contact Us
-                    </a>
-                    <a href="/products" className="inline-block bg-sky-600 text-white border border-sky-400 px-8 py-3 rounded-xl font-bold hover:bg-sky-700 transition-colors">
-                        Start Shopping
-                    </a>
+                    <Link href="/contact">
+                        <Button className="inline-block bg-white text-sky-600 px-8 py-3 rounded-xl font-bold hover:bg-sky-50 transition-colors shadow-lg">
+                            {t('contact_us')}
+                        </Button>
+                    </Link>
+                    <Link href="/products">
+                        <Button variant="outline" className="inline-block bg-sky-600 text-white border border-sky-400 px-8 py-3 rounded-xl font-bold hover:bg-sky-700 transition-colors">
+                            {t('start_shopping')}
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>

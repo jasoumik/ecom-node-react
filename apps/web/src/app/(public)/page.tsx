@@ -3,6 +3,7 @@ import { CategoriesSection } from "./landing/CategoriesSection";
 import { FeaturedProductsSection } from "./landing/FeaturedProductsSection";
 import { WhyChooseUsSection } from "./landing/WhyChooseUsSection";
 import { TestimonialsSection } from "./landing/TestimonialsSection";
+import { CallToActionSection } from "./landing/CallToActionSection";
 import { API_URL } from "@/lib/config";
 import { BannerSection } from "./landing/BannerSection";
 
@@ -27,15 +28,16 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-0 relative">
-      <HeroSection {...data.hero} />
+    <div className="flex flex-col gap-0 relative bg-slate-50 dark:bg-slate-950">
       {data.hero.banners && data.hero.banners.length > 0 && (
         <BannerSection banners={data.hero.banners} />
       )}
+      <HeroSection {...data.hero} />
       <CategoriesSection categories={data.categories} />
       <FeaturedProductsSection {...data.featuredProducts} />
       <WhyChooseUsSection {...data.whyChooseUs} />
       <TestimonialsSection {...data.testimonials} />
+      <CallToActionSection {...data.callToAction} />
     </div>
   );
 }

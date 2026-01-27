@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateBrandPage() {
-  const [newBrand, setNewBrand] = useState({ name: "", logo: "", description: "", is_active: true });
+  const [newBrand, setNewBrand] = useState({ name: "", name_bn: "", logo: "", description: "", is_active: true });
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
@@ -59,7 +59,10 @@ export default function CreateBrandPage() {
                 </label>
           </div>
 
-          <Input label="Name" value={newBrand.name} onChange={e => setNewBrand({...newBrand, name: e.target.value})} required className="bg-slate-50/50" />
+          <div className="grid md:grid-cols-2 gap-6">
+            <Input label="Name (English)" value={newBrand.name} onChange={e => setNewBrand({...newBrand, name: e.target.value})} required className="bg-slate-50/50" />
+            <Input label="Name (Bangla)" value={newBrand.name_bn} onChange={e => setNewBrand({...newBrand, name_bn: e.target.value})} className="bg-slate-50/50" />
+          </div>
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Logo URL</label>

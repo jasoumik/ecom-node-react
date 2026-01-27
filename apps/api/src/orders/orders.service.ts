@@ -285,7 +285,18 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
-    order.items = await this.knex('order_items').where({ order_id: id });
+    
+    const items = await this.knex('order_items').where({ order_id: id });
+    const reviews = await this.knex('reviews').where({ order_id: id });
+    
+    order.items = items.map(item => {
+        const review = reviews.find(r => r.product_id === item.product_id);
+        return {
+            ...item,
+            review: review || null
+        };
+    });
+
     return order;
   }
 

@@ -2,13 +2,17 @@ import * as React from "react";
 
 export interface RatingStarsProps {
   rating: number; // 0-5
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
-export const RatingStars: React.FC<RatingStarsProps> = ({ rating }) => {
+export const RatingStars: React.FC<RatingStarsProps> = ({ rating, size = "md", className }) => {
   const fullStars = Math.round(rating);
+  
+  const sizeClass = size === "sm" ? "w-3 h-3" : size === "lg" ? "w-5 h-5" : "w-4 h-4";
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className={`flex items-center gap-0.5 ${className ?? ""}`}>
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
@@ -17,7 +21,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({ rating }) => {
           fill={i < fullStars ? "currentColor" : "none"}
           stroke="currentColor"
           strokeWidth="2"
-          className={`w-4 h-4 ${i < fullStars ? "text-amber-400" : "text-slate-300"}`}
+          className={`${sizeClass} ${i < fullStars ? "text-amber-400" : "text-slate-300"}`}
         >
           <path
             strokeLinecap="round"

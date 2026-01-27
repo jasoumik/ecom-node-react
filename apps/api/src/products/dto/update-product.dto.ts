@@ -2,14 +2,16 @@ import { CreateProductDto, CreateVariantDto } from './create-product.dto';
 
 export class UpdateProductDto {
   name?: string;
+  name_bn?: string;
   description?: string;
+  description_bn?: string;
   price?: number;
   old_price?: number;
   cost_price?: number;
   images?: string[];
   category_id?: string;
   brand_id?: string;
-  country_id?: string; // Added country_id
+  country_id?: string;
   stock?: number;
   sku?: string;
   size?: string;

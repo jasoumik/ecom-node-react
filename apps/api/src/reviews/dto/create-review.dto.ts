@@ -1,8 +1,8 @@
 export class CreateReviewDto {
   productId: string;
-  orderId: string;
   userId: string;
+  orderId: string;
   rating: number;
-  comment?: string;
+  comment?: string; // Made optional
   images?: string[];
 }

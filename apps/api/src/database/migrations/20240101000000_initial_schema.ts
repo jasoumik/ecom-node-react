@@ -31,7 +31,9 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('categories', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
+    table.string('name_bn').nullable(); // Added Bangla Name
     table.text('description').nullable();
+    table.text('description_bn').nullable(); // Added Bangla Description
     table.string('image').nullable();
     table.uuid('parent_id').nullable().references('id').inTable('categories').onDelete('CASCADE');
     table.boolean('is_active').defaultTo(true);
@@ -42,6 +44,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('brands', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
+    table.string('name_bn').nullable(); // Added Bangla Name
     table.string('logo').nullable();
     table.text('description').nullable();
     table.boolean('is_active').defaultTo(true);
@@ -52,6 +55,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('countries', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
+    table.string('name_bn').nullable(); // Added Bangla Name
     table.string('code').notNullable(); // ISO code e.g. BD, US
     table.string('flag').nullable(); // URL to flag image
     table.boolean('is_active').defaultTo(true);
@@ -61,7 +65,9 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('products', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
+    table.string('name_bn').nullable(); // Added Bangla Name
     table.text('description').notNullable();
+    table.text('description_bn').nullable(); // Added Bangla Description
     table.decimal('price', 10, 2).notNullable(); // Current selling price
     table.decimal('old_price', 10, 2).nullable(); // Old price for strikethrough
     table.decimal('cost_price', 10, 2).nullable(); // Cost price for profit calc
@@ -116,6 +122,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('delivery_charges', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable(); // e.g. Inside Dhaka
+    table.string('name_bn').nullable(); // Added Bangla Name
     table.decimal('amount', 10, 2).notNullable();
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
@@ -184,6 +191,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('banners', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('title').notNullable();
+    table.string('title_bn').nullable(); // Added Bangla Title
     table.string('image').notNullable();
     table.string('link').nullable();
     table.boolean('is_active').defaultTo(true);
@@ -279,7 +287,9 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('promises', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('title').notNullable();
+    table.string('title_bn').nullable(); // Added Bangla Title
     table.text('description').notNullable();
+    table.text('description_bn').nullable(); // Added Bangla Description
     table.string('icon').notNullable(); // Emoji or URL
     table.integer('order').defaultTo(0);
     table.boolean('is_active').defaultTo(true);

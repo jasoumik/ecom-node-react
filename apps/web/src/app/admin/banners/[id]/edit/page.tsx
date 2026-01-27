@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
+import { getImageUrl } from "@/lib/utils";
 
 const AVAILABLE_ROUTES = [
     { label: "Home", value: "/" },
@@ -79,13 +80,16 @@ export default function EditBannerPage() {
                 </label>
           </div>
 
-          <Input label="Title" value={banner.title} onChange={e => setBanner({...banner, title: e.target.value})} required className="bg-slate-50/50" />
+          <div className="grid md:grid-cols-2 gap-6">
+            <Input label="Title (English)" value={banner.title} onChange={e => setBanner({...banner, title: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+            <Input label="Title (Bangla)" value={banner.title_bn || ""} onChange={e => setBanner({...banner, title_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+          </div>
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image URL</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-2">
                 <Input 
-                    className="flex-1 bg-slate-50/50 text-sm" 
+                    className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
                     value={banner.image} 
                     onChange={e => setBanner({...banner, image: e.target.value})} 
                     required 
@@ -93,13 +97,25 @@ export default function EditBannerPage() {
                 />
                 <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
             </div>
+            {banner.image && (
+                <div className="relative w-full h-40 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                    <img src={getImageUrl(banner.image)} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                        type="button"
+                        onClick={() => setBanner({...banner, image: ""})}
+                        className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Link Route</label>
             <div className="flex flex-col gap-2">
                 <select 
-                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
                     value={AVAILABLE_ROUTES.some(r => r.value === banner.link) ? banner.link : "custom"}
                     onChange={e => {
                         const val = e.target.value;
@@ -119,14 +135,14 @@ export default function EditBannerPage() {
                         placeholder="Enter custom URL (e.g. /products/123)" 
                         value={banner.link || ""} 
                         onChange={e => setBanner({...banner, link: e.target.value})} 
-                        className="bg-slate-50/50"
+                        className="bg-slate-50/50 dark:bg-slate-800/50"
                     />
                 )}
             </div>
           </div>
 
           <div className="w-1/3">
-            <Input label="Order" type="number" value={banner.order} onChange={e => setBanner({...banner, order: e.target.value})} className="bg-slate-50/50" />
+            <Input label="Order" type="number" value={banner.order} onChange={e => setBanner({...banner, order: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
           </div>
         </form>
       </div>

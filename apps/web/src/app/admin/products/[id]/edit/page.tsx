@@ -8,6 +8,7 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { Table } from "@/components/ui/Table";
+import { getImageUrl } from "@/lib/utils";
 
 interface Batch {
     id: string;
@@ -190,17 +191,31 @@ export default function EditProductPage() {
                 </div>
                 
                 <div className="space-y-4">
-                    <Input label="Product Name" value={product.name} onChange={e => setProduct({...product, name: e.target.value})} required className="bg-slate-50/50" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Input label="Product Name (English)" value={product.name} onChange={e => setProduct({...product, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+                        <Input label="Product Name (Bangla)" value={product.name_bn || ""} onChange={e => setProduct({...product, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    </div>
                     
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-                        <textarea 
-                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
-                        value={product.description} 
-                        onChange={e => setProduct({...product, description: e.target.value})} 
-                        required 
-                        rows={4}
-                        />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
+                            <textarea 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            value={product.description} 
+                            onChange={e => setProduct({...product, description: e.target.value})} 
+                            required 
+                            rows={4}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
+                            <textarea 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                            value={product.description_bn || ""} 
+                            onChange={e => setProduct({...product, description_bn: e.target.value})} 
+                            rows={4}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -208,11 +223,11 @@ export default function EditProductPage() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Pricing & Inventory</h3>
                 <div className="grid grid-cols-2 gap-4">
-                    <Input label="Price" type="number" value={product.price} onChange={e => setProduct({...product, price: e.target.value})} required className="bg-slate-50/50" />
-                    <Input label="Old Price" type="number" value={product.old_price || ''} onChange={e => setProduct({...product, old_price: e.target.value})} className="bg-slate-50/50" />
-                    <Input label="Cost Price" type="number" value={product.cost_price || ''} onChange={e => setProduct({...product, cost_price: e.target.value})} className="bg-slate-50/50" />
+                    <Input label="Price" type="number" value={product.price} onChange={e => setProduct({...product, price: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Old Price" type="number" value={product.old_price || ''} onChange={e => setProduct({...product, old_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                    <Input label="Cost Price" type="number" value={product.cost_price || ''} onChange={e => setProduct({...product, cost_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                     <Input label="Stock (Total)" type="number" value={product.stock} disabled className="bg-slate-100 dark:bg-slate-800 opacity-70" />
-                    <Input label="SKU" value={product.sku || ''} onChange={e => setProduct({...product, sku: e.target.value})} className="bg-slate-50/50" />
+                    <Input label="SKU" value={product.sku || ''} onChange={e => setProduct({...product, sku: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                 </div>
             </div>
 
@@ -226,16 +241,16 @@ export default function EditProductPage() {
                 {isAddingVariant && (
                     <div className="mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 animate-in fade-in">
                         <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Input label="Size" value={newVariant.size} onChange={e => setNewVariant({...newVariant, size: e.target.value})} className="bg-white" />
-                            <Input label="Color" value={newVariant.color} onChange={e => setNewVariant({...newVariant, color: e.target.value})} className="bg-white" />
+                            <Input label="Size" value={newVariant.size} onChange={e => setNewVariant({...newVariant, size: e.target.value})} className="bg-white dark:bg-slate-900" />
+                            <Input label="Color" value={newVariant.color} onChange={e => setNewVariant({...newVariant, color: e.target.value})} className="bg-white dark:bg-slate-900" />
                         </div>
                         <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Input label="Stock" type="number" value={newVariant.stock} onChange={e => setNewVariant({...newVariant, stock: e.target.value})} required className="bg-white" />
-                            <Input label="Price Override" type="number" value={newVariant.price} onChange={e => setNewVariant({...newVariant, price: e.target.value})} placeholder="Optional" className="bg-white" />
+                            <Input label="Stock" type="number" value={newVariant.stock} onChange={e => setNewVariant({...newVariant, stock: e.target.value})} required className="bg-white dark:bg-slate-900" />
+                            <Input label="Price Override" type="number" value={newVariant.price} onChange={e => setNewVariant({...newVariant, price: e.target.value})} placeholder="Optional" className="bg-white dark:bg-slate-900" />
                         </div>
                         <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Input label="SKU" value={newVariant.sku} onChange={e => setNewVariant({...newVariant, sku: e.target.value})} className="bg-white" />
-                            <Input label="Weight" value={newVariant.weight} onChange={e => setNewVariant({...newVariant, weight: e.target.value})} className="bg-white" />
+                            <Input label="SKU" value={newVariant.sku} onChange={e => setNewVariant({...newVariant, sku: e.target.value})} className="bg-white dark:bg-slate-900" />
+                            <Input label="Weight" value={newVariant.weight} onChange={e => setNewVariant({...newVariant, weight: e.target.value})} className="bg-white dark:bg-slate-900" />
                         </div>
                         <div className="flex justify-end">
                             <Button type="button" onClick={handleAddVariant} className="rounded-lg py-1.5 px-4 text-xs h-auto">Add to List</Button>
@@ -281,15 +296,15 @@ export default function EditProductPage() {
                 {isAddingBatch && (
                     <div className="mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 animate-in fade-in">
                         <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Input label="Batch Number" value={newBatch.batch_number} onChange={e => setNewBatch({...newBatch, batch_number: e.target.value})} required className="bg-white" />
-                            <Input label="Quantity" type="number" value={newBatch.quantity} onChange={e => setNewBatch({...newBatch, quantity: e.target.value})} required className="bg-white" />
+                            <Input label="Batch Number" value={newBatch.batch_number} onChange={e => setNewBatch({...newBatch, batch_number: e.target.value})} required className="bg-white dark:bg-slate-900" />
+                            <Input label="Quantity" type="number" value={newBatch.quantity} onChange={e => setNewBatch({...newBatch, quantity: e.target.value})} required className="bg-white dark:bg-slate-900" />
                         </div>
                         <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Input label="Purchase Price" type="number" value={newBatch.purchase_price} onChange={e => setNewBatch({...newBatch, purchase_price: e.target.value})} required className="bg-white" />
-                            <Input label="Selling Price" type="number" value={newBatch.selling_price} onChange={e => setNewBatch({...newBatch, selling_price: e.target.value})} required className="bg-white" />
+                            <Input label="Purchase Price" type="number" value={newBatch.purchase_price} onChange={e => setNewBatch({...newBatch, purchase_price: e.target.value})} required className="bg-white dark:bg-slate-900" />
+                            <Input label="Selling Price" type="number" value={newBatch.selling_price} onChange={e => setNewBatch({...newBatch, selling_price: e.target.value})} required className="bg-white dark:bg-slate-900" />
                         </div>
                         <div className="mb-3">
-                            <Input label="Expiry Date" type="date" value={newBatch.expiry_date} onChange={e => setNewBatch({...newBatch, expiry_date: e.target.value})} className="bg-white" />
+                            <Input label="Expiry Date" type="date" value={newBatch.expiry_date} onChange={e => setNewBatch({...newBatch, expiry_date: e.target.value})} className="bg-white dark:bg-slate-900" />
                         </div>
                         <div className="flex justify-end">
                             <Button type="button" onClick={handleAddBatch} className="rounded-lg py-1.5 px-4 text-xs h-auto">Save Batch</Button>
@@ -319,7 +334,7 @@ export default function EditProductPage() {
                     <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
                         <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
                             value={product.category_id || ""}
                             onChange={e => setProduct({...product, category_id: e.target.value})}
                             required
@@ -335,7 +350,7 @@ export default function EditProductPage() {
                     <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Country of Origin</label>
                         <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
                             value={product.country_id || ""}
                             onChange={e => setProduct({...product, country_id: e.target.value})}
                         >
@@ -352,15 +367,34 @@ export default function EditProductPage() {
                 <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Media</h3>
                 <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Product Images</label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-2">
                         <Input 
-                            className="flex-1 bg-slate-50/50 text-sm" 
+                            className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
                             value={product.images} 
                             onChange={e => setProduct({...product, images: e.target.value})} 
                             placeholder="Image URLs..."
                         />
                         <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
                     </div>
+                    {product.images && (
+                        <div className="flex flex-wrap gap-2">
+                            {product.images.split(',').map((img: string, i: number) => (
+                                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                                    <img src={getImageUrl(img.trim())} alt="Preview" className="w-full h-full object-cover" />
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            const newImages = product.images.split(',').map((s: string) => s.trim()).filter((_: any, idx: number) => idx !== i).join(', ');
+                                            setProduct({...product, images: newImages});
+                                        }}
+                                        className="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 rounded-bl-lg flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -369,10 +403,10 @@ export default function EditProductPage() {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                     <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Base Attributes</h3>
                     <div className="grid grid-cols-2 gap-4">
-                        <Input label="Size" placeholder="e.g. M" value={product.size || ''} onChange={e => setProduct({...product, size: e.target.value})} className="bg-slate-50/50" />
-                        <Input label="Color" placeholder="e.g. Red" value={product.color || ''} onChange={e => setProduct({...product, color: e.target.value})} className="bg-slate-50/50" />
-                        <Input label="Weight" placeholder="e.g. 500g" value={product.weight || ''} onChange={e => setProduct({...product, weight: e.target.value})} className="bg-slate-50/50" />
-                        <Input label="Material" placeholder="e.g. Cotton" value={product.material || ''} onChange={e => setProduct({...product, material: e.target.value})} className="bg-slate-50/50" />
+                        <Input label="Size" placeholder="e.g. M" value={product.size || ''} onChange={e => setProduct({...product, size: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                        <Input label="Color" placeholder="e.g. Red" value={product.color || ''} onChange={e => setProduct({...product, color: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                        <Input label="Weight" placeholder="e.g. 500g" value={product.weight || ''} onChange={e => setProduct({...product, weight: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                        <Input label="Material" placeholder="e.g. Cotton" value={product.material || ''} onChange={e => setProduct({...product, material: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                     </div>
                 </div>
             )}

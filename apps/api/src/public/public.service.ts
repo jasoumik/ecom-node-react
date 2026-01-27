@@ -17,6 +17,7 @@ export class PublicService {
     const displayCategories = categories.slice(0, 8).map(cat => ({
         id: cat.id,
         name: cat.name,
+        name_bn: cat.name_bn, // Added Bangla Name
         image: cat.image || "https://picsum.photos/seed/default/800/800"
     }));
 
@@ -26,6 +27,7 @@ export class PublicService {
         .select(
             'products.id',
             'products.name',
+            'products.name_bn', // Added Bangla Name
             'products.price',
             'products.images',
             'products.stock'
@@ -59,6 +61,7 @@ export class PublicService {
         return {
             id: p.id,
             name: p.name,
+            name_bn: p.name_bn, // Added Bangla Name
             price: `৳${p.price}`,
             href: `/products/${p.id}`,
             image: {
@@ -110,13 +113,16 @@ export class PublicService {
     return {
       hero: {
         headline: "Everything for Mom & Baby, Delivered.",
+        headline_bn: "মা এবং শিশুর জন্য সবকিছু, পৌঁছে যাবে আপনার দরজায়।",
         subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, organic skincare, and maternity essentials. Trusted by 50,000+ parents.",
-        primaryCta: { label: "Shop All Products", href: "/products" },
-        secondaryCta: { label: "Bundle & Save", href: "/bundles" },
+        subheadline_bn: "পৃথিবী আপনার প্রিমিয়াম ডায়াপার, জেন্টল ওয়াইপস, অর্গানিক স্কিনকেয়ার এবং মাতৃত্বকালীন প্রয়োজনীয় পণ্যের জন্য ওয়ান-স্টপ শপ। ৫০,০০০+ অভিভাবকের আস্থাশীল।",
+        primaryCta: { label: "Shop All Products", label_bn: "সব পণ্য দেখুন", href: "/products" },
+        secondaryCta: { label: "Bundle & Save", label_bn: "বান্ডেল এবং সেভ", href: "/bundles" },
         banners: banners.length > 0 ? banners.map(b => ({
             id: b.id,
             src: b.image,
             alt: b.title,
+            alt_bn: b.title_bn, // Added Bangla Title
             link: b.link
         })) : [],
         image: {
@@ -127,8 +133,8 @@ export class PublicService {
           priority: true,
         },
         stats: [
-          { label: "Products Available", value: `100+` },
-          { label: "Happy Families", value: "50k+" },
+          { label: "Products Available", label_bn: "পণ্য উপলব্ধ", value: `100+` },
+          { label: "Happy Families", label_bn: "সুখী পরিবার", value: "50k+" },
         ],
       },
       categories: displayCategories,
@@ -143,7 +149,9 @@ export class PublicService {
       },
       featuredProducts: {
         title: "Trending Now",
+        title_bn: "এখন ট্রেন্ডিং",
         subtitle: "Moms are loving these essentials this week.",
+        subtitle_bn: "মায়েরা এই সপ্তাহে এই পণ্যগুলো পছন্দ করছেন।",
         viewAllHref: "/products",
         products: featuredProducts,
       },
@@ -152,7 +160,9 @@ export class PublicService {
         reasons: promises.length > 0 ? promises.map(p => ({
             id: p.id,
             title: p.title,
+            title_bn: p.title_bn, // Added Bangla Title
             description: p.description,
+            description_bn: p.description_bn, // Added Bangla Description
             iconUrl: p.icon
         })) : [],
       },
@@ -170,8 +180,10 @@ export class PublicService {
       },
       callToAction: {
         title: "Start Your Journey with Prithibee",
+        title_bn: "পৃথিবীর সাথে আপনার যাত্রা শুরু করুন",
         subtitle: "Get 20% off your first order when you join our family.",
-        primaryCta: { label: "Shop Now", href: "/products" },
+        subtitle_bn: "আমাদের পরিবারে যোগ দিলে আপনার প্রথম অর্ডারে ২০% ছাড় পান।",
+        primaryCta: { label: "Shop Now", label_bn: "এখনই কিনুন", href: "/products" },
         secondaryText: "Free shipping on orders over ৳5,000.",
       },
     };
