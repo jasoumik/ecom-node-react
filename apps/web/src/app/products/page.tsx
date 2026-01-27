@@ -22,11 +22,13 @@ export default function ProductsPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const { addItem } = useCart();
-  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, items: wishlistItems } = useWishlist();
   const { addToast } = useToast();
   const { t, language } = useLanguage();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Reset when filters change
     setProducts([]);
     setPage(1);
@@ -116,7 +118,9 @@ export default function ProductsPage() {
         } catch (e) {}
     }
 
-    if (isInWishlist(product.id)) {
+    const isWishlisted = wishlistItems.some(i => i.id === product.id);
+
+    if (isWishlisted) {
         removeFromWishlist(product.id);
         addToast("Removed from wishlist");
     } else {
@@ -162,7 +166,7 @@ export default function ProductsPage() {
                         } catch (e) {}
                     }
 
-                    const isWishlisted = isInWishlist(product.id);
+                    const isWishlisted = mounted && wishlistItems.some(i => i.id === product.id);
 
                     return (
                     <div key={product.id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300 relative flex flex-col">
@@ -194,7 +198,7 @@ export default function ProductsPage() {
                         </div>
                         
                         {/* Content */}
-                        <div className="p-3 flex flex-col flex-grow">
+                        <div className="p-2 sm:p-3 flex flex-col flex-grow">
                             <div className="mb-1">
                                 <div className="flex items-center gap-1 mb-1">
                                     <RatingStars rating={parseFloat(product.rating) || 0} size="sm" />
@@ -207,13 +211,13 @@ export default function ProductsPage() {
                                 </h3>
                             </div>
                             
-                            <div className="mt-auto pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <div className="mt-auto pt-2 flex flex-col gap-2">
                                 <div className="text-base font-bold text-sky-600 dark:text-sky-400">
                                     ৳{product.price}
                                 </div>
                                 <Button 
                                     onClick={() => handleAddToCart(product)}
-                                    className="w-full sm:w-auto py-2 sm:py-1.5 px-3 text-xs font-bold bg-sky-50 text-sky-600 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 rounded-lg shadow-sm"
+                                    className="w-full py-2 text-xs font-bold bg-sky-50 text-sky-600 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 rounded-lg shadow-sm whitespace-nowrap"
                                 >
                                     {t('add_to_cart')}
                                 </Button>

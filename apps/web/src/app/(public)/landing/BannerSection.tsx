@@ -65,7 +65,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
                         </h1>
                         <div className="pt-4 animate-slide-in-from-bottom-8">
                             <Link href={currentBanner.link || '/products'}>
-                                <Button className="bg-sky-500 text-white hover:bg-sky-600 border-none font-bold px-8 py-3.5 rounded-xl shadow-lg text-base">
+                                <Button className="bg-sky-500 text-white hover:bg-sky-600 border-none font-bold px-8 py-3.5 rounded-full shadow-lg text-base">
                                     {t('shop_now')}
                                 </Button>
                             </Link>

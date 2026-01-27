@@ -18,6 +18,7 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -51,6 +52,7 @@ export function Header() {
       } else {
         setUser(null);
       }
+      setIsLoadingUser(false);
     };
 
     const storedSearches = localStorage.getItem("recentSearches");
@@ -163,12 +165,9 @@ export function Header() {
               </svg>
               <span>{settings.shop_phone}</span>
             </a>
-              <a href={settings.facebook_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-sky-100 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.333-4.669 1.212 0 2.493.216 2.493.216v2.733h-1.406c-1.492 0-1.956.926-1.956 1.874v2.25h3.072l-.487 3.47h-2.585v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  <span>Facebook</span>
-              </a>
+            <div className="sm:hidden text-[10px] opacity-80">
+                {t('free_shipping_offer', { threshold: settings.free_shipping_threshold }).split('•')[0]}
+            </div>
           </div>
         </div>
       </div>
@@ -301,6 +300,9 @@ export function Header() {
               {/* Language Toggle - Visible on Mobile now */}
               <LanguageToggle className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 text-xs sm:text-sm" />
 
+              {/* Theme Toggle - Visible on Mobile now */}
+              <ThemeToggle className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-yellow-400 text-xs sm:text-sm" />
+
               {/* Wishlist Icon */}
               <Link href="/wishlist" className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800 hidden sm:block">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -328,7 +330,10 @@ export function Header() {
               </Link>
 
               <div className="flex items-center gap-1 sm:gap-2">
-                {isLoggedIn ? (
+                {isLoadingUser ? (
+                    // Loading Skeleton for User Button
+                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                ) : isLoggedIn ? (
                   <div className="flex items-center gap-1 sm:gap-2">
                     <Link href="/profile" className="flex items-center gap-2 group">
                         <div className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-sm border border-sky-200 dark:border-sky-800 group-hover:border-sky-400 transition-colors">
@@ -339,6 +344,18 @@ export function Header() {
                             )}
                         </div>
                     </Link>
+                    {/* Hide Logout on Mobile */}
+                    <button 
+                      onClick={handleLogout}
+                      className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors hidden sm:block"
+                      title={t('logout')}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                    </button>
                   </div>
                 ) : (
                   <Link href="/login">
@@ -359,8 +376,6 @@ export function Header() {
                   </Link>
                 )}
               </div>
-              {/* Theme Toggle - Visible on Mobile now */}
-              <ThemeToggle className="hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-xl text-slate-600 dark:text-yellow-400" />
             </div>
           </div>
         </div>
@@ -370,7 +385,7 @@ export function Header() {
       {isMobileMenuOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <div className="absolute top-0 left-0 bottom-0 w-11/12 max-w-[300px] bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-left duration-300">
+              <div className="absolute top-0 left-0 bottom-0 w-11/12 max-w-[300px] bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-left duration-300 flex flex-col">
                   <div className="flex justify-between items-center mb-8">
                       <Link href="/" className="text-2xl font-sans font-bold text-sky-500 dark:text-sky-400" onClick={() => setIsMobileMenuOpen(false)}>
                         {shopName}
@@ -378,7 +393,7 @@ export function Header() {
                       <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
                   </div>
                   
-                  <nav className="space-y-4">
+                  <nav className="space-y-4 flex-1">
                       <Link href="/" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>{t('home')}</Link>
                       
                       {/* Wishlist in Menu */}
@@ -454,6 +469,19 @@ export function Header() {
                           Facebook
                       </a>
                   </nav>
+
+                  {/* Mobile Logout */}
+                  {isLoggedIn && (
+                      <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                          <button 
+                              onClick={handleLogout}
+                              className="flex items-center gap-2 text-red-500 font-bold w-full"
+                          >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                              {t('logout')}
+                          </button>
+                      </div>
+                  )}
               </div>
           </div>
       )}

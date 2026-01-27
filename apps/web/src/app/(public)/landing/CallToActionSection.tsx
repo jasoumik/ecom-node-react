@@ -38,7 +38,7 @@ export function CallToActionSection({
         </Text>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href={primaryCta.href}>
-            <Button className="!bg-white !text-sky-600 hover:!bg-sky-50 px-8 py-3 rounded-xl font-bold shadow-lg border-none">
+            <Button className="!bg-white !text-sky-600 hover:!bg-sky-50 px-8 py-3 rounded-full font-bold shadow-lg border-none">
               {getLocalizedField(primaryCta, 'label', language)}
             </Button>
           </Link>

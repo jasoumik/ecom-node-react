@@ -8,28 +8,30 @@ import { useToast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface FeaturedProductsSectionProps {
   title: string;
-  title_bn?: string;
   subtitle?: string;
-  subtitle_bn?: string;
   products: FeaturedProduct[];
   viewAllHref?: string;
 }
 
 export function FeaturedProductsSection({
   title,
-  title_bn,
   subtitle,
-  subtitle_bn,
   products,
   viewAllHref,
 }: FeaturedProductsSectionProps) {
   const { addItem } = useCart();
-  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, items: wishlistItems } = useWishlist();
   const { addToast } = useToast();
   const { t, language } = useLanguage();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleAddToCart = (product: FeaturedProduct) => {
     const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
@@ -46,8 +48,9 @@ export function FeaturedProductsSection({
 
   const toggleWishlist = (product: FeaturedProduct) => {
     const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
+    const isWishlisted = wishlistItems.some(i => i.id === product.id);
 
-    if (isInWishlist(product.id)) {
+    if (isWishlisted) {
         removeFromWishlist(product.id);
         addToast("Removed from wishlist");
     } else {
@@ -62,42 +65,43 @@ export function FeaturedProductsSection({
   };
 
   return (
-    <Section className="py-12 bg-slate-50 dark:bg-slate-950/50">
+    <Section className="py-12 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-end mb-8 gap-2">
             <div>
-                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl">{getLocalizedField({title, title_bn}, 'title', language)}</Heading>
-                {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{getLocalizedField({subtitle, subtitle_bn}, 'subtitle', language)}</p>}
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-black text-3xl tracking-tight">{title}</Heading>
+                {subtitle && <p className="text-slate-500 dark:text-slate-400 text-base mt-1 font-medium">{subtitle}</p>}
             </div>
             {viewAllHref && (
-                <Link href={viewAllHref} className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline">
-                    {t('view_all')} →
+                <Link href={viewAllHref} className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-white/50 shadow-sm transition-all hover:shadow-md dark:bg-slate-800/50 dark:border-slate-700">
+                    {t('view_all')} 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </Link>
             )}
         </div>
       
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             {products.map((product) => {
-            const isWishlisted = isInWishlist(product.id);
+            const isWishlisted = mounted && wishlistItems.some(i => i.id === product.id);
             
             return (
-                <div key={product.id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300 relative flex flex-col">
+                <div key={product.id} className="group bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-[2rem] border border-white/50 dark:border-slate-800 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative flex flex-col">
                     {/* Image Container */}
-                    <div className="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden">
-                        <Link href={product.href} className="block w-full h-full">
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-t-[2rem] m-2 mb-0">
+                        <Link href={product.href} className="block w-full h-full rounded-[1.5rem] overflow-hidden">
                             <ResponsiveImage
                                 src={product.image.src}
                                 alt={getLocalizedField(product, 'name', language)}
                                 width={300}
-                                height={300}
-                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                height={400}
+                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
                             />
                         </Link>
                         
                         {/* Badges */}
                         {product.tag && (
-                            <div className="absolute top-2 left-2">
-                                <span className="bg-sky-500 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded shadow-sm">
+                            <div className="absolute top-3 left-3 z-10">
+                                <span className="bg-white/90 backdrop-blur-md text-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm border border-white/50 dark:bg-slate-800/90 dark:text-white dark:border-slate-700">
                                     {product.tag}
                                 </span>
                             </div>
@@ -106,30 +110,30 @@ export function FeaturedProductsSection({
                         {/* Wishlist Button */}
                         <button 
                             onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-                            className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
+                            className={`absolute top-3 right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-md ${
                                 isWishlisted 
-                                ? 'bg-rose-50 text-rose-500' 
-                                : 'bg-white/90 text-slate-400 hover:text-rose-500 hover:bg-white'
+                                ? 'bg-rose-500 text-white scale-110 shadow-rose-500/30' 
+                                : 'bg-white/80 text-slate-400 hover:bg-white hover:text-rose-500 hover:scale-110 dark:bg-slate-800/80 dark:text-slate-400'
                             }`}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                             </svg>
                         </button>
                     </div>
                     
                     {/* Content */}
-                    <div className="p-3 flex flex-col flex-grow">
-                        <div className="mb-1">
-                            <div className="flex items-center gap-1 mb-1">
-                                <RatingStars rating={product.rating || 5} size="sm" />
-                                <span className="text-[10px] text-slate-400">({product.reviewCount})</span>
-                            </div>
-                            <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-snug min-h-[2.5em]">
+                    <div className="p-2 sm:p-3 flex-col flex-grow">
+                        <div className="mb-3">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug min-h-[2.5em] mb-1">
                                 <Link href={product.href} className="hover:text-sky-600 transition-colors">
                                     {getLocalizedField(product, 'name', language)}
                                 </Link>
                             </h3>
+                            <div className="flex items-center gap-1.5">
+                                <RatingStars rating={product.rating || 5} size="sm" />
+                                <span className="text-xs text-slate-400 font-bold">({product.reviewCount})</span>
+                            </div>
                         </div>
                         
                         <div className="mt-auto pt-2">
@@ -138,7 +142,7 @@ export function FeaturedProductsSection({
                             </div>
                             <Button 
                                 onClick={() => handleAddToCart(product)}
-                                className="w-full py-2 text-xs font-bold bg-sky-500 text-white hover:bg-sky-600 shadow-md rounded-lg"
+                                className="w-full py-2 text-xs font-bold bg-sky-500 text-white hover:bg-sky-600 shadow-sm rounded-lg"
                             >
                                 {t('add_to_cart')}
                             </Button>
