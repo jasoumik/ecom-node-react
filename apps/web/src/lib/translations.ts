@@ -162,7 +162,6 @@ export const translations = {
     join_family: "Join the Prithibee Family",
     join_family_subtitle: "Have questions or suggestions? We'd love to hear from you.",
     contact_us: "Contact Us",
-    start_shopping: "Start Shopping",
 
     // Contact
     contact_hero_subtitle: "We're here to help. Reach out to us for any questions, support, or feedback.",
@@ -193,7 +192,6 @@ export const translations = {
     product_name_placeholder: "e.g. Specific Brand Diapers",
     description_optional: "Description (Optional)",
     description_placeholder: "Any specific details...",
-    submit_request: "Submit Request",
 
     // Login/Register
     welcome_back: "Welcome Back",
@@ -228,6 +226,17 @@ export const translations = {
     order_number: "Order Number",
     continue_shopping: "Continue Shopping",
     view_order: "View Order",
+
+    // Buy Now Page
+    fill_form_to_confirm: "Fill the form below to confirm order",
+    enter_your_name: "Enter your name",
+    enter_mobile_number: "Enter your mobile number",
+    enter_full_address: "Enter your full address",
+    confirm_order: "Confirm Order",
+    click_to_order: "Click to Order",
+    product_price: "Product Price",
+    delivery_charge: "Delivery Charge",
+    processing: "Processing...",
     
     // Common
     loading: "Loading...",
@@ -397,7 +406,6 @@ export const translations = {
     join_family: "পৃথিবী পরিবারে যোগ দিন",
     join_family_subtitle: "প্রশ্ন বা পরামর্শ আছে? আমরা আপনার কথা শুনতে চাই।",
     contact_us: "যোগাযোগ করুন",
-    start_shopping: "কেনাকাটা শুরু করুন",
 
     // Contact
     contact_hero_subtitle: "আমরা সাহায্য করতে এখানে আছি। যেকোনো প্রশ্ন, সহায়তা বা মতামতের জন্য আমাদের সাথে যোগাযোগ করুন।",
@@ -428,42 +436,18 @@ export const translations = {
     product_name_placeholder: "যেমন: নির্দিষ্ট ব্র্যান্ডের ডায়াপার",
     description_optional: "বিবরণ (ঐচ্ছিক)",
     description_placeholder: "যেকোনো নির্দিষ্ট বিবরণ...",
-    submit_request: "অনুরোধ জমা দিন",
 
-    // Login/Register
-    welcome_back: "স্বাগতম",
-    sign_in_details: "সাইন ইন করতে আপনার বিবরণ লিখুন।",
-    password: "পাসওয়ার্ড",
-    otp_login: "ওটিপি (এসএমএস/ইমেল)",
-    phone_email_placeholder: "০১৭... বা you@example.com",
-    password_placeholder: "••••••••",
-    sign_in: "সাইন ইন",
-    send_otp: "ওটিপি পাঠান",
-    enter_otp_code: "{identifier}-এ পাঠানো ৬-সংখ্যার কোডটি লিখুন",
-    verify_login: "যাচাই করুন এবং লগইন করুন",
-    change_number_email: "নম্বর/ইমেল পরিবর্তন করুন",
-    dont_have_account: "অ্যাকাউন্ট নেই?",
-    create_account: "অ্যাকাউন্ট তৈরি করুন",
-    create_account_title: "অ্যাকাউন্ট তৈরি করুন",
-    create_account_subtitle: "আপনার শিশুর জন্য সেরাটি পেতে আমাদের সাথে যোগ দিন।",
-    full_name_placeholder: "জন ডো",
-    already_have_account: "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?",
-    register: "নিবন্ধন করুন",
-    login_success: "সফলভাবে লগইন হয়েছে!",
-    login_failed: "লগইন ব্যর্থ হয়েছে। আপনার তথ্য পরীক্ষা করুন।",
-    otp_sent_success: "ওটিপি সফলভাবে পাঠানো হয়েছে",
-    otp_send_failed: "ওটিপি পাঠাতে ব্যর্থ হয়েছে",
-    invalid_otp: "ভুল ওটিপি",
-    register_success: "অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!",
-    register_failed: "নিবন্ধন ব্যর্থ হয়েছে।",
+    // Buy Now Page
+    fill_form_to_confirm: "অর্ডার কনফার্ম করতে নিচের ফর্মটি পূরণ করুন",
+    enter_your_name: "আপনার নাম লিখুন",
+    enter_mobile_number: "আপনার মোবাইল নম্বর লিখুন",
+    enter_full_address: "আপনার সম্পূর্ণ ঠিকানা লিখুন",
+    confirm_order: "অর্ডার কনফার্ম করুন",
+    click_to_order: "অর্ডার করতে ক্লিক করুন",
+    product_price: "পণ্যের দাম",
+    delivery_charge: "ডেলিভারি চার্জ",
+    processing: "প্রসেসিং...",
     
-    // Thank You Page
-    thank_you_title: "আপনার অর্ডারের জন্য ধন্যবাদ!",
-    thank_you_subtitle: "আমরা আপনার অর্ডার পেয়েছি এবং শীঘ্রই এটি প্রক্রিয়া করব।",
-    order_number: "অর্ডার নম্বর",
-    continue_shopping: "কেনাকাটা চালিয়ে যান",
-    view_order: "অর্ডার দেখুন",
-
     // Common
     loading: "লোড হচ্ছে...",
     success: "সফল",
