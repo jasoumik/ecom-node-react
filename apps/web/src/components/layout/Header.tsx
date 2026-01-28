@@ -12,6 +12,7 @@ import { API_URL } from "@/lib/config";
 import { useSettings } from "@/lib/settings-context";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField } from "@/lib/utils";
+import Image from "next/image";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -147,9 +148,6 @@ export function Header() {
 
   const isLoggedIn = user && user.id;
 
-  // Helper to get shop name
-  const shopName = getLocalizedField({ name: settings.shop_name, name_bn: settings.shop_name_bn }, 'name', language);
-
   return (
     <>
       {/* Top Offer Bar */}
@@ -184,8 +182,15 @@ export function Header() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
 
-                <Link href="/" className="text-xl sm:text-3xl font-sans font-bold text-sky-500 dark:text-sky-400 tracking-tight hover:text-sky-600 transition-colors truncate max-w-[120px] sm:max-w-none">
-                    {shopName}
+                <Link href="/" className="flex items-center shrink-0">
+                    <Image 
+                        src="/logo.png" 
+                        alt={settings.shop_name} 
+                        width={120} 
+                        height={40} 
+                        className="h-8 sm:h-10 w-auto object-contain"
+                        priority
+                    />
                 </Link>
             </div>
 
@@ -387,8 +392,14 @@ export function Header() {
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
               <div className="absolute top-0 left-0 bottom-0 w-11/12 max-w-[300px] bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-left duration-300 flex flex-col">
                   <div className="flex justify-between items-center mb-8">
-                      <Link href="/" className="text-2xl font-sans font-bold text-sky-500 dark:text-sky-400" onClick={() => setIsMobileMenuOpen(false)}>
-                        {shopName}
+                      <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Image 
+                            src="/logo.png" 
+                            alt={settings.shop_name} 
+                            width={100} 
+                            height={32} 
+                            className="h-8 w-auto object-contain"
+                        />
                       </Link>
                       <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
                   </div>

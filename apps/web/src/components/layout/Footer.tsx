@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useLanguage } from "@/lib/language-context";
 import { useSettings } from "@/lib/settings-context";
 
@@ -14,8 +15,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="text-2xl font-sans font-bold text-sky-500 dark:text-sky-400 tracking-tight">
-              {settings.shop_name}
+            <Link href="/" className="inline-block">
+              <Image 
+                  src="/logo.png" 
+                  alt={settings.shop_name} 
+                  width={140} 
+                  height={48} 
+                  className="h-10 w-auto object-contain"
+              />
             </Link>
             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
               {t('footer_desc')}
