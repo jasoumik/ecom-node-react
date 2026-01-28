@@ -143,6 +143,14 @@ export const translations = {
     print_invoice: "Print Invoice",
     back: "Back",
     write_review: "Write Review",
+    track_order: "Track Order",
+    order_tracking: "Order Tracking",
+    order_placed: "Order Placed",
+    processing: "Processing",
+    shipped: "Shipped",
+    delivered: "Delivered",
+    cancelled: "Cancelled",
+    estimated_delivery: "Estimated Delivery",
 
     // About
     shop_name: "Prithibee",
@@ -236,8 +244,7 @@ export const translations = {
     click_to_order: "Click to Order",
     product_price: "Product Price",
     delivery_charge: "Delivery Charge",
-    processing: "Processing...",
-    
+
     // Common
     loading: "Loading...",
     success: "Success",
@@ -387,6 +394,14 @@ export const translations = {
     print_invoice: "ইনভয়েস প্রিন্ট করুন",
     back: "ফিরে যান",
     write_review: "রিভিউ লিখুন",
+    track_order: "অর্ডার ট্র্যাক করুন",
+    order_tracking: "অর্ডার ট্র্যাকিং",
+    order_placed: "অর্ডার প্লেসড",
+    processing: "প্রসেসিং",
+    shipped: "শিপড",
+    delivered: "ডেলিভারড",
+    cancelled: "বাতিল",
+    estimated_delivery: "আনুমানিক ডেলিভারি",
 
     // About
     shop_name: "পৃথিবী",
@@ -446,8 +461,7 @@ export const translations = {
     click_to_order: "অর্ডার করতে ক্লিক করুন",
     product_price: "পণ্যের দাম",
     delivery_charge: "ডেলিভারি চার্জ",
-    processing: "প্রসেসিং...",
-    
+
     // Common
     loading: "লোড হচ্ছে...",
     success: "সফল",

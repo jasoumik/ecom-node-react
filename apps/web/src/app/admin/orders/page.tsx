@@ -7,6 +7,7 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { Table } from "@/components/ui/Table";
 import { FilterBar } from "@/components/ui/FilterBar";
+import { Input } from "@/components/ui/Input";
 
 const STATUS_OPTIONS = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -14,6 +15,8 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusModal, setStatusModal] = useState<{ id: string, status: string } | null>(null);
+  const [statusComment, setStatusComment] = useState("");
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -47,18 +50,31 @@ export default function AdminOrdersPage() {
       ));
   };
 
-  const handleStatusUpdate = async (id: string, status: string) => {
+  const confirmStatusUpdate = async () => {
+    if (!statusModal) return;
+    
     try {
-      const res = await fetch(`${API_URL}/orders/${id}/status`, {
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      const res = await fetch(`${API_URL}/orders/${statusModal.id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ 
+            status: statusModal.status,
+            comment: statusComment,
+            userId: user?.id
+        }),
       });
+      
       if (res.ok) {
-        addToast(`Order marked as ${status}`, "success");
+        addToast(`Order marked as ${statusModal.status}`, "success");
         fetchOrders();
+        setStatusModal(null);
+        setStatusComment("");
       } else {
-        addToast("Failed to update status", "error");
+        const err = await res.json();
+        addToast(err.message || "Failed to update status", "error");
       }
     } catch (e) {
       addToast("Error updating status", "error");
@@ -112,7 +128,7 @@ export default function AdminOrdersPage() {
             cell: (order) => (
                 <select
                     value={order.status}
-                    onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                    onChange={(e) => setStatusModal({ id: order.id, status: e.target.value })}
                     className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded border-none focus:ring-0 cursor-pointer ${
                         order.status === 'completed' || order.status === 'delivered' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
                         order.status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
@@ -132,7 +148,7 @@ export default function AdminOrdersPage() {
             cell: (order) => (
               <div className="flex justify-end gap-1">
                   <button 
-                    onClick={() => router.push(`/profile/orders/${order.id}`)} // Reusing public invoice view for now
+                    onClick={() => router.push(`/profile/orders/${order.id}`)} 
                     className="p-1.5 rounded text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition-colors"
                     title="View Invoice"
                   >
@@ -143,6 +159,34 @@ export default function AdminOrdersPage() {
           }
         ]}
       />
+
+      {/* Status Update Modal */}
+      {statusModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-6 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Update Status</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                      Change status to <span className="font-bold uppercase">{statusModal.status}</span>?
+                  </p>
+                  
+                  <div className="mb-6">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Comment (Optional)</label>
+                      <textarea 
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
+                          value={statusComment}
+                          onChange={(e) => setStatusComment(e.target.value)}
+                          rows={3}
+                          placeholder="Add a note about this status change..."
+                      />
+                  </div>
+                  
+                  <div className="flex justify-end gap-3">
+                      <Button variant="outline" onClick={() => { setStatusModal(null); setStatusComment(""); }} className="rounded-lg py-2 px-4 text-xs h-auto">Cancel</Button>
+                      <Button onClick={confirmStatusUpdate} className="rounded-lg py-2 px-4 text-xs h-auto bg-sky-500 text-white hover:bg-sky-600">Confirm Update</Button>
+                  </div>
+              </div>
+          </div>
+      )}
     </div>
   );
 }

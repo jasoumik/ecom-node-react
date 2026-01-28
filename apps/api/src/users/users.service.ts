@@ -82,6 +82,12 @@ export class UsersService {
   }
 
   async addAddress(userId: string, addressData: any): Promise<any> {
+    // Check if user exists
+    const user = await this.knex('users').where({ id: userId }).first();
+    if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
     // If default, unset other defaults
     if (addressData.is_default) {
       await this.knex('addresses').where({ user_id: userId }).update({ is_default: false });

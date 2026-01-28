@@ -118,6 +118,13 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
+        // Initial History Log
+        await trx('order_history').insert({
+            order_id: order.id,
+            status: 'pending',
+            comment: 'Order placed'
+        });
+
         for (const item of orderItemsData) {
             if (item.variant_id) {
                 await trx('product_variants').where({ id: item.variant_id }).decrement('stock', item.quantity);
@@ -216,6 +223,13 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
+        // Initial History Log
+        await trx('order_history').insert({
+            order_id: order.id,
+            status: orderData.status,
+            comment: 'Manual Order Created'
+        });
+
         for (const item of orderItemsData) {
             if (item.variant_id) {
                 await trx('product_variants').where({ id: item.variant_id }).decrement('stock', item.quantity);
@@ -288,6 +302,7 @@ export class OrdersService {
     
     const items = await this.knex('order_items').where({ order_id: id });
     const reviews = await this.knex('reviews').where({ order_id: id });
+    const history = await this.knex('order_history').where({ order_id: id }).orderBy('created_at', 'asc');
     
     order.items = items.map(item => {
         const review = reviews.find(r => r.product_id === item.product_id);
@@ -296,24 +311,44 @@ export class OrdersService {
             review: review || null
         };
     });
-
+    
+    order.history = history;
+    
     return order;
   }
 
-  async updateStatus(id: string, status: string): Promise<any> {
-    const [order] = await this.knex('orders')
-      .where({ id })
-      .update({ status })
-      .returning('*');
+  async updateStatus(id: string, status: string, comment?: string, userId?: string): Promise<any> {
+    const order = await this.knex('orders').where({ id }).first();
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
+
+    // Workflow Validation
+    const currentStatus = order.status;
     
-    // Notify customer on status change
-    const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
-    await this.notificationService.sendSMS(order.customer_phone, msg);
-    
-    return order;
+    if (status === 'delivered' && currentStatus === 'pending') {
+        throw new BadRequestException('Cannot mark Pending order as Delivered directly. Must be Shipped first.');
+    }
+
+    return await this.knex.transaction(async (trx) => {
+        const [updatedOrder] = await trx('orders')
+          .where({ id })
+          .update({ status })
+          .returning('*');
+        
+        await trx('order_history').insert({
+            order_id: id,
+            status: status,
+            comment: comment || `Status updated to ${status}`,
+            updated_by: userId || null
+        });
+        
+        // Notify customer on status change
+        const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
+        await this.notificationService.sendSMS(order.customer_phone, msg);
+        
+        return updatedOrder;
+    });
   }
 
   async cancelOrder(id: string, userId: string): Promise<any> {
@@ -348,6 +383,12 @@ export class OrdersService {
         await trx('orders')
             .where({ id })
             .update({ status: 'cancelled' });
+
+        await trx('order_history').insert({
+            order_id: id,
+            status: 'cancelled',
+            comment: 'Order cancelled by user'
+        });
     });
         
     return { ...order, status: 'cancelled' };

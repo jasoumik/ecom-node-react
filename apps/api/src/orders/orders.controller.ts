@@ -33,8 +33,13 @@ export class OrdersController {
   }
 
   @Put(':id/status')
-  updateStatus(@Param('id') id: string, @Body('status') status: string) {
-    return this.ordersService.updateStatus(id, status);
+  updateStatus(
+      @Param('id') id: string, 
+      @Body('status') status: string,
+      @Body('comment') comment?: string,
+      @Body('userId') userId?: string
+  ) {
+    return this.ordersService.updateStatus(id, status, comment, userId);
   }
 
   @Put(':id/cancel')

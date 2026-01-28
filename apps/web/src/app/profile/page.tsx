@@ -115,14 +115,24 @@ export default function ProfilePage() {
                                         <div className="text-sm font-bold text-slate-900 dark:text-white">
                                             ৳{order.total_amount}
                                         </div>
-                                        <Button 
-                                            size="sm" 
-                                            variant="secondary" 
-                                            className="rounded-xl text-xs"
-                                            onClick={() => router.push(`/profile/orders/${order.id}`)}
-                                        >
-                                            {t('view')} {t('invoice')}
-                                        </Button>
+                                        <div className="flex gap-2">
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline" 
+                                                className="rounded-xl text-xs"
+                                                onClick={() => router.push(`/track/${order.id}`)}
+                                            >
+                                                {t('track_order')}
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="secondary" 
+                                                className="rounded-xl text-xs"
+                                                onClick={() => router.push(`/profile/orders/${order.id}`)}
+                                            >
+                                                {t('view')} {t('invoice')}
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
