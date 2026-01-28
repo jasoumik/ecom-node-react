@@ -120,8 +120,9 @@ export default function BuyNowPage() {
 
     setIsSubmitting(true);
     try {
-      // Save address if requested
-      if (user && saveAddress && customerAddress) {
+      // Save address if requested AND not already saved
+      const isAddressSaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
+      if (user && saveAddress && customerAddress && !isAddressSaved) {
           await fetch(`${API_URL}/users/${user.id}/addresses`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -199,8 +200,10 @@ export default function BuyNowPage() {
 
   const currentImage = mediaList[selectedImageIndex] || mediaList[0];
 
+  const isAddressAlreadySaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans">
       {/* Simple Header */}
       <header className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 py-4 text-center sticky top-0 z-50">
           <h1 className="text-2xl font-bold text-sky-500">{settings.shop_name}</h1>
@@ -385,20 +388,6 @@ export default function BuyNowPage() {
                         placeholder={t('enter_full_address')}
                     />
                 </div>
-                
-                {user && (
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <div className="relative flex items-center">
-                            <input 
-                                type="checkbox" 
-                                checked={saveAddress} 
-                                onChange={e => setSaveAddress(e.target.checked)}
-                                className="peer w-5 h-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500 transition-all cursor-pointer"
-                            />
-                        </div>
-                        <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-sky-600 transition-colors">Save this address for future</span>
-                    </label>
-                )}
 
                 <div className="space-y-3">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">{t('delivery_area')}</label>
