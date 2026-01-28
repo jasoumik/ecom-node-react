@@ -1,9 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter, Poppins, Hind_Siliguri } from "next/font/google"; // Added Hind_Siliguri
+import { Poppins, Hind_Siliguri } from "next/font/google"; // Removed Inter
 import { LayoutContent } from "@/components/layout/LayoutContent";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({ 
   weight: ['400', '500', '600', '700', '800'],
   subsets: ["latin"], 
@@ -27,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="light">
-      <body className={`${inter.variable} ${poppins.variable} ${hindSiliguri.variable} font-sans bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
+      <body className={`${poppins.variable} ${hindSiliguri.variable} font-sans bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
         <LayoutContent>{children}</LayoutContent>
       </body>
     </html>

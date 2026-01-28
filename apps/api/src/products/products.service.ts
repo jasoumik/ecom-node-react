@@ -29,8 +29,9 @@ export class ProductsService {
 
     const products = await baseQuery.clone().select('*').limit(limit).offset(offset).orderBy('created_at', 'desc');
 
-    // Fetch ratings for these products
     const productIds = products.map(p => p.id);
+
+    // Fetch ratings
     const ratings = await this.knex('reviews')
         .whereIn('product_id', productIds)
         .where('status', 'approved')
@@ -47,11 +48,34 @@ export class ProductsService {
         return acc;
     }, {});
 
-    const data = products.map(p => ({
-        ...p,
-        reviewCount: ratingsMap[p.id]?.count || 0,
-        rating: ratingsMap[p.id]?.average || 0
-    }));
+    // Fetch price ranges from variants
+    const variants = await this.knex('product_variants')
+        .whereIn('product_id', productIds)
+        .select('product_id', 'price');
+
+    const priceMap = variants.reduce((acc, v) => {
+        if (!acc[v.product_id]) acc[v.product_id] = [];
+        if (v.price) acc[v.product_id].push(parseFloat(v.price));
+        return acc;
+    }, {});
+
+    const data = products.map(p => {
+        const variantPrices = priceMap[p.id] || [];
+        const basePrice = parseFloat(p.price);
+        const allPrices = [basePrice, ...variantPrices].filter(p => !isNaN(p));
+        
+        const minPrice = Math.min(...allPrices);
+        const maxPrice = Math.max(...allPrices);
+
+        return {
+            ...p,
+            reviewCount: ratingsMap[p.id]?.count || 0,
+            rating: ratingsMap[p.id]?.average || 0,
+            minPrice,
+            maxPrice,
+            hasMultiplePrices: minPrice !== maxPrice
+        };
+    });
 
     return {
       data,
@@ -165,6 +189,16 @@ export class ProductsService {
         category_name,
         // @ts-ignore
         category_name_bn,
+        // @ts-ignore
+        reviewCount,
+        // @ts-ignore
+        rating,
+        // @ts-ignore
+        minPrice,
+        // @ts-ignore
+        maxPrice,
+        // @ts-ignore
+        hasMultiplePrices,
         ...updateData 
     } = updateProductDto as any;
 

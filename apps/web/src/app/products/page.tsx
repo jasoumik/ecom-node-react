@@ -63,7 +63,12 @@ export default function ProductsPage() {
         if (isInitial) {
             setProducts(newProducts);
         } else {
-            setProducts(prev => [...prev, ...newProducts]);
+            setProducts(prev => {
+                // Filter out duplicates
+                const existingIds = new Set(prev.map(p => p.id));
+                const uniqueNewProducts = newProducts.filter((p: any) => !existingIds.has(p.id));
+                return [...prev, ...uniqueNewProducts];
+            });
         }
 
         if (newProducts.length === 0 || (isInitial && newProducts.length < 12) || (products.length + newProducts.length >= total)) {
@@ -95,6 +100,12 @@ export default function ProductsPage() {
             const parsed = JSON.parse(product.images);
             if (Array.isArray(parsed) && parsed.length > 0) imageUrl = getImageUrl(parsed[0]);
         } catch (e) {}
+    }
+
+    // If product has variants, redirect to product page instead of adding to cart directly
+    if (product.hasMultiplePrices || product.has_variants) {
+        window.location.href = `/products/${product.id}`;
+        return;
     }
 
     addItem({
@@ -167,6 +178,7 @@ export default function ProductsPage() {
                     }
 
                     const isWishlisted = mounted && wishlistItems.some(i => i.id === product.id);
+                    const hasVariants = product.hasMultiplePrices || product.has_variants;
 
                     return (
                     <div key={product.id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300 relative flex flex-col">
@@ -211,15 +223,21 @@ export default function ProductsPage() {
                                 </h3>
                             </div>
                             
-                            <div className="mt-auto pt-2 flex flex-col gap-2">
+                            <div className="mt-auto pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <div className="text-base font-bold text-sky-600 dark:text-sky-400">
-                                    ৳{product.price}
+                                    {product.hasMultiplePrices ? (
+                                        <span className="text-sm">
+                                            ৳{product.minPrice} - ৳{product.maxPrice}
+                                        </span>
+                                    ) : (
+                                        `৳${product.price}`
+                                    )}
                                 </div>
                                 <Button 
                                     onClick={() => handleAddToCart(product)}
-                                    className="w-full py-2 text-xs font-bold bg-sky-50 text-sky-600 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 rounded-lg shadow-sm whitespace-nowrap"
+                                    className="w-full sm:w-auto py-1.5 px-2 sm:px-3 text-[10px] sm:text-xs font-bold bg-sky-50 text-sky-600 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 rounded-lg shadow-sm whitespace-nowrap"
                                 >
-                                    {t('add_to_cart')}
+                                    {hasVariants ? 'View Options' : t('add_to_cart')}
                                 </Button>
                             </div>
                         </div>

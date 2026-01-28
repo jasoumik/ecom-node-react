@@ -29,6 +29,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [quantity, setQuantity] = useState(1); // Quantity State
 
   // Notify Me State
   const [showNotifyModal, setShowNotifyModal] = useState(false);
@@ -166,8 +167,8 @@ export default function ProductPage() {
     const finalPrice = selectedVariant ? parseFloat(selectedVariant.price || product.price) : parseFloat(product.price);
     const finalStock = selectedVariant ? selectedVariant.stock : product.stock;
 
-    if (finalStock <= 0) {
-        setShowNotifyModal(true);
+    if (finalStock < quantity) {
+        addToast(`Only ${finalStock} items available`, "error");
         return;
     }
 
@@ -187,15 +188,15 @@ export default function ProductPage() {
       name: `${getLocalizedField(product, 'name', language)} ${selectedVariant ? `(${[selectedSize, selectedColor].filter(Boolean).join(' ')})` : ''}`,
       price: finalPrice,
       image: imageUrl,
-      quantity: 1,
+      quantity: quantity,
     });
-    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
+    addToast(`Added ${quantity} x ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
   const handleOrderNow = () => {
       const finalStock = selectedVariant ? selectedVariant.stock : product.stock;
-      if (finalStock <= 0) {
-          setShowNotifyModal(true);
+      if (finalStock < quantity) {
+          addToast(`Only ${finalStock} items available`, "error");
           return;
       }
       handleAddToCart();
@@ -471,6 +472,28 @@ export default function ProductPage() {
                 </div>
             )}
 
+            {/* Quantity Selector */}
+            {currentStock > 0 && (
+                <div className="flex items-center gap-4">
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('quantity')}:</span>
+                    <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                        <button 
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                        >
+                            -
+                        </button>
+                        <span className="font-bold w-8 text-center text-slate-900 dark:text-white">{quantity}</span>
+                        <button 
+                            onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
+                            className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Delivery Info */}
             <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -613,7 +636,7 @@ export default function ProductPage() {
                             {review.images && (
                                 <div className="flex gap-2">
                                     {parseReviewImages(review.images).map((img: string, i: number) => (
-                                        <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
+                                        <div key={i} className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
                                             <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
                                         </div>
                                     ))}
