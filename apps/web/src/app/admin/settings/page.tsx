@@ -9,6 +9,7 @@ import { FullScreenLoader } from "@/components/ui/Loader";
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -19,7 +20,9 @@ export default function AdminSettingsPage() {
     try {
       const res = await fetch(`${API_URL}/settings`);
       const data = await res.json();
-      setSettings(Array.isArray(data) ? data : []);
+      // Sort settings to ensure stable order
+      const sorted = (Array.isArray(data) ? data : []).sort((a: any, b: any) => a.key.localeCompare(b.key));
+      setSettings(sorted);
     } catch (e) {
       console.error(e);
     } finally {
@@ -27,21 +30,28 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleUpdate = async (key: string, value: string) => {
+  const handleChange = (key: string, value: string) => {
+      setSettings(prev => prev.map(s => s.key === key ? { ...s, value } : s));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const res = await fetch(`${API_URL}/settings/${key}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value }),
-      });
-      if (res.ok) {
-        addToast("Setting updated", "success");
-        fetchSettings();
-      } else {
-        addToast("Failed to update setting", "error");
-      }
+      // Save all settings in parallel
+      await Promise.all(settings.map(s => 
+          fetch(`${API_URL}/settings/${s.key}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ value: s.value }),
+          })
+      ));
+      
+      addToast("Settings saved successfully", "success");
+      fetchSettings(); // Refresh to be sure
     } catch (e) {
-      addToast("Error updating setting", "error");
+      addToast("Error saving settings", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -49,13 +59,22 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 max-w-3xl">
-      <div>
-        <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Settings</Heading>
-        <p className="text-xs text-slate-500">Configure system preferences</p>
+      <div className="flex justify-between items-center">
+        <div>
+            <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Settings</Heading>
+            <p className="text-xs text-slate-500">Configure system preferences</p>
+        </div>
+        <Button 
+            onClick={handleSave} 
+            disabled={saving}
+            className="rounded-lg shadow-md shadow-sky-500/20 py-2 px-6 text-sm h-auto"
+        >
+            {saving ? "Saving..." : "Save Changes"}
+        </Button>
       </div>
       
       <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-        <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">Inventory Configuration</h3>
+        <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">General Configuration</h3>
         
         <div className="space-y-5">
             {settings.map(setting => (
@@ -72,7 +91,7 @@ export default function AdminSettingsPage() {
                                     type="radio" 
                                     name="inventory_method" 
                                     checked={setting.value === 'FIFO'} 
-                                    onChange={() => handleUpdate('inventory_method', 'FIFO')}
+                                    onChange={() => handleChange('inventory_method', 'FIFO')}
                                     className="w-3.5 h-3.5 text-sky-500 focus:ring-sky-500"
                                 />
                                 <span className="text-xs font-bold text-slate-900 dark:text-white">FIFO (First-In, First-Out)</span>
@@ -82,7 +101,7 @@ export default function AdminSettingsPage() {
                                     type="radio" 
                                     name="inventory_method" 
                                     checked={setting.value === 'LIFO'} 
-                                    onChange={() => handleUpdate('inventory_method', 'LIFO')}
+                                    onChange={() => handleChange('inventory_method', 'LIFO')}
                                     className="w-3.5 h-3.5 text-sky-500 focus:ring-sky-500"
                                 />
                                 <span className="text-xs font-bold text-slate-900 dark:text-white">LIFO (Last-In, First-Out)</span>
@@ -92,7 +111,7 @@ export default function AdminSettingsPage() {
                         <input 
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
                             value={setting.value}
-                            onChange={(e) => handleUpdate(setting.key, e.target.value)}
+                            onChange={(e) => handleChange(setting.key, e.target.value)}
                         />
                     )}
                 </div>
