@@ -13,7 +13,15 @@ export class RequestsService {
 
   // Stock Requests
   async createStockRequest(data: CreateStockRequestDto) {
-    const [request] = await this.knex('stock_requests').insert(data).returning('*');
+    const insertData = {
+        product_id: data.productId,
+        variant_id: data.variantId || null,
+        phone: data.phone,
+        email: data.email || null,
+        status: 'pending'
+    };
+
+    const [request] = await this.knex('stock_requests').insert(insertData).returning('*');
     
     const adminMessage = `New Stock Request for Product ID: ${data.productId}. Customer: ${data.phone}`;
     await this.notificationService.sendEmail(process.env.ADMIN_EMAIL || 'admin@example.com', 'New Stock Request', adminMessage);
@@ -52,7 +60,16 @@ export class RequestsService {
 
   // Product Requests
   async createProductRequest(data: CreateProductRequestDto) {
-    const [request] = await this.knex('product_requests').insert(data).returning('*');
+    const insertData = {
+        product_name: data.productName,
+        description: data.description,
+        user_name: data.userName,
+        phone: data.phone,
+        email: data.email || null,
+        status: 'pending'
+    };
+
+    const [request] = await this.knex('product_requests').insert(insertData).returning('*');
     
     const adminMessage = `New Product Request: ${data.productName}. Customer: ${data.userName} (${data.phone})`;
     await this.notificationService.sendEmail(process.env.ADMIN_EMAIL || 'admin@example.com', 'New Product Idea', adminMessage);
