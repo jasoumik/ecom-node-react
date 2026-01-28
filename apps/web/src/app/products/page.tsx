@@ -114,6 +114,7 @@ export default function ProductsPage() {
       price: parseFloat(product.price),
       image: imageUrl,
       quantity: 1,
+      stock: parseInt(product.stock) || 0 // Pass stock
     });
     addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };

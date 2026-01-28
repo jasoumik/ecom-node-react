@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, totalPrice, clearCart, addItem } = useCart();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
@@ -25,6 +25,8 @@ export default function CartPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [saveAddress, setSaveAddress] = useState(false);
   const { addToast } = useToast();
   const { t } = useLanguage();
 
@@ -36,11 +38,59 @@ export default function CartPage() {
             setUser(parsedUser);
             setCustomerName(parsedUser.name || "");
             setCustomerPhone(parsedUser.phone || "");
+            fetchAddresses(parsedUser.id);
         } catch (e) {}
     }
     fetchDeliveryCharges();
     fetchSettings();
+    validateStock();
   }, []);
+
+  const validateStock = async () => {
+      if (items.length === 0) return;
+      
+      try {
+          const updatedItems = await Promise.all(items.map(async (item) => {
+              const res = await fetch(`${API_URL}/products/${item.id}`);
+              if (res.ok) {
+                  const product = await res.json();
+                  let stock = product.stock;
+                  
+                  if (item.variantId) {
+                      const variant = product.variants?.find((v: any) => v.id === item.variantId);
+                      if (variant) stock = variant.stock;
+                  }
+                  
+                  return { ...item, stock: parseInt(stock) };
+              }
+              return item;
+          }));
+
+          updatedItems.forEach(newItem => {
+              const oldItem = items.find(i => i.id === newItem.id && i.variantId === newItem.variantId);
+              if (oldItem && oldItem.stock !== newItem.stock) {
+                  addItem(newItem); 
+                  if (newItem.quantity > newItem.stock) {
+                      updateQuantity(newItem.id, newItem.stock, newItem.variantId);
+                      addToast(`Quantity for ${newItem.name} adjusted to available stock`, "error");
+                  }
+              }
+          });
+          
+      } catch (e) {
+          console.error("Failed to validate stock");
+      }
+  };
+
+  const fetchAddresses = async (userId: string) => {
+      try {
+          const res = await fetch(`${API_URL}/users/${userId}/addresses`);
+          if (res.ok) {
+              const data = await res.json();
+              setSavedAddresses(Array.isArray(data) ? data : []);
+          }
+      } catch (e) {}
+  };
 
   const fetchDeliveryCharges = async () => {
       try {
@@ -123,6 +173,16 @@ export default function CartPage() {
 
     setIsSubmitting(true);
     try {
+      // Save address if requested AND not already saved
+      const isAddressSaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
+      if (user && saveAddress && customerAddress && !isAddressSaved) {
+          await fetch(`${API_URL}/users/${user.id}/addresses`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ address: customerAddress, type: 'Home', is_default: false }),
+          });
+      }
+
       const orderData = {
         customerName,
         customerPhone,
@@ -149,7 +209,7 @@ export default function CartPage() {
         const data = await res.json();
         addToast("Order placed successfully!", "success");
         clearCart();
-        router.push(`/thank-you?orderId=${data.id}`); // Redirect to Thank You page
+        router.push(`/thank-you?orderId=${data.id}`);
       } else {
         const errorData = await res.json();
         console.error("Order error:", errorData);
@@ -161,6 +221,10 @@ export default function CartPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddressSelect = (address: any) => {
+      setCustomerAddress(address.address);
   };
 
   if (items.length === 0) {
@@ -192,6 +256,8 @@ export default function CartPage() {
       }
   }
 
+  const isAddressAlreadySaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-slate-950 py-12 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -217,43 +283,56 @@ export default function CartPage() {
             </div>
 
             <div className="space-y-4">
-                {items.map((item) => (
-                <div key={`${item.id}-${item.variantId}`} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
-                    
-                    <div className="flex-1 w-full text-center sm:text-left">
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{item.name}</h3>
-                    <p className="text-sky-500 font-bold text-xl">৳{item.price}</p>
-                    </div>
+                {items.map((item) => {
+                    // Safe quantity check
+                    const qty = Number(item.quantity) || 1;
+                    const stock = item.stock !== undefined ? Number(item.stock) : 999; // Default to 999 if stock unknown
 
-                    <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                        <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
+                    return (
+                    <div key={`${item.id}-${item.variantId}`} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        
+                        <div className="flex-1 w-full text-center sm:text-left">
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{item.name}</h3>
+                        <p className="text-sky-500 font-bold text-xl">৳{item.price}</p>
+                        </div>
+
+                        <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                            <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
+                                <button 
+                                    onClick={() => updateQuantity(item.id, Math.max(1, qty - 1), item.variantId)} 
+                                    className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                                >
+                                    -
+                                </button>
+                                <span className="font-bold w-6 text-center text-slate-900 dark:text-white">{qty}</span>
+                                <button 
+                                    onClick={() => {
+                                        if (qty < stock) {
+                                            updateQuantity(item.id, qty + 1, item.variantId);
+                                        } else {
+                                            addToast(`Only ${stock} items available`, "error");
+                                        }
+                                    }} 
+                                    className={`w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center shadow-sm transition-all font-bold ${qty >= stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                                    disabled={qty >= stock}
+                                >
+                                    +
+                                </button>
+                            </div>
                             <button 
-                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)} 
-                                className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                                onClick={() => removeItem(item.id, item.variantId)} 
+                                className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
+                                title="Remove Item"
                             >
-                                -
-                            </button>
-                            <span className="font-bold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
-                            <button 
-                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)} 
-                                className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
-                            >
-                                +
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             </button>
                         </div>
-                        <button 
-                            onClick={() => removeItem(item.id, item.variantId)} 
-                            className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
-                            title="Remove Item"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
                     </div>
-                </div>
-                ))}
+                    );
+                })}
             </div>
           </div>
 
@@ -317,7 +396,16 @@ export default function CartPage() {
                                         />
                                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{charge.name}</span>
                                     </div>
-                                    <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
+                                    <div className="text-right">
+                                        {isFreeShipping ? (
+                                            <>
+                                                <span className="text-xs text-slate-400 line-through mr-2">৳{charge.amount}</span>
+                                                <span className="text-sm font-bold text-emerald-600">FREE</span>
+                                            </>
+                                        ) : (
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
+                                        )}
+                                    </div>
                                 </label>
                             ))}
                         </div>
@@ -358,6 +446,42 @@ export default function CartPage() {
                         )}
 
                         <h4 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider mt-6">{t('shipping_details')}</h4>
+                        
+                        {/* Saved Addresses - Animated */}
+                        {savedAddresses.length > 0 && (
+                            <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Saved Addresses</label>
+                                    <span className="text-[10px] text-sky-500 font-medium bg-sky-50 px-2 py-0.5 rounded-full">Tap to select</span>
+                                </div>
+                                <div className="space-y-2">
+                                    {savedAddresses.map(addr => (
+                                        <button
+                                            key={addr.id}
+                                            type="button"
+                                            onClick={() => handleAddressSelect(addr)}
+                                            className={`w-full text-left p-3 rounded-xl border transition-all duration-200 group relative overflow-hidden ${
+                                                customerAddress === addr.address 
+                                                ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500' 
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-sky-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            }`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                                    <span className="text-lg">{addr.type === 'Home' ? '🏠' : addr.type === 'Office' ? '🏢' : '📍'}</span>
+                                                    {addr.type}
+                                                </div>
+                                                {customerAddress === addr.address && (
+                                                    <span className="text-sky-500 text-xs font-bold animate-in zoom-in">Selected</span>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-slate-500 truncate mt-1 pl-7">{addr.address}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <Input 
                             label={t('full_name')} 
                             value={customerName} 
@@ -384,6 +508,20 @@ export default function CartPage() {
                             placeholder="Street address, City, Zip"
                             />
                         </div>
+                        
+                        {user && !isAddressAlreadySaved && (
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={saveAddress} 
+                                        onChange={e => setSaveAddress(e.target.checked)}
+                                        className="peer w-5 h-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500 transition-all cursor-pointer"
+                                    />
+                                </div>
+                                <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-sky-600 transition-colors">Save this address for future</span>
+                            </label>
+                        )}
                     </div>
                     
                     <Button 

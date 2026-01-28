@@ -120,6 +120,10 @@ export default function ProductPage() {
       });
       
       setSelectedVariant(variant);
+      // Only reset quantity if the variant actually changes to a different ID
+      // But here we just reset to 1 to be safe, which is fine unless it triggers on every render.
+      // It triggers when selectedSize/Color changes.
+      setQuantity(1);
   }, [selectedSize, selectedColor, product]);
 
   const handleSizeChange = (newSize: string) => {
@@ -165,7 +169,7 @@ export default function ProductPage() {
     }
 
     const finalPrice = selectedVariant ? parseFloat(selectedVariant.price || product.price) : parseFloat(product.price);
-    const finalStock = selectedVariant ? selectedVariant.stock : product.stock;
+    const finalStock = selectedVariant ? parseInt(selectedVariant.stock) : parseInt(product.stock);
 
     if (finalStock < quantity) {
         addToast(`Only ${finalStock} items available`, "error");
@@ -189,12 +193,13 @@ export default function ProductPage() {
       price: finalPrice,
       image: imageUrl,
       quantity: quantity,
+      stock: finalStock // Pass stock
     });
     addToast(`Added ${quantity} x ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
   const handleOrderNow = () => {
-      const finalStock = selectedVariant ? selectedVariant.stock : product.stock;
+      const finalStock = selectedVariant ? parseInt(selectedVariant.stock) : parseInt(product.stock);
       if (finalStock < quantity) {
           addToast(`Only ${finalStock} items available`, "error");
           return;
@@ -275,7 +280,7 @@ export default function ProductPage() {
   const colors = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) : [];
 
   const currentPrice = selectedVariant ? (selectedVariant.price || product.price) : product.price;
-  const currentStock = selectedVariant ? selectedVariant.stock : product.stock;
+  const currentStock = selectedVariant ? parseInt(selectedVariant.stock) : parseInt(product.stock);
 
   const isSizeAvailable = (size: string) => {
       return product.variants.some((v: any) => v.size === size && v.stock > 0);
@@ -478,19 +483,29 @@ export default function ProductPage() {
                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('quantity')}:</span>
                     <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
                         <button 
-                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                             className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
                         >
                             -
                         </button>
                         <span className="font-bold w-8 text-center text-slate-900 dark:text-white">{quantity}</span>
                         <button 
-                            onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
-                            className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                            onClick={() => {
+                                if (quantity < currentStock) {
+                                    setQuantity(prev => prev + 1);
+                                } else {
+                                    addToast(`Only ${currentStock} items available`, "error");
+                                }
+                            }}
+                            className={`w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center shadow-sm transition-all font-bold ${quantity >= currentStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-600'}`}
+                            disabled={quantity >= currentStock}
                         >
                             +
                         </button>
                     </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {currentStock} available
+                    </span>
                 </div>
             )}
 

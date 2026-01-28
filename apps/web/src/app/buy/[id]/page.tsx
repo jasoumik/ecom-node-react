@@ -26,6 +26,9 @@ export default function BuyNowPage() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [saveAddress, setSaveAddress] = useState(false);
   
   // Variant State
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -41,6 +44,17 @@ export default function BuyNowPage() {
   const settings = useSettings();
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        try {
+            const parsedUser = JSON.parse(userStr);
+            setUser(parsedUser);
+            setCustomerName(parsedUser.name || "");
+            setCustomerPhone(parsedUser.phone || "");
+            fetchAddresses(parsedUser.id);
+        } catch (e) {}
+    }
+
     const fetchProduct = async () => {
       try {
         const res = await fetch(`${API_URL}/products/${id}`);
@@ -65,6 +79,16 @@ export default function BuyNowPage() {
     fetchProduct();
     fetchDeliveryCharges();
   }, [id]);
+
+  const fetchAddresses = async (userId: string) => {
+      try {
+          const res = await fetch(`${API_URL}/users/${userId}/addresses`);
+          if (res.ok) {
+              const data = await res.json();
+              setSavedAddresses(Array.isArray(data) ? data : []);
+          }
+      } catch (e) {}
+  };
 
   const fetchDeliveryCharges = async () => {
       try {
@@ -96,6 +120,15 @@ export default function BuyNowPage() {
 
     setIsSubmitting(true);
     try {
+      // Save address if requested
+      if (user && saveAddress && customerAddress) {
+          await fetch(`${API_URL}/users/${user.id}/addresses`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ address: customerAddress, type: 'Home', is_default: false }),
+          });
+      }
+
       const orderData = {
         customerName,
         customerPhone,
@@ -131,13 +164,23 @@ export default function BuyNowPage() {
     }
   };
 
+  const handleAddressSelect = (address: any) => {
+      setCustomerAddress(address.address);
+  };
+
   if (loading) return <FullScreenLoader />;
   if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
 
   const currentPrice = selectedVariant ? (selectedVariant.price || product.price) : product.price;
   const selectedDelivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
   const deliveryAmount = selectedDelivery ? parseFloat(selectedDelivery.amount) : 0;
-  const totalAmount = (parseFloat(currentPrice) * quantity) + deliveryAmount;
+  
+  // Free Shipping Logic (Frontend Display Only - Backend handles actual logic)
+  const subtotal = parseFloat(currentPrice) * quantity;
+  const freeShippingThreshold = parseFloat(settings.free_shipping_threshold || "5000");
+  const isFreeShipping = subtotal >= freeShippingThreshold;
+  const finalDeliveryAmount = isFreeShipping ? 0 : deliveryAmount;
+  const totalAmount = subtotal + finalDeliveryAmount;
 
   const sizes = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.size).filter(Boolean))) : [];
   const colors = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) : [];
@@ -157,7 +200,7 @@ export default function BuyNowPage() {
   const currentImage = mediaList[selectedImageIndex] || mediaList[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Simple Header */}
       <header className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 py-4 text-center sticky top-0 z-50">
           <h1 className="text-2xl font-bold text-sky-500">{settings.shop_name}</h1>
@@ -280,6 +323,41 @@ export default function BuyNowPage() {
             <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-6 text-center">{t('fill_form_to_confirm')}</Heading>
             
             <form onSubmit={handlePlaceOrder} className="space-y-5">
+                {/* Saved Addresses - Animated */}
+                {savedAddresses.length > 0 && (
+                    <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Saved Addresses</label>
+                            <span className="text-[10px] text-sky-500 font-medium bg-sky-50 px-2 py-0.5 rounded-full">Tap to select</span>
+                        </div>
+                        <div className="space-y-2">
+                            {savedAddresses.map(addr => (
+                                <button
+                                    key={addr.id}
+                                    type="button"
+                                    onClick={() => handleAddressSelect(addr)}
+                                    className={`w-full text-left p-3 rounded-xl border transition-all duration-200 group relative overflow-hidden ${
+                                        customerAddress === addr.address 
+                                        ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500' 
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-sky-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                            <span className="text-lg">{addr.type === 'Home' ? '🏠' : addr.type === 'Office' ? '🏢' : '📍'}</span>
+                                            {addr.type}
+                                        </div>
+                                        {customerAddress === addr.address && (
+                                            <span className="text-sky-500 text-xs font-bold animate-in zoom-in">Selected</span>
+                                        )}
+                                    </div>
+                                    <div className="text-xs text-slate-500 truncate mt-1 pl-7">{addr.address}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <Input 
                     label={t('full_name')} 
                     value={customerName} 
@@ -307,6 +385,20 @@ export default function BuyNowPage() {
                         placeholder={t('enter_full_address')}
                     />
                 </div>
+                
+                {user && (
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className="relative flex items-center">
+                            <input 
+                                type="checkbox" 
+                                checked={saveAddress} 
+                                onChange={e => setSaveAddress(e.target.checked)}
+                                className="peer w-5 h-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500 transition-all cursor-pointer"
+                            />
+                        </div>
+                        <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-sky-600 transition-colors">Save this address for future</span>
+                    </label>
+                )}
 
                 <div className="space-y-3">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">{t('delivery_area')}</label>
@@ -324,7 +416,16 @@ export default function BuyNowPage() {
                                     />
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{getLocalizedField(charge, 'name', language)}</span>
                                 </div>
-                                <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
+                                <div className="text-right">
+                                    {isFreeShipping ? (
+                                        <>
+                                            <span className="text-xs text-slate-400 line-through mr-2">৳{charge.amount}</span>
+                                            <span className="text-sm font-bold text-emerald-600">FREE</span>
+                                        </>
+                                    ) : (
+                                        <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
+                                    )}
+                                </div>
                             </label>
                         ))}
                     </div>
@@ -338,7 +439,9 @@ export default function BuyNowPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                         <span>{t('delivery_charge')}</span>
-                        <span>৳{deliveryAmount}</span>
+                        <span className={isFreeShipping ? 'text-green-600 font-bold' : ''}>
+                            {isFreeShipping ? 'FREE' : `৳${deliveryAmount}`}
+                        </span>
                     </div>
                     <div className="flex justify-between text-lg font-bold border-t border-slate-200 dark:border-slate-600 pt-2 mt-2">
                         <span>{t('total')}</span>

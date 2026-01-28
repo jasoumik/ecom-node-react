@@ -3,12 +3,14 @@ import { Knex } from 'knex';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 import { NotificationService } from '../notification/notification.service';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @Inject('KNEX_CONNECTION') private readonly knex: Knex,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly settingsService: SettingsService
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<any> {
@@ -67,8 +69,15 @@ export class OrdersService {
       }
       const deliveryAmount = parseFloat(deliveryCharge.amount);
 
+      // Free Shipping Logic
+      const freeShippingThresholdStr = await this.settingsService.getValue('free_shipping_threshold');
+      const freeShippingThreshold = freeShippingThresholdStr ? parseFloat(freeShippingThresholdStr) : Infinity;
+      const isFreeShipping = subtotal >= freeShippingThreshold;
+
       let discountAmount = 0;
       let couponId = null;
+      
+      // Apply Coupon
       if (couponCode) {
           const coupon = await this.knex('coupons').where({ code: couponCode, is_active: true }).first();
           if (coupon) {
@@ -81,12 +90,21 @@ export class OrdersService {
 
               couponId = coupon.id;
               if (coupon.type === 'percentage') {
-                  discountAmount = (subtotal * parseFloat(coupon.value)) / 100;
+                  discountAmount += (subtotal * parseFloat(coupon.value)) / 100;
               } else {
-                  discountAmount = parseFloat(coupon.value);
+                  discountAmount += parseFloat(coupon.value);
               }
-              if (discountAmount > subtotal) discountAmount = subtotal;
           }
+      }
+
+      // Apply Free Shipping as Discount
+      if (isFreeShipping) {
+          discountAmount += deliveryAmount;
+      }
+
+      // Ensure discount doesn't exceed total (subtotal + delivery)
+      if (discountAmount > (subtotal + deliveryAmount)) {
+          discountAmount = subtotal + deliveryAmount;
       }
 
       const totalAmount = subtotal + deliveryAmount - discountAmount;
