@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { join } from 'path';
-import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,8 +14,7 @@ async function bootstrap() {
       fs.mkdirSync(uploadDir);
   }
   
-  // Serve static files manually if ServeStaticModule has issues with prefix
-  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+  // Remove manual express static; ServeStaticModule already serves /uploads
 
   await app.listen(process.env.PORT ?? 3000);
 }
