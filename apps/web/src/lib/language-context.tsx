@@ -1,36 +1,35 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
-import { translations } from "./translations"; // Import translations
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { translations } from "./translations";
 
-type Language = 'en' | 'bn';
+type Language = "en" | "bn";
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string, replacements?: Record<string, string>) => string; // Translation function
+  t: (key: string, replacements?: Record<string, string>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en'); // Default to English
+  const [language, setLanguage] = useState<Language>("en");
 
   useEffect(() => {
-    // Try to load language from localStorage
-    const storedLang = localStorage.getItem('language') as Language;
-    if (storedLang && translations[storedLang]) {
+    const storedLang = localStorage.getItem("language") as Language;
+    if (storedLang) {
       setLanguage(storedLang);
     }
   }, []);
 
-  useEffect(() => {
-    // Update html lang attribute
-    document.documentElement.lang = language;
-    localStorage.setItem('language', language);
-  }, [language]);
+  const handleSetLanguage = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem("language", lang);
+  };
 
   const t = (key: string, replacements?: Record<string, string>) => {
+    // @ts-ignore
     let translatedText = translations[language]?.[key] || key; // Fallback to key if not found
     if (replacements) {
       for (const rKey in replacements) {
@@ -41,7 +40,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
@@ -50,7 +49,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
 }
