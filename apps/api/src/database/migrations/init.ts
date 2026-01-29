@@ -295,9 +295,33 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
+
+  // Landing Pages Table
+  await knex.schema.createTable('landing_pages', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('product_id').references('id').inTable('products').onDelete('CASCADE');
+    table.string('slug').unique().notNullable();
+    table.string('title');
+    table.text('description');
+    table.string('theme').defaultTo('default'); // default, dark, festive, etc.
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Order History Table
+  await knex.schema.createTable('order_history', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('order_id').references('id').inTable('orders').onDelete('CASCADE');
+    table.string('status').notNullable();
+    table.string('comment').nullable();
+    table.uuid('updated_by').nullable(); // User ID of admin who updated
+    table.timestamp('created_at').defaultTo(knex.fn.now());
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('order_history');
+  await knex.schema.dropTableIfExists('landing_pages');
   await knex.schema.dropTableIfExists('promises');
   await knex.schema.dropTableIfExists('reviews');
   await knex.schema.dropTableIfExists('contact_messages');

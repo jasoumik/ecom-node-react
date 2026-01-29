@@ -1,8 +1,7 @@
 import { Knex } from 'knex';
-import * as bcrypt from 'bcrypt';
 
 export async function seed(knex: Knex): Promise<void> {
-  // Deletes ALL existing entries
+  // Deletes ALL existing entries except users
   await knex('promises').del();
   await knex('reviews').del();
   await knex('contact_messages').del();
@@ -14,7 +13,6 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('product_variants').del();
   await knex('products').del();
   await knex('categories').del();
-  await knex('users').del();
   await knex('banners').del();
   await knex('media_files').del();
   await knex('media_folders').del();
@@ -24,29 +22,14 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('settings').del();
   await knex('countries').del();
 
-  // Create Admin User
-  const salt = await bcrypt.genSalt();
-  const passwordHash = await bcrypt.hash('password', salt);
+  // Get User IDs (assuming they exist from 01_users.ts)
+  const admin = await knex('users').where({ role: 'admin' }).first();
+  const customer = await knex('users').where({ role: 'customer' }).first();
 
-  const [admin] = await knex('users').insert([
-    {
-      phone: '01700000000', // Admin Phone
-      email: 'admin@example.com',
-      passwordHash,
-      name: 'Admin User',
-      role: 'admin',
-    }
-  ]).returning('id');
-
-  const [customer] = await knex('users').insert([
-    {
-      phone: '01700000001', // Customer Phone
-      email: 'customer@example.com',
-      passwordHash, // Same password 'password'
-      name: 'John Doe',
-      role: 'customer',
-    }
-  ]).returning('id');
+  if (!admin || !customer) {
+      console.log('Users not found. Please run 01_users seed first.');
+      return;
+  }
 
   // Insert Categories
   const [diapers] = await knex('categories').insert({ 

@@ -38,10 +38,12 @@ export function FeaturedProductsSection({
     
     addItem({
       id: product.id,
+      // variantId can be added here if your product has variants
       name: getLocalizedField(product, 'name', language),
       price: isNaN(priceValue) ? 0 : priceValue,
       image: product.image.src,
       quantity: 1,
+      stock: 999, // default stock to satisfy CartItem type and prevent over-adding
     });
     addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
