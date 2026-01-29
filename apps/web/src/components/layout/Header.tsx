@@ -75,7 +75,7 @@ export function Header() {
 
   const fetchCategories = async () => {
       try {
-          const res = await fetch(`${API_URL}/categories`);
+          const res = await fetch(`${API_URL}/categories?public=true`); // Fetch only categories with products
           const data = await res.json();
           setCategories(Array.isArray(data) ? data : []);
       } catch (e) {
@@ -147,6 +147,9 @@ export function Header() {
   };
 
   const isLoggedIn = user && user.id;
+
+  // Helper to get shop name
+  const shopName = getLocalizedField({ name: settings.shop_name, name_bn: settings.shop_name_bn }, 'name', language);
 
   return (
     <>
