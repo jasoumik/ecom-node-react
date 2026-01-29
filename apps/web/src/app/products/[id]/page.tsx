@@ -37,6 +37,10 @@ export default function ProductPage() {
   const [notifyEmail, setNotifyEmail] = useState("");
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
 
+  // Zoom State
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   const imageRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
   const { addToast } = useToast();
@@ -281,6 +285,17 @@ export default function ProductPage() {
 
   const currentPrice = selectedVariant ? (selectedVariant.price || product.price) : product.price;
   const currentStock = selectedVariant ? parseInt(selectedVariant.stock) : parseInt(product.stock);
+  const currentWeight = selectedVariant?.weight || product.weight;
+
+  const isSizeAvailable = (size: string) => {
+      return product.variants.some((v: any) => v.size === size && v.stock > 0);
+  };
+  
+  const isColorAvailableForSize = (color: string) => {
+      if (!selectedSize) return true;
+      const variant = product.variants.find((v: any) => v.size === selectedSize && v.color === color);
+      return variant && variant.stock > 0;
+  };
 
   const avgRating = reviews.length > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
@@ -305,7 +320,14 @@ export default function ProductPage() {
         <div className="grid md:grid-cols-12 gap-8 lg:gap-16">
           {/* Left Column: Media Gallery */}
           <div className="md:col-span-6 lg:col-span-7 space-y-4">
-            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 relative group">
+            <div 
+                className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 relative group cursor-zoom-in"
+                ref={imageRef}
+                onMouseMove={handleMouseMove}
+                onMouseEnter={() => setIsZoomed(true)}
+                onMouseLeave={() => setIsZoomed(false)}
+                onClick={() => setIsZoomed(!isZoomed)}
+            >
               {isVideo(selectedMedia) ? (
                   <video 
                     src={getImageUrl(selectedMedia)} 
@@ -316,11 +338,23 @@ export default function ProductPage() {
                     loop
                   />
               ) : (
-                  <img 
-                      src={getImageUrl(selectedMedia)} 
-                      alt={getLocalizedField(product, 'name', language)} 
-                      className="w-full h-full object-contain p-4" 
-                  />
+                  <>
+                    <div 
+                        className="w-full h-full"
+                        style={{
+                            backgroundImage: `url(${getImageUrl(selectedMedia)})`,
+                            backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
+                            backgroundSize: isZoomed ? '200%' : 'contain',
+                            backgroundRepeat: 'no-repeat',
+                            transition: isZoomed ? 'none' : 'background-size 0.3s ease-out'
+                        }}
+                    />
+                    <img 
+                        src={getImageUrl(selectedMedia)} 
+                        alt={getLocalizedField(product, 'name', language)} 
+                        className={`w-full h-full object-contain p-4 ${isZoomed ? 'opacity-0' : 'opacity-100'}`} 
+                    />
+                  </>
               )}
             </div>
             
@@ -355,7 +389,7 @@ export default function ProductPage() {
           {/* Right Column: Product Details */}
           <div className="md:col-span-6 lg:col-span-5 space-y-6">
             <div>
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex justify-between items-start mb-3">
                   <div className="text-xs font-bold text-sky-600 uppercase tracking-wider bg-sky-50 dark:bg-sky-900/30 px-2 py-1 rounded-md">{getLocalizedField(product, 'category_name', language)}</div>
                   <div className="flex gap-2">
                       <button onClick={handleShare} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
@@ -366,8 +400,8 @@ export default function ProductPage() {
               
               <Heading as="h1" size="lg" className="font-sans dark:text-white text-xl sm:text-2xl lg:text-3xl font-bold leading-tight mb-2 text-slate-900">{getLocalizedField(product, 'name', language)}</Heading>
               
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-800">
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                  <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-800">
                       <RatingStars rating={avgRating} size="sm" />
                       <span className="text-xs font-bold text-amber-700 dark:text-amber-400 ml-1">{avgRating.toFixed(1)}</span>
                   </div>
@@ -375,8 +409,8 @@ export default function ProductPage() {
                   
                   {/* Country Label */}
                   {product.country_id && (
-                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{t('product_of')} {getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
+                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t('product_of')} {getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
                         {product.country_flag && (
                             product.country_flag.startsWith('http') || product.country_flag.startsWith('/') ? (
                                 <img src={getImageUrl(product.country_flag)} alt="Flag" className="w-4 h-2.5 object-cover rounded-sm shadow-sm" />
@@ -432,6 +466,7 @@ export default function ProductPage() {
                             <label className="block text-xs font-bold text-slate-900 dark:text-white mb-2">{t('color')}</label>
                             <div className="flex flex-wrap gap-2">
                                 {colors.map((color: any) => {
+                                    const isAvailable = isColorAvailableForSize(color);
                                     return (
                                         <button
                                             key={color}
@@ -439,7 +474,9 @@ export default function ProductPage() {
                                             className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all ${
                                                 selectedColor === color 
                                                 ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 ring-1 ring-sky-500' 
-                                                : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800'
+                                                : isAvailable 
+                                                    ? 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800'
+                                                    : 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-600 opacity-50'
                                             }`}
                                         >
                                             {color}
@@ -458,7 +495,7 @@ export default function ProductPage() {
                                 {weights.map((weight: any) => (
                                     <button
                                         key={weight}
-                                        onClick={() => handleWeightChange(weight)}
+                                        onClick={() => setSelectedWeight(weight)}
                                         className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all min-w-[2.5rem] ${
                                             selectedWeight === weight 
                                             ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 ring-1 ring-sky-500' 
@@ -555,7 +592,7 @@ export default function ProductPage() {
                             {getLocalizedField(product, 'description', language)}
                             
                             {/* Specifications */}
-                            {(selectedVariant?.sku || product.sku) && (
+                            {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
                                 <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
                                     <h4 className="font-bold text-slate-900 dark:text-white mb-3">Specifications</h4>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -563,6 +600,12 @@ export default function ProductPage() {
                                             <div>
                                                 <span className="text-slate-500 block">Material</span>
                                                 <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
+                                            </div>
+                                        )}
+                                        {currentWeight && (
+                                            <div>
+                                                <span className="text-slate-500 block">Weight</span>
+                                                <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
                                             </div>
                                         )}
                                         {(selectedVariant?.sku || product.sku) && (
