@@ -94,23 +94,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700">
-        <div className="text-center mb-8">
-          <Heading className="text-3xl font-serif text-slate-900 dark:text-white mb-2">{t('welcome_back')}</Heading>
-          <Text className="text-slate-500 dark:text-slate-400">{t('sign_in_details')}</Text>
+    <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-colors duration-300 px-4">
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-slate-100 dark:border-slate-700">
+        <div className="text-center mb-6">
+          <Heading className="text-2xl font-serif text-slate-900 dark:text-white mb-1">{t('welcome_back')}</Heading>
+          <Text className="text-sm text-slate-500 dark:text-slate-400">{t('sign_in_details')}</Text>
         </div>
         
         {/* Toggle Login Method */}
         <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl mb-6">
             <button 
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${!isOtpLogin ? 'bg-white dark:bg-slate-600 shadow-sm text-sky-600' : 'text-slate-500 dark:text-slate-400'}`}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${!isOtpLogin ? 'bg-white dark:bg-slate-600 shadow-sm text-sky-600' : 'text-slate-500 dark:text-slate-400'}`}
                 onClick={() => { setIsOtpLogin(false); setOtpSent(false); }}
             >
                 {t('password')}
             </button>
             <button 
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${isOtpLogin ? 'bg-white dark:bg-slate-600 shadow-sm text-sky-600' : 'text-slate-500 dark:text-slate-400'}`}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${isOtpLogin ? 'bg-white dark:bg-slate-600 shadow-sm text-sky-600' : 'text-slate-500 dark:text-slate-400'}`}
                 onClick={() => setIsOtpLogin(true)}
             >
                 {t('otp_login')}
@@ -118,7 +118,7 @@ export default function LoginPage() {
         </div>
         
         {!isOtpLogin ? (
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-4">
             <Input
                 label={t('phone_number')}
                 type="text"
@@ -126,6 +126,7 @@ export default function LoginPage() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder={t('phone_email_placeholder')}
                 required
+                className="py-2.5 text-sm"
             />
             <Input
                 label={t('password')}
@@ -134,16 +135,17 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('password_placeholder')}
                 required
+                className="py-2.5 text-sm"
             />
             
-            <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
+            <Button fullWidth type="submit" className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
                 {t('sign_in')}
             </Button>
             </form>
         ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {!otpSent ? (
-                    <form onSubmit={handleSendOtp} className="space-y-6">
+                    <form onSubmit={handleSendOtp} className="space-y-4">
                         <Input
                             label={t('phone_number')}
                             type="text"
@@ -151,21 +153,22 @@ export default function LoginPage() {
                             onChange={(e) => setIdentifier(e.target.value)}
                             placeholder={t('phone_email_placeholder')}
                             required
+                            className="py-2.5 text-sm"
                         />
-                        <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
+                        <Button fullWidth type="submit" className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
                             {t('send_otp')}
                         </Button>
                     </form>
                 ) : (
-                    <div className="space-y-6 animate-in fade-in">
+                    <div className="space-y-4 animate-in fade-in">
                         <div className="text-center">
-                            <p className="text-sm text-slate-500 mb-4">{t('enter_otp_code', { identifier })}</p>
+                            <p className="text-xs text-slate-500 mb-3">{t('enter_otp_code', { identifier })}</p>
                             <OtpInput length={6} onComplete={(val) => setOtp(val)} />
                         </div>
-                        <Button fullWidth onClick={handleVerifyOtp} className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
+                        <Button fullWidth onClick={handleVerifyOtp} className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
                             {t('verify_login')}
                         </Button>
-                        <button onClick={() => setOtpSent(false)} className="w-full text-center text-sm text-sky-500 hover:underline">
+                        <button onClick={() => setOtpSent(false)} className="w-full text-center text-xs text-sky-500 hover:underline">
                             {t('change_number_email')}
                         </button>
                     </div>
@@ -173,8 +176,8 @@ export default function LoginPage() {
             </div>
         )}
         
-        <div className="mt-8 text-center">
-            <Text className="text-slate-500 dark:text-slate-400">
+        <div className="mt-6 text-center">
+            <Text className="text-xs text-slate-500 dark:text-slate-400">
               {t('dont_have_account')} <Link href="/register" className="text-sky-600 font-bold hover:text-sky-700 hover:underline dark:text-sky-400">{t('create_account')}</Link>
             </Text>
         </div>
