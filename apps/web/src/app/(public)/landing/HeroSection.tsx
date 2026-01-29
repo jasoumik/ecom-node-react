@@ -29,11 +29,13 @@ export function HeroSection(props: HeroContent) {
                 {getLocalizedField(primaryCta, 'label', language)}
               </Button>
             </a>
-            <a href={secondaryCta.href} className="w-full sm:w-auto">
-              <Button variant="outline" className="px-8 py-3 text-sm rounded-full border-2 border-slate-200 text-slate-700 hover:border-sky-600 hover:text-sky-600 hover:bg-white transition-all duration-300 w-full font-bold dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                {getLocalizedField(secondaryCta, 'label', language)}
-              </Button>
-            </a>
+            {secondaryCta && (
+              <a href={secondaryCta.href} className="w-full sm:w-auto">
+                <Button variant="outline" className="px-8 py-3 text-sm rounded-full border-2 border-slate-200 text-slate-700 hover:border-sky-600 hover:text-sky-600 hover:bg-white transition-all duration-300 w-full font-bold dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                  {getLocalizedField(secondaryCta, 'label', language)}
+                </Button>
+              </a>
+            )}
           </div>
 
           {stats && stats.length > 0 && (
