@@ -14,7 +14,7 @@ export const databaseProviders = [
           port: parseInt(process.env.DB_PORT || '5432', 10),
           database: process.env.DB_NAME || 'ecom',
           user: process.env.DB_USERNAME || 'jasoumik',
-          // password: process.env.DB_PASSWORD || 'postgres',
+          password: process.env.DB_PASSWORD || process.env.PGPASSWORD || undefined,
         },
         pool: {
           min: 2,
