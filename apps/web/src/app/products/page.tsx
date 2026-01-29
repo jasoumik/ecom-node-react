@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
@@ -12,7 +12,7 @@ import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
   const searchQuery = searchParams.get("search");
@@ -263,5 +263,13 @@ export default function ProductsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<FullScreenLoader />}>
+      <ProductsContent />
+    </Suspense>
   );
 }

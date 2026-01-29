@@ -7,6 +7,8 @@ import { CallToActionSection } from "./landing/CallToActionSection";
 import { API_URL } from "@/lib/config";
 import { BannerSection } from "./landing/BannerSection";
 
+export const dynamic = 'force-dynamic'; // Fix for dynamic server usage
+
 async function getLandingData() {
   try {
     const res = await fetch(`${API_URL}/public/landing?tenant=default`, { 
