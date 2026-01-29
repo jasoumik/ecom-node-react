@@ -117,17 +117,15 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="flex gap-2">
                                             <Button 
-                                                size="sm" 
                                                 variant="outline" 
-                                                className="rounded-xl text-xs"
+                                                className="rounded-xl text-xs py-1.5 px-3 h-auto"
                                                 onClick={() => router.push(`/track/${order.id}`)}
                                             >
                                                 {t('track_order')}
                                             </Button>
                                             <Button 
-                                                size="sm" 
                                                 variant="secondary" 
-                                                className="rounded-xl text-xs"
+                                                className="rounded-xl text-xs py-1.5 px-3 h-auto"
                                                 onClick={() => router.push(`/profile/orders/${order.id}`)}
                                             >
                                                 {t('view')} {t('invoice')}
