@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Heading, Text } from "@repo/ui";
 import { useLanguage } from "@/lib/language-context";
@@ -8,7 +8,7 @@ import { API_URL } from "@/lib/config";
 import Link from "next/link";
 import { FullScreenLoader } from "@/components/ui/Loader";
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [order, setOrder] = useState<any>(null);
@@ -61,5 +61,13 @@ export default function ThankYouPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<FullScreenLoader />}>
+      <ThankYouContent />
+    </Suspense>
   );
 }
