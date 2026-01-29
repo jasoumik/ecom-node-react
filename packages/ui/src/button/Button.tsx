@@ -1,48 +1,43 @@
 import * as React from "react";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline";
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "outline" | "ghost";
   fullWidth?: boolean;
   asChild?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  variant = "primary",
-  fullWidth,
-  className,
-  asChild,
-  children,
-  ...props
-}) => {
-  // GhorerBazar inspired: Slightly rounded corners (rounded-md or rounded), bold text, specific padding
-  // They use roughly 4-6px radius. Tailwind 'rounded' is 4px, 'rounded-md' is 6px.
-  // I'll use 'rounded-md' for a clean, professional look.
-  const base =
-    "inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-bold tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95";
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = "primary", fullWidth, asChild, children, ...props }, ref) => {
+    const base = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50";
+    
+    const variants = {
+      primary: "bg-sky-500 text-white hover:bg-sky-600 shadow-sm",
+      secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
+      outline: "border border-slate-200 bg-transparent hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+      ghost: "hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+    };
 
-  const variantClass =
-    variant === "primary"
-      ? "bg-sky-500 text-white shadow-md hover:bg-sky-600 hover:shadow-lg focus-visible:ring-sky-500"
-      : variant === "secondary"
-      ? "bg-white text-slate-800 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-sky-400"
-      : "border-2 border-sky-500 text-sky-600 hover:bg-sky-50 focus-visible:ring-sky-400";
+    const variantClass = variants[variant];
+    const widthClass = fullWidth ? "w-full" : "";
+    
+    if (asChild && React.isValidElement(children)) {
+       const child = children as React.ReactElement<any>;
+       return React.cloneElement(child, {
+           className: `${base} ${variantClass} ${widthClass} ${className ?? ""} ${child.props.className ?? ""}`,
+           ...props
+       });
+    }
 
-  const widthClass = fullWidth ? "w-full" : "";
-
-  if (asChild && React.isValidElement(children)) {
-     return React.cloneElement(children as React.ReactElement, {
-         className: `${base} ${variantClass} ${widthClass} ${className ?? ""} ${(children as React.ReactElement).props.className ?? ""}`,
-         ...props
-     });
+    return (
+      <button
+        className={`${base} ${variantClass} ${widthClass} ${className ?? ""}`}
+        ref={ref}
+        {...props}
+      >
+        {children}
+      </button>
+    );
   }
+);
 
-  return (
-    <button
-      className={`${base} ${variantClass} ${widthClass} ${className ?? ""}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
+Button.displayName = "Button";
