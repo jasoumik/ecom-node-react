@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totalPrice, clearCart, addItem } = useCart();
+  const { items, removeItem, updateQuantity, totalPrice, clearCart, addItem, totalItems } = useCart();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
@@ -343,7 +343,7 @@ export default function CartPage() {
                 
                 <div className="space-y-3 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                        <span>{t('subtotal')}</span>
+                        <span>{t('subtotal')} ({totalItems()} {t('items')})</span>
                         <span className="font-medium">৳{totalPrice()}</span>
                     </div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
