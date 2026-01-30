@@ -47,58 +47,21 @@ export class PublicService {
         productsToDisplay = [...trendingProducts, ...additional].slice(0, 8);
     }
     
-    // Helper to normalize image URLs
-    const normalizeImageUrl = (url?: string): string => {
-      const fallback = 'https://picsum.photos/seed/default/800/800';
-      if (!url) return fallback;
-      let out = url.trim();
-      // Fix malformed protocol/host e.g., https:/.example.com -> https://example.com
-      out = out.replace(/^https:\/\./, 'https://');
-      out = out.replace(/^http:\/\./, 'http://');
-      // Also handle any accidental '://.'
-      out = out.replace(/:\/\/\./, '://');
-
-      // If it is a relative uploads path, prepend PUBLIC_BASE_URL
-      if (out.startsWith('/uploads/')) {
-        const base = process.env.PUBLIC_BASE_URL;
-        if (base) {
-          try {
-            const u = new URL(base);
-            const host = u.hostname.replace(/^\.+/, '');
-            const origin = `${u.protocol}//${host}${u.port ? ':' + u.port : ''}`;
-            return `${origin}${out}`;
-          } catch {
-            // invalid env, keep relative
-            return out;
-          }
-        }
-      }
-
-      // If URL accidentally contains '/.hostname/' after domain (e.g., https://domain/.otherhost/...), remove '/.otherhost'
-      out = out.replace(/(https?:\/\/[^\/]+)\/\.[^\/]+\//, '$1/');
-
-      return out;
-    };
-
     const featuredProducts = productsToDisplay.map((p: any) => {
-        let imageUrl = 'https://picsum.photos/seed/default/800/800';
+        let imageUrl = "https://picsum.photos/seed/default/800/800";
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
-            imageUrl = normalizeImageUrl(p.images[0]);
+            imageUrl = p.images[0];
         } else if (p.images && typeof p.images === 'string') {
              try {
                  const parsed = JSON.parse(p.images);
-                 // console.log(p.images);
-                 if (Array.isArray(parsed) && parsed.length > 0) imageUrl = normalizeImageUrl(parsed[0]);
-             } catch (e) {
-                 // If p.images is a single URL string, normalize it directly
-                 imageUrl = normalizeImageUrl(p.images);
-             }
+                 if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+             } catch (e) {}
         }
 
         return {
             id: p.id,
             name: p.name,
-            name_bn: p.name_bn,
+            name_bn: p.name_bn, // Added Bangla Name
             price: `৳${p.price}`,
             href: `/products/${p.id}`,
             image: {
@@ -107,7 +70,7 @@ export class PublicService {
                 width: 400,
                 height: 400,
             },
-            tag: p.total_sold > 5 ? 'Best Seller' : (p.stock < 10 ? 'Low Stock' : 'New'),
+            tag: p.total_sold > 5 ? "Best Seller" : (p.stock < 10 ? "Low Stock" : "New"),
             rating: 5.0,
             reviewCount: 0,
         };
