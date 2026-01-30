@@ -23,22 +23,28 @@ export function getLocalizedField(obj: any, field: string, language: 'en' | 'bn'
 }
 
 export function getImageUrl(url: any) {
-  if (!url || typeof url !== 'string') return "https://picsum.photos/seed/default/800/800";
-  
-  if (url.startsWith("http") || url.startsWith("https")) {
+  if (!url || typeof url !== "string") {
+    return "https://picsum.photos/seed/default/800/800";
+  }
+
+  // Already absolute → return as-is
+  if (/^https?:\/\//i.test(url)) {
     return url;
   }
-  
-  // Remove /api suffix if present
-  let baseUrl = API_URL.replace(/\/api\/?$/, '');
-  
-  // FORCE port 3001 for local development if it's pointing to 3000
-  if (baseUrl.includes('localhost:3000') || baseUrl.includes('127.0.0.1:3000')) {
-      baseUrl = baseUrl.replace('3000', '3001');
+
+  // 🔥 Normalize broken / polluted paths
+  let cleanUrl = url
+      .replace(/^\.?prithibee\.com/, "")
+      .replace(/^api\.prithibee\.com/, "")
+      .replace(/^\/+/, "");
+
+  // Ensure uploads path exists
+  if (!cleanUrl.startsWith("api/uploads")) {
+    cleanUrl = `api/uploads/${cleanUrl.replace(/^uploads\//, "")}`;
   }
-  
-  // Ensure url starts with /
-  const cleanPath = url.startsWith("/") ? url : `/${url}`;
-  
-  return `${baseUrl}${cleanPath}`;
+
+  // Base host (no /api)
+  const baseUrl = API_URL.replace(/\/api\/?$/, "");
+
+  return `${baseUrl}/${cleanUrl}`;
 }
