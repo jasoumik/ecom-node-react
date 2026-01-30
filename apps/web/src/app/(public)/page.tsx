@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic'; // Fix for dynamic server usage
 async function getLandingData() {
   try {
     const res = await fetch(`${API_URL}/public/landing?tenant=default`, { 
+      cache: 'no-store' 
     });
     if (!res.ok) throw new Error('Failed to fetch data');
     return res.json();
