@@ -7,13 +7,13 @@ import { CallToActionSection } from "./landing/CallToActionSection";
 import { API_URL } from "@/lib/config";
 import { BannerSection } from "./landing/BannerSection";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = 'force-dynamic'; // Fix for dynamic server usage
 
 async function getLandingData() {
   try {
-    // Removed cache: 'no-store' to avoid conflict with static generation check
-    const res = await fetch(`${API_URL}/public/landing?tenant=default`);
+    const res = await fetch(`${API_URL}/public/landing?tenant=default`, { 
+      cache: 'no-store' 
+    });
     if (!res.ok) throw new Error('Failed to fetch data');
     return res.json();
   } catch (error) {
