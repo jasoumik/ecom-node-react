@@ -36,8 +36,8 @@ export function getImageUrl(url: any) {
       return `${host}${cleanPath}`;
   }
   
-  // Use API_URL directly
-  let baseUrl = API_URL;
+  // Fallback to API_URL logic
+  let baseUrl = API_URL.replace(/\/api\/?$/, '');
   
   // Only apply localhost fix if we are actually on localhost
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
@@ -52,12 +52,6 @@ export function getImageUrl(url: any) {
   // Ensure protocol
   if (!baseUrl.startsWith('http') && !baseUrl.startsWith('/')) {
       baseUrl = `https://${baseUrl}`;
-  }
-  
-  // If URL already starts with /api/uploads and baseUrl ends with /api, remove one /api
-  // This handles the case where DB has /api/uploads/... and API_URL has /api
-  if (url.startsWith('/api/uploads') && baseUrl.endsWith('/api')) {
-      baseUrl = baseUrl.slice(0, -4); // Remove last /api
   }
   
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
