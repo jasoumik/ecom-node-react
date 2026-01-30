@@ -32,10 +32,18 @@ export function getImageUrl(url: any) {
   // Remove /api suffix if present
   let baseUrl = API_URL.replace(/\/api\/?$/, '');
   
+  // Debug Log
+  if (typeof window !== 'undefined') {
+      console.log('getImageUrl Debug:', { API_URL, baseUrl, inputUrl: url });
+  }
+  
   // FORCE port 3001 for local development if it's pointing to 3000
   if (baseUrl.includes('localhost:3000') || baseUrl.includes('127.0.0.1:3000')) {
       baseUrl = baseUrl.replace('3000', '3001');
   }
+
+  // Fix malformed domain if present (e.g. https:/.domain.com)
+  baseUrl = baseUrl.replace('https:/.', 'https://');
   
   // Ensure url starts with /
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
