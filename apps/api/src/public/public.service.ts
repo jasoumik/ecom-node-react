@@ -114,8 +114,8 @@ export class PublicService {
       hero: {
         headline: "Everything for Mom & Baby, Delivered.",
         headline_bn: "মা এবং শিশুর জন্য সবকিছু, পৌঁছে যাবে আপনার দরজায়।",
-        subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, organic skincare, and maternity essentials. Trusted by 1,000+ parents.",
-        subheadline_bn: "পৃথিবী আপনার প্রিমিয়াম ডায়াপার, জেন্টল ওয়াইপস, অর্গানিক স্কিনকেয়ার এবং মাতৃত্বকালীন প্রয়োজনীয় পণ্যের জন্য ওয়ান-স্টপ শপ। 1,000+ অভিভাবকের আস্থাশীল।",
+        subheadline: "Prithibee is your one-stop shop for premium diapers, gentle wipes, organic skincare, and maternity essentials. Trusted by 5,000+ parents.",
+        subheadline_bn: "পৃথিবী আপনার প্রিমিয়াম ডায়াপার, জেন্টল ওয়াইপস, অর্গানিক স্কিনকেয়ার এবং মাতৃত্বকালীন প্রয়োজনীয় পণ্যের জন্য ওয়ান-স্টপ শপ। ৫০,০০০+ অভিভাবকের আস্থাশীল।",
         primaryCta: { label: "Shop All Products", label_bn: "সব পণ্য দেখুন", href: "/products" },
         secondaryCta: { label: "Bundle & Save", label_bn: "বান্ডেল এবং সেভ", href: "/bundles" },
         banners: banners.length > 0 ? banners.map(b => ({
