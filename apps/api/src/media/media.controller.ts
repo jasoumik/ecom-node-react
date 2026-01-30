@@ -3,20 +3,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { extname } from 'path';
 
-const UPLOADS_PATH =
-    process.env.NODE_ENV === 'production'
-        ? '/var/www/uploads'
-        : join(process.cwd(), 'uploads');
 @Controller('media')
 export class MediaController {
-  private readonly UPLOADS_PATH: string;
-
-  constructor(private readonly mediaService: MediaService) {
-    // ✅ Use same absolute path as service
-    this.UPLOADS_PATH = this.mediaService.getUploadPath();
-  }
+  constructor(private readonly mediaService: MediaService) {}
 
   @Get('folders')
   getFolders(@Query('parentId') parentId?: string) {
@@ -41,19 +32,17 @@ export class MediaController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
-      destination: (req, file, cb) => cb(null, UPLOADS_PATH),
+      destination: './uploads', // Ensure this directory exists
       filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
         cb(null, `${randomName}${extname(file.originalname)}`);
-      },
-    }),
+      }
+    })
   }))
   uploadFile(
-      @UploadedFile() file: Express.Multer.File,
+      @UploadedFile() file: Express.Multer.File, 
       @Body('folderId') folderId?: string,
-      @Body('context') context?: string,
+      @Body('context') context?: string
   ) {
     return this.mediaService.saveFileRecord(file, folderId, context);
   }

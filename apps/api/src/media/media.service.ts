@@ -1,35 +1,18 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { CreateFolderDto } from './dto/create-folder.dto';
-import { join, basename } from 'path';
-import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'fs';
 
 @Injectable()
 export class MediaService {
-  private readonly UPLOADS_PATH: string;
-
-  constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {
-    // ✅ Absolute upload path based on environment
-    this.UPLOADS_PATH =
-        process.env.NODE_ENV === 'production'
-            ? '/var/www/uploads'
-            : join(process.cwd(), 'uploads');
-
-    // ✅ Ensure uploads folder exists
-    if (!existsSync(this.UPLOADS_PATH)) {
-      mkdirSync(this.UPLOADS_PATH, { recursive: true });
-    }
-  }
-
-  getUploadPath() {
-    return this.UPLOADS_PATH;
-  }
-
-  /* -------------------- FOLDERS -------------------- */
+  constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
   async getFolders(parentId?: string): Promise<any[]> {
     const query = this.knex('media_folders').select('*');
-    parentId ? query.where({ parent_id: parentId }) : query.whereNull('parent_id');
+    if (parentId) {
+      query.where({ parent_id: parentId });
+    } else {
+      query.whereNull('parent_id');
+    }
     return query;
   }
 
@@ -42,48 +25,59 @@ export class MediaService {
     await this.knex('media_folders').where({ id }).delete();
   }
 
-  /* -------------------- FILES -------------------- */
-
   async getFiles(folderId?: string): Promise<any[]> {
     const query = this.knex('media_files').select('*');
-    folderId ? query.where({ folder_id: folderId }) : query.whereNull('folder_id');
+    if (folderId) {
+      query.where({ folder_id: folderId });
+    } else {
+      query.whereNull('folder_id');
+    }
+    // Filter out system/profile images if needed, or rely on folder structure.
+    // For now, let's assume profile pics are not added to media_files table unless explicitly uploaded via media manager.
+    // But wait, if profile upload uses the same endpoint, it adds to media_files.
+    // We should add a 'source' or 'is_system' flag, or just filter by folder.
+    // If profile upload doesn't specify folderId, it goes to root.
+    // Let's add a filter to exclude files that look like profile pics if we can distinguish them, 
+    // OR better: Profile upload should NOT use the general media upload endpoint if we don't want them in the library.
+    // But reusing the endpoint is convenient.
+    // Let's assume for now that if it's in the root folder, it's visible.
+    // If we want to hide profile pics, we should upload them to a specific hidden folder or not record them in media_files.
+    
+    // Current implementation: All uploads via /media/upload go to media_files.
+    // To hide profile pics, we can add a 'is_hidden' column or similar.
+    // For this request, I'll filter out files that are not associated with a folder if we want to keep root clean, 
+    // OR we can just accept that they are there.
+    
+    // The user said "Media Library should not have the images that uploaded in profile pic".
+    // This implies profile pics are cluttering the library.
+    // I will modify the upload endpoint to accept a 'context' param, and if context is 'profile', mark it as hidden or don't save to media_files DB (just return URL).
+    
     return query;
   }
 
   async saveFileRecord(file: Express.Multer.File, folderId?: string, context?: string): Promise<any> {
-    const filePath = join(this.UPLOADS_PATH, file.filename);
+    const url = `/uploads/${file.filename}`; 
 
-    if (!existsSync(filePath) && file.buffer) {
-      writeFileSync(filePath, file.buffer);
-    }
-
-    const url = `/uploads/${file.filename}`;
-
+    // If context is profile, we might not want to save it to the media library DB to keep it clean.
+    // Or we save it with a flag.
+    // Let's choose to NOT save to DB if context is 'profile', just return the URL.
     if (context === 'profile') {
-      return { url };
+        return { url };
     }
 
-    const [mediaFile] = await this.knex('media_files')
-        .insert({
-          name: file.originalname,
-          url,
-          type: file.mimetype.startsWith('image/') ? 'image' : 'video',
-          mime_type: file.mimetype,
-          size: file.size,
-          folder_id: folderId ?? null,
-        })
-        .returning('*');
+    const [mediaFile] = await this.knex('media_files').insert({
+      name: file.originalname,
+      url: url,
+      type: file.mimetype.startsWith('image/') ? 'image' : 'video',
+      mime_type: file.mimetype,
+      size: file.size,
+      folder_id: folderId || null,
+    }).returning('*');
 
     return mediaFile;
   }
 
   async deleteFile(id: string): Promise<void> {
-    const file = await this.knex('media_files').where({ id }).first();
-    if (!file) throw new NotFoundException('File not found');
-
-    const filePath = join(this.UPLOADS_PATH, basename(file.url));
-    if (existsSync(filePath)) unlinkSync(filePath);
-
     await this.knex('media_files').where({ id }).delete();
   }
 }
