@@ -9,7 +9,6 @@ import { AuthModule } from './auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { BannersModule } from './banners/banners.module';
-import { MediaModule } from './media/media.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { BrandsModule } from './brands/brands.module';
@@ -21,8 +20,22 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { PromisesModule } from './promises/promises.module';
 import { LandingPagesModule } from './landing-pages/landing-pages.module'; // Added
 import { DatabaseModule } from './database/database.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { existsSync, mkdirSync } from 'fs';
+import { MediaModule } from './media/media.module';
+// ... other imports
+
+// ✅ Absolute path for uploads
+export const UPLOADS_PATH =
+    process.env.NODE_ENV === 'production'
+        ? '/var/www/uploads'
+        : join(process.cwd(), 'uploads');
+
+// ✅ Ensure folder exists
+if (!existsSync(UPLOADS_PATH)) {
+  mkdirSync(UPLOADS_PATH, { recursive: true });
+}
 
 @Module({
   imports: [
@@ -45,9 +58,9 @@ import { join } from 'path';
     RequestsModule,
     ReviewsModule,
     PromisesModule,
-    LandingPagesModule, // Added
+    LandingPagesModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: UPLOADS_PATH, // ✅ Use absolute path
       serveRoot: '/uploads',
     }),
   ],
