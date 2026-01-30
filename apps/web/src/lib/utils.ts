@@ -29,6 +29,30 @@ export function getImageUrl(url: any) {
     return url;
   }
 
+  // Debug Log - Check for this in browser console
+  if (typeof window !== 'undefined') {
+      console.log('getImageUrl v5 Debug:', { API_URL, UPLOADS_HOST, url });
+  }
+
+  // NUCLEAR OPTION: Hardcode production URL if we are on the production domain
+  // This runs on both Server (SSR) and Client
+  // We check if API_URL looks suspicious (starts with dot) OR if we are just in prod
+  if (process.env.NODE_ENV === 'production') {
+      // If UPLOADS_HOST is set, use it
+      if (UPLOADS_HOST && UPLOADS_HOST.includes('prithibee.com')) {
+          const host = UPLOADS_HOST.startsWith('http') ? UPLOADS_HOST : `https://${UPLOADS_HOST}`;
+          const cleanPath = url.startsWith("/") ? url : `/${url}`;
+          return `${host}${cleanPath}`;
+      }
+      
+      // Fallback to hardcoded main domain if API_URL is broken
+      if (API_URL.startsWith('.') || API_URL.includes('.prithibee.com')) {
+           const cleanPath = url.startsWith("/") ? url : `/${url}`;
+           // Assuming API is at api.prithibee.com based on your env file
+           return `https://api.prithibee.com/api/uploads${cleanPath.replace('/api/uploads', '')}`;
+      }
+  }
+
   // Use explicit uploads host if available
   if (UPLOADS_HOST) {
       const host = UPLOADS_HOST.startsWith('http') ? UPLOADS_HOST : `https://${UPLOADS_HOST}`;
@@ -46,10 +70,9 @@ export function getImageUrl(url: any) {
       }
   }
 
-  // Fix malformed domain if present (e.g. https:/.domain.com or just .domain.com)
-  // This handles the case where API_URL might have a leading dot typo
+  // Fix malformed domain if present
   if (baseUrl.startsWith('.')) {
-      baseUrl = `https://${baseUrl.substring(1)}`; // Remove dot and add https://
+      baseUrl = `https://${baseUrl.substring(1)}`;
   } else {
       baseUrl = baseUrl.replace('https:/.', 'https://');
   }
