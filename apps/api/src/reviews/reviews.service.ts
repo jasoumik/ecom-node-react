@@ -7,45 +7,51 @@ export class ReviewsService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
   async create(createReviewDto: CreateReviewDto) {
-    // 1. Verify Order exists and is delivered
-    const order = await this.knex('orders')
-        .where({ id: createReviewDto.orderId, user_id: createReviewDto.userId })
-        .first();
+    // If orderId is provided, validate it
+    if (createReviewDto.orderId) {
+        // 1. Verify Order exists and is delivered
+        const order = await this.knex('orders')
+            .where({ id: createReviewDto.orderId, user_id: createReviewDto.userId })
+            .first();
 
-    if (!order) {
-        throw new NotFoundException('Order not found');
-    }
-    if (order.status !== 'delivered' && order.status !== 'completed') {
-        throw new BadRequestException('You can only review delivered orders');
-    }
+        if (!order) {
+            throw new NotFoundException('Order not found');
+        }
+        if (order.status !== 'delivered' && order.status !== 'completed') {
+            throw new BadRequestException('You can only review delivered orders');
+        }
 
-    // 2. Verify Product is in Order
-    const orderItem = await this.knex('order_items')
-        .where({ order_id: createReviewDto.orderId, product_id: createReviewDto.productId })
-        .first();
+        // 2. Verify Product is in Order
+        const orderItem = await this.knex('order_items')
+            .where({ order_id: createReviewDto.orderId, product_id: createReviewDto.productId })
+            .first();
 
-    if (!orderItem) {
-        throw new BadRequestException('Product not found in this order');
-    }
+        if (!orderItem) {
+            throw new BadRequestException('Product not found in this order');
+        }
 
-    // 3. Check for existing review
-    const existing = await this.knex('reviews')
-        .where({ order_id: createReviewDto.orderId, product_id: createReviewDto.productId })
-        .first();
+        // 3. Check for existing review
+        const existing = await this.knex('reviews')
+            .where({ order_id: createReviewDto.orderId, product_id: createReviewDto.productId })
+            .first();
 
-    if (existing) {
-        throw new BadRequestException('You have already reviewed this product for this order');
+        if (existing) {
+            throw new BadRequestException('You have already reviewed this product for this order');
+        }
+    } else {
+        // Manual Review (Admin created or special case)
+        // We might want to check if user exists, but userId is required in DTO
     }
 
     // 4. Create Review
     const [review] = await this.knex('reviews').insert({
         product_id: createReviewDto.productId,
         user_id: createReviewDto.userId,
-        order_id: createReviewDto.orderId,
+        order_id: createReviewDto.orderId || null,
         rating: createReviewDto.rating,
         comment: createReviewDto.comment,
         images: createReviewDto.images ? JSON.stringify(createReviewDto.images) : null,
-        status: 'pending' // Default to pending approval
+        status: createReviewDto.orderId ? 'pending' : 'approved' // Auto-approve manual reviews? Or keep pending. Let's auto-approve if no orderId (admin created)
     }).returning('*');
 
     return review;

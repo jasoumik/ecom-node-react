@@ -271,7 +271,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
     table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
-    table.uuid('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE'); // Verify purchase
+    table.uuid('order_id').nullable().references('id').inTable('orders').onDelete('CASCADE'); // Verify purchase, nullable for manual reviews
     table.integer('rating').notNullable(); // 1-5
     table.text('comment').nullable();
     table.jsonb('images').nullable(); // Array of image URLs
@@ -279,7 +279,7 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
     
-    // Ensure one review per product per order
+    // Ensure one review per product per order (if order exists)
     table.unique(['product_id', 'order_id']);
   });
 

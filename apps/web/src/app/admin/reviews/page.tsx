@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Heading, Button } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
@@ -15,6 +16,7 @@ export default function AdminReviewsPage() {
   const [filteredReviews, setFilteredReviews] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -102,9 +104,14 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
-      <div>
-        <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Reviews</Heading>
-        <p className="text-xs text-slate-500">Manage customer reviews</p>
+      <div className="flex justify-between items-center">
+        <div>
+            <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Reviews</Heading>
+            <p className="text-xs text-slate-500">Manage customer reviews</p>
+        </div>
+        <Button onClick={() => router.push("/admin/reviews/create")} className="rounded-lg shadow-sm py-2 px-4 text-xs h-auto">
+            + Add Review
+        </Button>
       </div>
 
       <FilterBar onSearch={handleSearch} placeholder="Search reviews..." />
