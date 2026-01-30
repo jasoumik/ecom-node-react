@@ -44,6 +44,11 @@ export function getImageUrl(url: any) {
 
   // Fix malformed domain if present (e.g. https:/.domain.com)
   baseUrl = baseUrl.replace('https:/.', 'https://');
+
+  // Ensure protocol
+  if (!baseUrl.startsWith('http')) {
+      baseUrl = `https://${baseUrl}`;
+  }
   
   // Ensure url starts with /
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
