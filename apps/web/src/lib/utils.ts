@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { API_URL, UPLOADS_HOST } from "./config";
+import { API_URL } from "./config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,13 +29,6 @@ export function getImageUrl(url: any) {
     return url;
   }
 
-  // Use explicit uploads host if available
-  if (UPLOADS_HOST) {
-      const host = UPLOADS_HOST.startsWith('http') ? UPLOADS_HOST : `https://${UPLOADS_HOST}`;
-      const cleanPath = url.startsWith("/") ? url : `/${url}`;
-      return `${host}${cleanPath}`;
-  }
-  
   // Use API_URL directly
   let baseUrl = API_URL;
   
@@ -44,14 +37,6 @@ export function getImageUrl(url: any) {
       if (baseUrl.includes('localhost:3000') || baseUrl.includes('127.0.0.1:3000')) {
           baseUrl = baseUrl.replace('3000', '3001');
       }
-  }
-
-  // Fix malformed domain if present (e.g. https:/.domain.com or just .domain.com)
-  // This handles the case where API_URL might have a leading dot typo
-  if (baseUrl.startsWith('.')) {
-      baseUrl = `https://${baseUrl.substring(1)}`; // Remove dot and add https://
-  } else {
-      baseUrl = baseUrl.replace('https:/.', 'https://');
   }
 
   // Ensure protocol
