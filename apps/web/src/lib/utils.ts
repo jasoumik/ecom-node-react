@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { API_URL } from "./config";
+import { API_URL, UPLOADS_HOST } from "./config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,6 +29,13 @@ export function getImageUrl(url: any) {
     return url;
   }
 
+  // Use explicit uploads host if available
+  if (UPLOADS_HOST) {
+      const host = UPLOADS_HOST.startsWith('http') ? UPLOADS_HOST : `https://${UPLOADS_HOST}`;
+      const cleanPath = url.startsWith("/") ? url : `/${url}`;
+      return `${host}${cleanPath}`;
+  }
+  
   // Use API_URL directly
   let baseUrl = API_URL;
   
@@ -39,14 +46,18 @@ export function getImageUrl(url: any) {
       }
   }
 
+  // Fix malformed domain if present
+  baseUrl = baseUrl.replace('https:/.', 'https://');
+
   // Ensure protocol
   if (!baseUrl.startsWith('http') && !baseUrl.startsWith('/')) {
       baseUrl = `https://${baseUrl}`;
   }
   
   // If URL already starts with /api/uploads and baseUrl ends with /api, remove one /api
+  // This handles the case where DB has /api/uploads/... and API_URL has /api
   if (url.startsWith('/api/uploads') && baseUrl.endsWith('/api')) {
-      baseUrl = baseUrl.slice(0, -4);
+      baseUrl = baseUrl.slice(0, -4); // Remove last /api
   }
   
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
