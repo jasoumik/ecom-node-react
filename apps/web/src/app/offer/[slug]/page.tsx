@@ -201,7 +201,7 @@ export default function LandingOfferPage() {
                 onClick={() => setIsZoomed(!isZoomed)}
             >
                 <div 
-                    className="w-full h-full"
+                    className="absolute inset-0 w-full h-full"
                     style={{
                         backgroundImage: `url(${getImageUrl(currentImage)})`,
                         backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
@@ -213,7 +213,7 @@ export default function LandingOfferPage() {
                 <img 
                     src={getImageUrl(currentImage)} 
                     alt={landingPage.title || getLocalizedField(product, 'name', language)} 
-                    className={`w-full h-full object-contain p-2 ${isZoomed ? 'opacity-0' : 'opacity-100'}`}
+                    className={`absolute inset-0 w-full h-full object-contain p-2 ${isZoomed ? 'opacity-0' : 'opacity-100'}`}
                 />
             </div>
             
