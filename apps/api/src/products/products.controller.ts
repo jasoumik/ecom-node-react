@@ -11,9 +11,10 @@ export class ProductsController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('category') categoryId?: string
+    @Query('category') categoryId?: string,
+    @Query('search') search?: string
   ) {
-    return this.productsService.findAll(Number(page), Number(limit), categoryId);
+    return this.productsService.findAll(Number(page), Number(limit), categoryId, search);
   }
 
   @Get('batches')

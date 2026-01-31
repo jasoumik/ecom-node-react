@@ -11,7 +11,7 @@ import { useWishlist } from "@/lib/wishlist";
 import { API_URL } from "@/lib/config";
 import { useSettings } from "@/lib/settings-context";
 import { useLanguage } from "@/lib/language-context";
-import { getLocalizedField } from "@/lib/utils";
+import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
 export function Header() {
@@ -94,7 +94,8 @@ export function Header() {
   // Debounce search suggestions
   useEffect(() => {
       const timer = setTimeout(() => {
-          if (searchQuery.trim().length > 1) {
+          // Trigger search only if 3 or more characters
+          if (searchQuery.trim().length >= 3) {
               fetchSuggestions(searchQuery);
           } else {
               setSuggestions([]);
@@ -108,8 +109,10 @@ export function Header() {
           const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(query)}&limit=5`);
           const data = await res.json();
           if (data.data && Array.isArray(data.data)) {
-              const matches = data.data.filter((p: any) => p.name.toLowerCase().includes(query.toLowerCase()));
-              setSuggestions(matches.slice(0, 5));
+              // Use backend results directly (backend handles case-insensitive search)
+              setSuggestions(data.data);
+          } else {
+              setSuggestions([]);
           }
       } catch (e) {
           setSuggestions([]);
@@ -274,9 +277,11 @@ export function Header() {
                 </button>
               </form>
               {/* Suggestions Dropdown */}
-              {showSuggestions && (
+              {showSuggestions && searchQuery.trim().length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-                      {suggestions.length > 0 ? (
+                      {searchQuery.trim().length < 3 ? (
+                          <div className="p-4 text-sm text-slate-500">Keep typing to see suggestions...</div>
+                      ) : suggestions.length > 0 ? (
                           <ul>
                                 {suggestions.map((product) => (
                                     <li key={product.id}>
@@ -285,8 +290,8 @@ export function Header() {
                                             className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3"
                                             onClick={() => setShowSuggestions(false)}
                                         >
-                                            <div className="w-8 h-8 rounded bg-slate-100 overflow-hidden shrink-0">
-                                                <div className="w-full h-full bg-slate-200"></div>
+                                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+                                                <Image src={getImageUrl(product.images?.[0])} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
                                             </div>
                                             <div className="flex-1 truncate">
                                                 <div className="font-bold truncate">{getLocalizedField(product, 'name', language)}</div>
@@ -296,7 +301,9 @@ export function Header() {
                                     </li>
                                 ))}
                             </ul>
-                      ) : null}
+                      ) : (
+                          <div className="p-4 text-sm text-slate-500">No products found for "{searchQuery}".</div>
+                      )}
                   </div>
               )}
             </div>
@@ -392,7 +399,7 @@ export function Header() {
                     </span>
                     {/* Desktop: Text Button */}
                     <span className="hidden lg:inline-flex">
-                        <Button className="text-xs font-bold py-2 px-5 h-auto rounded-xl bg-sky-50 text-white hover:bg-sky-600 shadow-md shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-500">
+                        <Button className="text-xs font-bold py-2 px-5 h-auto rounded-xl bg-sky-50 text-white hover:bg-sky-600 shadow-md shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-50">
                         {t('login')}
                         </Button>
                     </span>
@@ -537,6 +544,36 @@ export function Header() {
               </svg>
             </button>
           </form>
+          {/* Mobile Suggestions Dropdown */}
+          {searchQuery.trim().length > 0 && (
+              <div className="mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                  {searchQuery.trim().length < 3 ? (
+                      <div className="p-4 text-sm text-slate-500">Keep typing to see suggestions...</div>
+                  ) : suggestions.length > 0 ? (
+                      <ul>
+                            {suggestions.map((product) => (
+                                <li key={product.id}>
+                                    <Link 
+                                        href={`/products/${product.id}`}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3"
+                                        onClick={() => setIsSearchOpen(false)}
+                                    >
+                                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+                                            <Image src={getImageUrl(product.images?.[0])} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 truncate">
+                                            <div className="font-bold truncate">{getLocalizedField(product, 'name', language)}</div>
+                                            <div className="text-xs text-slate-500">৳{product.price}</div>
+                                        </div>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                  ) : (
+                      <div className="p-4 text-sm text-slate-500">No products found for "{searchQuery}".</div>
+                  )}
+              </div>
+          )}
         </div>
       )}
     </>
