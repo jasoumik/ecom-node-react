@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@repo/ui";
-import { API_URL } from "@/lib/config";
+import { API_URL, BASE_URL } from "@/lib/config";
 import { FullScreenLoader } from "./Loader";
 
 interface MediaPickerProps {
@@ -16,9 +16,6 @@ export function MediaPicker({ onSelect, onClose, context = 'general' }: MediaPic
   const [files, setFiles] = useState<any[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Extract base URL from API_URL (remove /api)
-  const BASE_URL = API_URL.replace('/api', '');
 
   useEffect(() => {
     fetchMedia(currentFolder);
