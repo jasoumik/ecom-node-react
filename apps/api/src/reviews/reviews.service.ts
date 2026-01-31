@@ -98,7 +98,9 @@ export class ReviewsService {
         .join('users', 'reviews.user_id', 'users.id')
         .select('reviews.*', 'users.name as user_name', 'users.avatar as user_avatar')
         .where({ product_id: productId, status: 'approved' })
-        .orderBy('created_at', 'desc');
+        .orderBy('rating', 'desc') // Highest rating first
+        .orderBy('created_at', 'desc') // Then latest
+        .limit(3); // Only top 3
   }
 
   async updateStatus(id: string, status: string) {
