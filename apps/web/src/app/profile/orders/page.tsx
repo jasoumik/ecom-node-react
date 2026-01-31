@@ -103,7 +103,7 @@ export default function MyOrdersPage() {
                 <div className="flex justify-end gap-2">
                     <Button 
                         variant="outline" 
-                        className="text-sky-600 border-sky-200 hover:bg-sky-50 hover:border-sky-300 px-3 py-1.5 text-xs rounded-lg h-auto"
+                        className="text-sky-600 border-sky-200 hover:bg-sky-50 hover:border-sky-300 px-4 py-2 text-xs rounded-xl"
                         onClick={() => router.push(`/profile/orders/${order.id}`)}
                     >
                         View Invoice
@@ -111,7 +111,7 @@ export default function MyOrdersPage() {
                     {order.status === 'pending' && (
                         <Button 
                             variant="outline" 
-                            className="text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300 px-3 py-1.5 text-xs rounded-lg h-auto"
+                            className="text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300 px-4 py-2 text-xs rounded-xl"
                             onClick={() => handleCancel(order.id)}
                         >
                             Cancel
@@ -143,23 +143,25 @@ export default function MyOrdersPage() {
                     </div>
                     <div className="text-right">
                         <div className="font-bold text-slate-900 dark:text-white text-lg">৳{order.total_amount}</div>
-                        <div className="flex gap-2 mt-2 justify-end">
-                            <button 
-                                onClick={() => router.push(`/profile/orders/${order.id}`)}
-                                className="text-sky-600 text-xs font-bold hover:underline"
-                            >
-                                Invoice
-                            </button>
-                            {order.status === 'pending' && (
-                                <button 
-                                    onClick={() => handleCancel(order.id)}
-                                    className="text-red-500 text-xs font-bold hover:underline"
-                                >
-                                    Cancel
-                                </button>
-                            )}
-                        </div>
                     </div>
+                </div>
+                <div className="flex gap-2 mt-2">
+                    <Button 
+                        variant="outline"
+                        onClick={() => router.push(`/profile/orders/${order.id}`)}
+                        className="flex-1 rounded-xl text-xs py-2 px-4 border-slate-200 dark:border-slate-700"
+                    >
+                        Invoice
+                    </Button>
+                    {order.status === 'pending' && (
+                        <Button 
+                            variant="outline"
+                            onClick={() => handleCancel(order.id)}
+                            className="flex-1 rounded-xl text-xs py-2 px-4 text-red-500 border-red-200 hover:bg-red-50"
+                        >
+                            Cancel
+                        </Button>
+                    )}
                 </div>
             </div>
         )}

@@ -52,13 +52,13 @@ export default function OrderInvoicePage() {
     <>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-4 sm:py-8 print:bg-white print:p-0 print:min-h-0">
         <div className="max-w-4xl mx-auto px-4 print:max-w-none print:px-0 print:mx-0">
-          <div className="flex justify-between items-start mb-6 print:hidden">
-            <Button variant="outline" onClick={() => router.back()} className="rounded-xl text-xs sm:text-sm">← {t('back')}</Button>
-            <div className="flex gap-2">
-                <Button onClick={() => router.push(`/track/${order.id}`)} variant="secondary" className="rounded-xl text-xs sm:text-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
+            <Button variant="outline" onClick={() => router.back()} className="rounded-xl text-xs sm:text-sm py-2 px-4">← {t('back')}</Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button onClick={() => router.push(`/track/${order.id}`)} variant="secondary" className="w-full sm:w-auto rounded-xl text-xs sm:text-sm py-2 px-4 justify-center">
                     {t('track_order')}
                 </Button>
-                <Button onClick={handlePrint} className="rounded-xl flex items-center gap-2 text-xs sm:text-sm">
+                <Button onClick={handlePrint} className="w-full sm:w-auto rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm py-2 px-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     {t('print_invoice')}
                 </Button>

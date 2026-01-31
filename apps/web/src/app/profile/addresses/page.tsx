@@ -62,18 +62,18 @@ export default function AddressesPage() {
 
   return (
     <div className="max-w-4xl">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
             <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-1">My Addresses</Heading>
             <p className="text-slate-500 dark:text-slate-400 text-sm">Manage your shipping addresses for faster checkout.</p>
         </div>
-        <Button onClick={() => setIsAdding(!isAdding)} className="rounded-xl shadow-lg shadow-sky-500/20 px-6">
+        <Button onClick={() => setIsAdding(!isAdding)} className="w-full sm:w-auto rounded-xl shadow-lg shadow-sky-500/20 px-6 py-2.5">
             {isAdding ? "Cancel" : "+ Add New"}
         </Button>
       </div>
 
       {isAdding && (
-        <div className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 mb-8 animate-in fade-in slide-in-from-top-4">
+        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 sm:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 mb-8 animate-in fade-in slide-in-from-top-4">
             <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-6">New Address Details</h3>
             <form onSubmit={handleAdd} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -99,7 +99,7 @@ export default function AddressesPage() {
                     </div>
                 </div>
                 <div className="pt-4 flex justify-end">
-                    <Button type="submit" className="rounded-xl px-8 py-3 shadow-md">Save Address</Button>
+                    <Button type="submit" className="w-full sm:w-auto rounded-xl px-8 py-3 shadow-md">Save Address</Button>
                 </div>
             </form>
         </div>
@@ -132,7 +132,7 @@ export default function AddressesPage() {
                     <p className="text-slate-500 dark:text-slate-400 text-sm">{addr.city}, {addr.zip}</p>
                 </div>
 
-                <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                <div className="absolute bottom-6 right-6">
                     <button
                         onClick={() => handleDelete(addr.id)}
                         className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors"
@@ -145,10 +145,10 @@ export default function AddressesPage() {
         ))}
 
         {addresses.length === 0 && !isAdding && (
-            <div className="col-span-2 flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+            <div className="col-span-2 flex flex-col items-center justify-center py-10 sm:py-16 px-4 text-center text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
                 <div className="text-4xl mb-4 opacity-50">📍</div>
                 <p className="font-medium">No addresses saved yet</p>
-                <p className="text-sm mt-1">Add an address to speed up your checkout process.</p>
+                <p className="text-xs sm:text-sm mt-1 max-w-xs mx-auto">Add an address to speed up your checkout process.</p>
             </div>
         )}
       </div>

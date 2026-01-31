@@ -27,17 +27,9 @@ function ProductsContent() {
   const { addToast } = useToast();
   const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-        try {
-            setUser(JSON.parse(userStr));
-        } catch (e) {}
-    }
-
     // Reset when filters change
     setProducts([]);
     setPage(1);
@@ -137,7 +129,7 @@ function ProductsContent() {
     addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
-  const toggleWishlist = async (product: any) => {
+  const toggleWishlist = (product: any) => {
     let imageUrl = "https://picsum.photos/seed/default/800/800";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = getImageUrl(product.images[0]);
@@ -153,11 +145,6 @@ function ProductsContent() {
     if (isWishlisted) {
         removeFromWishlist(product.id);
         addToast("Removed from wishlist");
-        if (user) {
-            try {
-                await fetch(`${API_URL}/wishlist/${user.id}/${product.id}`, { method: 'DELETE' });
-            } catch (e) {}
-        }
     } else {
         addToWishlist({
             id: product.id,
@@ -166,15 +153,6 @@ function ProductsContent() {
             image: imageUrl
         });
         addToast("Added to wishlist");
-        if (user) {
-            try {
-                await fetch(`${API_URL}/wishlist/${user.id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId: product.id })
-                });
-            } catch (e) {}
-        }
     }
   };
 
