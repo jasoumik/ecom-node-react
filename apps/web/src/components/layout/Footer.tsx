@@ -17,7 +17,7 @@ export function Footer() {
           <div className="space-y-4 text-center md:text-left">
             <Link href="/" className="inline-flex items-center gap-2 justify-center md:justify-start">
               <Image 
-                  src="/logo.png" 
+                  src="/logo2.png"
                   alt={settings.shop_name} 
                   width={140} 
                   height={48} 
