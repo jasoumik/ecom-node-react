@@ -5,10 +5,12 @@ import { Heading, Text, Button } from "@repo/ui";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField } from "@/lib/utils";
+import {API_URL} from "@/lib/config";
 
 export function HeroSection(props: HeroContent) {
   const { headline, headline_bn, subheadline, subheadline_bn, primaryCta, secondaryCta, stats } = props;
   const { t, language } = useLanguage();
+  console.log('debug', API_URL);
 
   return (
     <section className="w-full bg-white dark:bg-slate-900 py-12 border-b border-slate-100 dark:border-slate-800">
