@@ -205,10 +205,10 @@ export function Header() {
 
                 <Link href="/" className="flex items-center gap-2 shrink-0">
                     <Image 
-                        src="/logo.png" 
+                        src="/logo3.png"
                         alt={settings.shop_name} 
                         width={120} 
-                        height={40} 
+                        height={50}
                         className="h-8 sm:h-10 w-auto object-contain"
                         priority
                     />
@@ -422,7 +422,7 @@ export function Header() {
                   <div className="flex justify-between items-center mb-8">
                       <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
                         <Image 
-                            src="/logo.png" 
+                            src="/logo3.png"
                             alt={settings.shop_name} 
                             width={100} 
                             height={32} 
