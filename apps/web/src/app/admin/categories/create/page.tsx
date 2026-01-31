@@ -9,9 +9,10 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateCategoryPage() {
-  const [newCategory, setNewCategory] = useState({ name: "", name_bn: "", description: "", description_bn: "", image: "", parent_id: "", is_active: true });
+  const [newCategory, setNewCategory] = useState({ name: "", name_bn: "", description: "", description_bn: "", image: "", banner_image: "", parent_id: "", is_active: true });
   const [categories, setCategories] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState<'image' | 'banner_image'>('image');
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -52,6 +53,11 @@ export default function CreateCategoryPage() {
     } catch (e) {
         addToast("Error creating category", "error");
     }
+  };
+
+  const openMediaPicker = (target: 'image' | 'banner_image') => {
+      setMediaPickerTarget(target);
+      setShowMediaPicker(true);
   };
 
   return (
@@ -100,16 +106,30 @@ export default function CreateCategoryPage() {
               </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image</label>
-            <div className="flex gap-2">
-                <Input 
-                    className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
-                    value={newCategory.image} 
-                    onChange={e => setNewCategory({...newCategory, image: e.target.value})} 
-                    placeholder="Image URL..."
-                />
-                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Icon/Thumbnail (Small)</label>
+                <div className="flex gap-2">
+                    <Input 
+                        className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
+                        value={newCategory.image} 
+                        onChange={e => setNewCategory({...newCategory, image: e.target.value})} 
+                        placeholder="Image URL..."
+                    />
+                    <Button type="button" variant="secondary" onClick={() => openMediaPicker('image')} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
+                </div>
+            </div>
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Banner Image (Large)</label>
+                <div className="flex gap-2">
+                    <Input 
+                        className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
+                        value={newCategory.banner_image} 
+                        onChange={e => setNewCategory({...newCategory, banner_image: e.target.value})} 
+                        placeholder="Banner URL..."
+                    />
+                    <Button type="button" variant="secondary" onClick={() => openMediaPicker('banner_image')} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
+                </div>
             </div>
           </div>
           
@@ -139,7 +159,7 @@ export default function CreateCategoryPage() {
       {showMediaPicker && (
         <MediaPicker 
             onSelect={(url) => {
-                setNewCategory({ ...newCategory, image: url });
+                setNewCategory({ ...newCategory, [mediaPickerTarget]: url });
                 setShowMediaPicker(false);
             }}
             onClose={() => setShowMediaPicker(false)}

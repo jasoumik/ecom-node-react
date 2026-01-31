@@ -13,6 +13,7 @@ export default function EditCategoryPage() {
   const [category, setCategory] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState<'image' | 'banner_image'>('image');
   const router = useRouter();
   const params = useParams();
   const { addToast } = useToast();
@@ -63,6 +64,11 @@ export default function EditCategoryPage() {
     }
   };
 
+  const openMediaPicker = (target: 'image' | 'banner_image') => {
+      setMediaPickerTarget(target);
+      setShowMediaPicker(true);
+  };
+
   if (!category) return <div>Loading...</div>;
 
   return (
@@ -111,29 +117,55 @@ export default function EditCategoryPage() {
               </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Image</label>
-            <div className="flex gap-2 mb-2">
-                <Input 
-                    className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
-                    value={category.image || ""} 
-                    onChange={e => setCategory({...category, image: e.target.value})} 
-                    placeholder="Image URL..."
-                />
-                <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
-            </div>
-            {category.image && (
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
-                    <img src={getImageUrl(category.image)} alt="Preview" className="w-full h-full object-cover" />
-                    <button 
-                        type="button"
-                        onClick={() => setCategory({...category, image: ""})}
-                        className="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                        ✕
-                    </button>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Icon/Thumbnail (Small)</label>
+                <div className="flex gap-2 mb-2">
+                    <Input 
+                        className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
+                        value={category.image || ""} 
+                        onChange={e => setCategory({...category, image: e.target.value})} 
+                        placeholder="Image URL..."
+                    />
+                    <Button type="button" variant="secondary" onClick={() => openMediaPicker('image')} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
                 </div>
-            )}
+                {category.image && (
+                    <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                        <img src={getImageUrl(category.image)} alt="Preview" className="w-full h-full object-cover" />
+                        <button 
+                            type="button"
+                            onClick={() => setCategory({...category, image: ""})}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+            </div>
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Banner Image (Large)</label>
+                <div className="flex gap-2 mb-2">
+                    <Input 
+                        className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
+                        value={category.banner_image || ""} 
+                        onChange={e => setCategory({...category, banner_image: e.target.value})} 
+                        placeholder="Banner URL..."
+                    />
+                    <Button type="button" variant="secondary" onClick={() => openMediaPicker('banner_image')} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
+                </div>
+                {category.banner_image && (
+                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                        <img src={getImageUrl(category.banner_image)} alt="Banner Preview" className="w-full h-full object-cover" />
+                        <button 
+                            type="button"
+                            onClick={() => setCategory({...category, banner_image: ""})}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+            </div>
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
@@ -162,7 +194,7 @@ export default function EditCategoryPage() {
       {showMediaPicker && (
         <MediaPicker 
             onSelect={(url) => {
-                setCategory({ ...category, image: url });
+                setCategory({ ...category, [mediaPickerTarget]: url });
                 setShowMediaPicker(false);
             }}
             onClose={() => setShowMediaPicker(false)}

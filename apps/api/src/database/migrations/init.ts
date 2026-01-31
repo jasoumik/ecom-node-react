@@ -35,6 +35,7 @@ export async function up(knex: Knex): Promise<void> {
     table.text('description').nullable();
     table.text('description_bn').nullable(); // Added Bangla Description
     table.string('image').nullable();
+    table.string('banner_image').nullable(); // Added Banner Image
     table.uuid('parent_id').nullable().references('id').inTable('categories').onDelete('CASCADE');
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
@@ -225,7 +226,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('settings', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('key').unique().notNullable();
-    table.string('value').notNullable();
+    table.text('value').notNullable(); // Changed to TEXT
     table.string('description').nullable();
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);

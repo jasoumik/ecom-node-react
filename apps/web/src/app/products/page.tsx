@@ -17,6 +17,7 @@ function ProductsContent() {
   const categoryId = searchParams.get("category");
   const searchQuery = searchParams.get("search");
   const [products, setProducts] = useState<any[]>([]);
+  const [category, setCategory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -34,6 +35,15 @@ function ProductsContent() {
     setPage(1);
     setHasMore(true);
     fetchProducts(1, true);
+    
+    if (categoryId) {
+        fetch(`${API_URL}/categories/${categoryId}`)
+            .then(res => res.json())
+            .then(setCategory)
+            .catch(console.error);
+    } else {
+        setCategory(null);
+    }
   }, [categoryId, searchQuery]);
 
   const fetchProducts = async (pageNum: number, isInitial: boolean = false) => {
@@ -153,10 +163,74 @@ function ProductsContent() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Category Banner & Subcategories */}
+        {category && (
+            <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                {category.banner_image && (
+                    <div className="w-full h-40 sm:h-56 md:h-72 rounded-2xl overflow-hidden mb-8 relative shadow-md group">
+                        <ResponsiveImage 
+                            src={getImageUrl(category.banner_image)} 
+                            alt={getLocalizedField(category, 'name', language)} 
+                            width={1200} 
+                            height={400} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6 sm:p-10">
+                            <div>
+                                <h1 className="text-3xl sm:text-5xl font-bold text-white drop-shadow-lg mb-2">
+                                    {getLocalizedField(category, 'name', language)}
+                                </h1>
+                                {category.description && (
+                                    <p className="text-white/90 text-sm sm:text-base max-w-2xl line-clamp-2">
+                                        {getLocalizedField(category, 'description', language)}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {category.children && category.children.length > 0 && (
+                    <div className="mb-8">
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-lg">{t('subcategories')}</h3>
+                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                            {category.children.map((sub: any) => (
+                                <Link 
+                                    key={sub.id} 
+                                    href={`/products?category=${sub.id}`}
+                                    className="flex flex-col items-center gap-3 min-w-[100px] group"
+                                >
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 overflow-hidden group-hover:border-sky-500 group-hover:shadow-md transition-all duration-300">
+                                        <ResponsiveImage 
+                                            src={getImageUrl(sub.image)} 
+                                            alt={getLocalizedField(sub, 'name', language)} 
+                                            width={100} 
+                                            height={100} 
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 text-center group-hover:text-sky-500 transition-colors line-clamp-2 max-w-[100px]">
+                                        {getLocalizedField(sub, 'name', language)}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        )}
+
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
             <div>
-                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl">{t('shop_all_products')}</Heading>
-                <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t('discover_collection')}</Text>
+                {!category && (
+                    <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl">
+                        {searchQuery ? `Search results for "${searchQuery}"` : t('shop_all_products')}
+                    </Heading>
+                )}
+                {!category && !searchQuery && (
+                    <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t('discover_collection')}</Text>
+                )}
             </div>
         </div>
 

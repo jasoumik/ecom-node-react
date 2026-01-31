@@ -1,20 +1,9 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Knex } from 'knex';
 
 @Injectable()
-export class SettingsService implements OnModuleInit {
+export class SettingsService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
-
-  async onModuleInit() {
-      try {
-          // Fix for "value too long" error: Change value column to TEXT
-          await this.knex.raw('ALTER TABLE settings ALTER COLUMN value TYPE TEXT');
-          console.log('Successfully altered settings.value to TEXT');
-      } catch (e) {
-          // It might fail if table doesn't exist or other reasons, but usually safe to ignore if it's already TEXT
-          // console.error('Migration note: Failed to alter settings table (might be already correct)', e);
-      }
-  }
 
   async findAll(): Promise<any[]> {
     return this.knex('settings').select('*');
