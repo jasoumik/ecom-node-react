@@ -24,6 +24,7 @@ export function getLocalizedField(obj: any, field: string, language: 'en' | 'bn'
 
 export function getImageUrl(url: any) {
   if (!url || typeof url !== 'string') return "https://picsum.photos/seed/default/800/800";
+  console.log(url);
 
   if (url.startsWith("http") || url.startsWith("https")) {
     return url;
@@ -36,6 +37,7 @@ export function getImageUrl(url: any) {
   // if (baseUrl.includes('localhost:3000') || baseUrl.includes('127.0.0.1:3000')) {
   //     baseUrl = baseUrl.replace('3000', '3001');
   // }
+  console.log(baseUrl);
 
   // Ensure url starts with /
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
