@@ -22,7 +22,6 @@ export default function ProductPage() {
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("description");
   
   // Variant Selection State
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -602,85 +601,72 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* Info Tabs */}
-            <div className="mt-8">
-                <div className="flex border-b border-slate-200 dark:border-slate-700 mb-4">
-                    {['description', 'reviews'].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`px-6 py-2 text-sm font-bold border-b-2 transition-colors ${
-                                activeTab === tab 
-                                ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
-                                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                            }`}
-                        >
-                            {tab === 'description' ? 'Description' : t('reviews')}
-                        </button>
-                    ))}
-                </div>
-                
-                <div className="min-h-[200px]">
-                    {activeTab === 'description' && (
-                        <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
-                            {getLocalizedField(product, 'description', language)}
-                            
-                            {/* Specifications */}
-                            {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
-                                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                                    <h4 className="font-bold text-slate-900 dark:text-white mb-3">Specifications</h4>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        {(selectedVariant?.material || product.material) && (
-                                            <div>
-                                                <span className="text-slate-500 block">Material</span>
-                                                <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
-                                            </div>
-                                        )}
-                                        {currentWeight && (
-                                            <div>
-                                                <span className="text-slate-500 block">Weight</span>
-                                                <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
-                                            </div>
-                                        )}
-                                        {(selectedVariant?.sku || product.sku) && (
-                                            <div>
-                                                <span className="text-slate-500 block">SKU</span>
-                                                <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    
-                    {activeTab === 'reviews' && (
-                        <div className="space-y-6">
-                            {reviews.length === 0 ? (
-                                <p className="text-slate-500 dark:text-slate-400 text-center py-8">{t('no_reviews')}</p>
-                            ) : (
-                                reviews.map((review) => (
-                                    <div key={review.id} className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="font-bold text-slate-900 dark:text-white">{review.user_name}</div>
-                                                <RatingStars rating={review.rating} size="sm" />
-                                            </div>
-                                            <div className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</div>
+            {/* Reviews & Description (No Tabs) */}
+            <div className="mt-8 space-y-8">
+                {/* Reviews Section */}
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
+                    <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
+                    <div className="space-y-6">
+                        {reviews.length === 0 ? (
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('no_reviews')}</p>
+                        ) : (
+                            reviews.map((review) => (
+                                <div key={review.id} className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0 last:pb-0">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="font-bold text-slate-900 dark:text-white text-sm">{review.user_name}</div>
+                                            <RatingStars rating={review.rating} size="sm" />
                                         </div>
-                                        <p className="text-slate-600 dark:text-slate-300 text-sm">{review.comment}</p>
-                                        {review.images && (
-                                            <div className="flex gap-2 mt-3">
-                                                {parseReviewImages(review.images).map((img: string, i: number) => (
-                                                    <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
-                                                        <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                        <div className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</div>
                                     </div>
-                                ))
-                            )}
+                                    <p className="text-slate-600 dark:text-slate-300 text-sm">{review.comment}</p>
+                                    {review.images && (
+                                        <div className="flex gap-2 mt-3">
+                                            {parseReviewImages(review.images).map((img: string, i: number) => (
+                                                <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
+                                                    <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Description Section */}
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
+                    <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">Description</Heading>
+                    <div 
+                        className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm"
+                        dangerouslySetInnerHTML={{ __html: getLocalizedField(product, 'description', language) }}
+                    />
+                    
+                    {/* Specifications */}
+                    {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
+                        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                            <h4 className="font-bold text-slate-900 dark:text-white mb-3 text-sm">Specifications</h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                {(selectedVariant?.material || product.material) && (
+                                    <div>
+                                        <span className="text-slate-500 block text-xs">Material</span>
+                                        <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
+                                    </div>
+                                )}
+                                {currentWeight && (
+                                    <div>
+                                        <span className="text-slate-500 block text-xs">Weight</span>
+                                        <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
+                                    </div>
+                                )}
+                                {(selectedVariant?.sku || product.sku) && (
+                                    <div>
+                                        <span className="text-slate-500 block text-xs">SKU</span>
+                                        <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
