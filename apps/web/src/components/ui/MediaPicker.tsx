@@ -118,7 +118,7 @@ export function MediaPicker({ onSelect, onClose, context = 'general' }: MediaPic
                 <div 
                     key={file.id} 
                     className="group relative aspect-square bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-sky-500 transition-all"
-                    onClick={() => onSelect(`${API_URL}${file.url}`)}
+                    onClick={() => onSelect(`${file.url}`)}
                 >
                   {file.type === 'image' ? (
                     <img src={`${API_URL}${file.url}`} alt={file.name} className="w-full h-full object-cover" />

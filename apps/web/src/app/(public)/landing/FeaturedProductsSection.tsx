@@ -7,7 +7,7 @@ import { useWishlist } from "@/lib/wishlist";
 import { useToast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
-import { getLocalizedField } from "@/lib/utils";
+import {getImageUrl, getLocalizedField} from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 interface FeaturedProductsSectionProps {
@@ -92,7 +92,7 @@ export function FeaturedProductsSection({
                     <div className="relative aspect-[4/5] overflow-hidden rounded-t-[2rem] m-2 mb-0">
                         <Link href={product.href} className="block w-full h-full rounded-[1.5rem] overflow-hidden">
                             <ResponsiveImage
-                                src={product.image.src}
+                                src={getImageUrl(product.image.src)}
                                 alt={getLocalizedField(product, 'name', language)}
                                 width={300}
                                 height={400}

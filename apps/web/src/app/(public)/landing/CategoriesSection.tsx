@@ -4,7 +4,7 @@ import { Section, Heading, ResponsiveImage } from "@repo/ui";
 import type { Category } from "./types";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
-import { getLocalizedField } from "@/lib/utils";
+import {getImageUrl, getLocalizedField} from "@/lib/utils";
 
 interface CategoriesSectionProps {
   categories: Category[];
@@ -33,7 +33,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
             >
                 <div className="w-full aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <ResponsiveImage
-                        src={category.image}
+                        src={getImageUrl(category.image)}
                         alt={getLocalizedField(category, 'name', language)}
                         width={200}
                         height={200}
