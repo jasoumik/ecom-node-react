@@ -44,7 +44,7 @@ export function getImageUrl(url: any) {
   }
 
   // Base host (no /api)
-  const baseUrl = API_URL.replace(/\/api\/?$/, "");
+  const baseUrl = API_URL;
 
   return `${baseUrl}/${cleanUrl}`;
 }
