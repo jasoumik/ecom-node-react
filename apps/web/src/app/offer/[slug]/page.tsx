@@ -26,6 +26,8 @@ export default function LandingOfferPage() {
   const [deliveryCharges, setDeliveryCharges] = useState<any[]>([]);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentNumbers, setPaymentNumbers] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Variant State
@@ -77,6 +79,7 @@ export default function LandingOfferPage() {
 
     fetchData();
     fetchDeliveryCharges();
+    fetchSettings();
   }, [slug]);
 
   const fetchDeliveryCharges = async () => {
@@ -85,6 +88,19 @@ export default function LandingOfferPage() {
           const data = await res.json();
           setDeliveryCharges(data);
           if (data.length > 0) setSelectedDeliveryId(data[0].id);
+      } catch (e) {}
+  };
+
+  const fetchSettings = async () => {
+      try {
+          const res = await fetch(`${API_URL}/settings`);
+          const data = await res.json();
+          const numbers: any = {};
+          data.forEach((s: any) => {
+              if (s.key === 'bkash_number') numbers.bkash = s.value;
+              if (s.key === 'nagad_number') numbers.nagad = s.value;
+          });
+          setPaymentNumbers(numbers);
       } catch (e) {}
   };
 
@@ -115,6 +131,11 @@ export default function LandingOfferPage() {
         return;
     }
 
+    if ((paymentMethod === 'bkash' || paymentMethod === 'nagad') && !transactionId) {
+        addToast("Please enter transaction ID", "error");
+        return;
+    }
+
     setIsSubmitting(true);
     try {
       const orderData = {
@@ -123,6 +144,7 @@ export default function LandingOfferPage() {
         customerAddress,
         deliveryChargeId: selectedDeliveryId,
         paymentMethod,
+        transactionId: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? transactionId : undefined,
         items: [{
             productId: product.id,
             variantId: selectedVariant?.id,
@@ -408,10 +430,56 @@ export default function LandingOfferPage() {
                                     />
                                     <span className={`text-sm font-medium ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>{getLocalizedField(charge, 'name', language)}</span>
                                 </div>
-                                <span className={`text-sm font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>৳{charge.amount}</span>
+                                <div className="text-right">
+                                    {isFreeShipping ? (
+                                        <>
+                                            <span className="text-xs text-slate-400 line-through mr-2">৳{charge.amount}</span>
+                                            <span className="text-sm font-bold text-emerald-600">FREE</span>
+                                        </>
+                                    ) : (
+                                        <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
+                                    )}
+                                </div>
                             </label>
                         ))}
                     </div>
+                </div>
+
+                <div className="space-y-3">
+                    <label className={`block text-sm font-bold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>{t('payment_method')}</label>
+                    <div className="grid grid-cols-3 gap-2">
+                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                            <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
+                            <span className="text-2xl mb-1">💵</span>
+                            <span className={`text-xs font-bold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'} text-center leading-tight`}>{t('cod')}</span>
+                        </label>
+                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                            <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="hidden" />
+                            <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-8 w-auto mb-1 object-contain" />
+                            <span className={`text-xs font-bold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>Bkash</span>
+                        </label>
+                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                            <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => setPaymentMethod('nagad')} className="hidden" />
+                            <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-8 w-auto mb-1 object-contain" />
+                            <span className={`text-xs font-bold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>Nagad</span>
+                        </label>
+                    </div>
+                    
+                    {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
+                        <div className={`animate-in fade-in slide-in-from-top-2 p-4 rounded-xl border ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                            <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
+                                Please send money to <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span>
+                            </p>
+                            <Input 
+                                label="Transaction ID" 
+                                placeholder="Enter TrxID" 
+                                required 
+                                value={transactionId}
+                                onChange={(e) => setTransactionId(e.target.value)}
+                                className={isDarkTheme ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white'}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Order Summary */}

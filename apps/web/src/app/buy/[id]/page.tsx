@@ -25,6 +25,8 @@ export default function BuyNowPage() {
   const [deliveryCharges, setDeliveryCharges] = useState<any[]>([]);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentNumbers, setPaymentNumbers] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -83,6 +85,7 @@ export default function BuyNowPage() {
 
     fetchProduct();
     fetchDeliveryCharges();
+    fetchSettings();
   }, [id]);
 
   const fetchAddresses = async (userId: string) => {
@@ -101,6 +104,19 @@ export default function BuyNowPage() {
           const data = await res.json();
           setDeliveryCharges(data);
           if (data.length > 0) setSelectedDeliveryId(data[0].id);
+      } catch (e) {}
+  };
+
+  const fetchSettings = async () => {
+      try {
+          const res = await fetch(`${API_URL}/settings`);
+          const data = await res.json();
+          const numbers: any = {};
+          data.forEach((s: any) => {
+              if (s.key === 'bkash_number') numbers.bkash = s.value;
+              if (s.key === 'nagad_number') numbers.nagad = s.value;
+          });
+          setPaymentNumbers(numbers);
       } catch (e) {}
   };
 
@@ -131,6 +147,11 @@ export default function BuyNowPage() {
         return;
     }
 
+    if ((paymentMethod === 'bkash' || paymentMethod === 'nagad') && !transactionId) {
+        addToast("Please enter transaction ID", "error");
+        return;
+    }
+
     setIsSubmitting(true);
     try {
       // Save address if requested AND not already saved
@@ -149,6 +170,7 @@ export default function BuyNowPage() {
         customerAddress,
         deliveryChargeId: selectedDeliveryId,
         paymentMethod,
+        transactionId: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? transactionId : undefined,
         items: [{
             productId: product.id,
             variantId: selectedVariant?.id,
@@ -482,6 +504,43 @@ export default function BuyNowPage() {
                             </label>
                         ))}
                     </div>
+                </div>
+
+                <div className="space-y-3">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">{t('payment_method')}</label>
+                    <div className="grid grid-cols-3 gap-2">
+                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                            <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
+                            <span className="text-2xl mb-1">💵</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight">{t('cod')}</span>
+                        </label>
+                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                            <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="hidden" />
+                            <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-8 w-auto mb-1 object-contain" />
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Bkash</span>
+                        </label>
+                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                            <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => setPaymentMethod('nagad')} className="hidden" />
+                            <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-8 w-auto mb-1 object-contain" />
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Nagad</span>
+                        </label>
+                    </div>
+                    
+                    {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
+                        <div className="animate-in fade-in slide-in-from-top-2 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                            <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                                Please send money to <span className="font-bold text-slate-900 dark:text-white">{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span>
+                            </p>
+                            <Input 
+                                label="Transaction ID" 
+                                placeholder="Enter TrxID" 
+                                required 
+                                value={transactionId}
+                                onChange={(e) => setTransactionId(e.target.value)}
+                                className="bg-white dark:bg-slate-900"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Order Summary */}
