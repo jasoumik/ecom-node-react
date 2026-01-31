@@ -28,7 +28,6 @@ export function FeaturedProductsSection({
   const { addToast } = useToast();
   const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
-    console.log(products, 'products');
 
   useEffect(() => {
     setMounted(true);
@@ -66,6 +65,7 @@ export function FeaturedProductsSection({
         addToast("Added to wishlist");
     }
   };
+
   return (
     <Section className="py-12 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
