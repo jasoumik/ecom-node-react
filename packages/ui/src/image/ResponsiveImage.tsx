@@ -22,9 +22,8 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = (props) => {
     props.src.includes('127.0.0.1:3001') ||
     props.src.includes('/uploads/'); // Catch-all for uploads folder
 
-  const shouldUnoptimized = unoptimized ?? isLocalUpload;
+  const shouldUnoptimize = unoptimized ?? isLocalUpload;
 
-  console.log(shouldUnoptimized, unoptimized, isLocalUpload, props.src);
   return (
     <Image
       {...rest}
@@ -34,7 +33,7 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = (props) => {
       placeholder={props.placeholder ?? "empty"}
       loading={resolvedLoading}
       priority={priority}
-      unoptimized={shouldUnoptimized}
+      unoptimized={shouldUnoptimize}
     />
   );
 };
