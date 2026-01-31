@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
@@ -35,6 +35,11 @@ export default function LandingOfferPage() {
   
   // Image State
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Zoom State
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLDivElement>(null);
 
   const { addToast } = useToast();
   const router = useRouter();
@@ -92,6 +97,14 @@ export default function LandingOfferPage() {
       });
       setSelectedVariant(variant);
   }, [selectedSize, selectedColor, product]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!imageRef.current) return;
+    const { left, top, width, height } = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setMousePos({ x, y });
+  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,14 +192,28 @@ export default function LandingOfferPage() {
       <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
         {/* Product Hero */}
         <div className={`${cardClass} rounded-3xl shadow-sm border overflow-hidden mb-8`}>
-            <div className="aspect-video w-full relative bg-slate-100 dark:bg-slate-700">
-                <ResponsiveImage 
+            <div 
+                className="aspect-video w-full relative bg-slate-100 dark:bg-slate-700 cursor-zoom-in group"
+                ref={imageRef}
+                onMouseMove={handleMouseMove}
+                onMouseEnter={() => setIsZoomed(true)}
+                onMouseLeave={() => setIsZoomed(false)}
+                onClick={() => setIsZoomed(!isZoomed)}
+            >
+                <div 
+                    className="w-full h-full"
+                    style={{
+                        backgroundImage: `url(${getImageUrl(currentImage)})`,
+                        backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
+                        backgroundSize: isZoomed ? '200%' : 'contain',
+                        backgroundRepeat: 'no-repeat',
+                        transition: isZoomed ? 'none' : 'background-size 0.3s ease-out'
+                    }}
+                />
+                <img 
                     src={getImageUrl(currentImage)} 
                     alt={landingPage.title || getLocalizedField(product, 'name', language)} 
-                    width={800} 
-                    height={450} 
-                    className="object-cover w-full h-full"
-                    priority
+                    className={`w-full h-full object-contain p-2 ${isZoomed ? 'opacity-0' : 'opacity-100'}`}
                 />
             </div>
             
