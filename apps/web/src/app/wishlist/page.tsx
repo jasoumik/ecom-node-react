@@ -6,12 +6,34 @@ import { Button, Heading, ResponsiveImage } from "@repo/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { API_URL } from "@/lib/config";
 
 export default function WishlistPage() {
   const { items, removeItem } = useWishlist();
   const { addItem } = useCart();
   const { addToast } = useToast();
   const { t } = useLanguage();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        try {
+            setUser(JSON.parse(userStr));
+        } catch (e) {}
+    }
+  }, []);
+
+  const handleRemove = async (id: string) => {
+      removeItem(id);
+      addToast("Removed from wishlist");
+      if (user) {
+          try {
+              await fetch(`${API_URL}/wishlist/${user.id}/${id}`, { method: 'DELETE' });
+          } catch (e) {}
+      }
+  };
 
   const handleAddToCart = (item: any) => {
     addItem({
@@ -51,7 +73,7 @@ export default function WishlistPage() {
                                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                             />
                             <button 
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => handleRemove(item.id)}
                                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors shadow-sm"
                                 title="Remove"
                             >

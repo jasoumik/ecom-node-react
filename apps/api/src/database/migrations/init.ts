@@ -284,6 +284,16 @@ export async function up(knex: Knex): Promise<void> {
     table.unique(['product_id', 'order_id']);
   });
 
+  // Wishlist Items Table
+  await knex.schema.createTable('wishlist_items', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.timestamp('created_at').defaultTo(knex.fn.now());
+    
+    table.unique(['user_id', 'product_id']);
+  });
+
   // Promises Table (Why Choose Us)
   await knex.schema.createTable('promises', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
@@ -324,6 +334,7 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('order_history');
   await knex.schema.dropTableIfExists('landing_pages');
   await knex.schema.dropTableIfExists('promises');
+  await knex.schema.dropTableIfExists('wishlist_items');
   await knex.schema.dropTableIfExists('reviews');
   await knex.schema.dropTableIfExists('contact_messages');
   await knex.schema.dropTableIfExists('product_requests');

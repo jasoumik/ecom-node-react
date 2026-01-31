@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import {getImageUrl, getLocalizedField} from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { API_URL } from "@/lib/config";
 
 interface FeaturedProductsSectionProps {
   title: string;
@@ -28,9 +29,16 @@ export function FeaturedProductsSection({
   const { addToast } = useToast();
   const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        try {
+            setUser(JSON.parse(userStr));
+        } catch (e) {}
+    }
   }, []);
 
   const handleAddToCart = (product: FeaturedProduct) => {
@@ -48,13 +56,18 @@ export function FeaturedProductsSection({
     addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
-  const toggleWishlist = (product: FeaturedProduct) => {
+  const toggleWishlist = async (product: FeaturedProduct) => {
     const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
     const isWishlisted = wishlistItems.some(i => i.id === product.id);
 
     if (isWishlisted) {
         removeFromWishlist(product.id);
         addToast("Removed from wishlist");
+        if (user) {
+            try {
+                await fetch(`${API_URL}/wishlist/${user.id}/${product.id}`, { method: 'DELETE' });
+            } catch (e) {}
+        }
     } else {
         addToWishlist({
             id: product.id,
@@ -63,6 +76,15 @@ export function FeaturedProductsSection({
             image: product.image.src
         });
         addToast("Added to wishlist");
+        if (user) {
+            try {
+                await fetch(`${API_URL}/wishlist/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: product.id })
+                });
+            } catch (e) {}
+        }
     }
   };
 

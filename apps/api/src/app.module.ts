@@ -20,6 +20,7 @@ import { RequestsModule } from './requests/requests.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { PromisesModule } from './promises/promises.module';
 import { LandingPagesModule } from './landing-pages/landing-pages.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -46,9 +47,10 @@ import { join } from 'path';
     ReviewsModule,
     PromisesModule,
     LandingPagesModule,
+    WishlistModule,
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/api/uploads', // Changed to match frontend requests
+      serveRoot: '/uploads',
     }),
   ],
   controllers: [AppController],
