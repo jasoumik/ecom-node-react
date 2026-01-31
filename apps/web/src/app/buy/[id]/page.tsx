@@ -189,12 +189,14 @@ export default function BuyNowPage() {
   const selectedDelivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
   const deliveryAmount = selectedDelivery ? parseFloat(selectedDelivery.amount) : 0;
   
-  // Free Shipping Logic (Frontend Display Only - Backend handles actual logic)
+  // Free Shipping Logic
   const subtotal = parseFloat(currentPrice) * quantity;
   const freeShippingThreshold = parseFloat(settings.free_shipping_threshold || "5000");
   const isFreeShipping = subtotal >= freeShippingThreshold;
   const finalDeliveryAmount = isFreeShipping ? 0 : deliveryAmount;
   const totalAmount = subtotal + finalDeliveryAmount;
+  const amountToFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+  const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
   const sizes = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.size).filter(Boolean))) : [];
   const colors = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) : [];
@@ -352,6 +354,41 @@ export default function BuyNowPage() {
         <div id="order-form" className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl shadow-lg border-2 border-sky-100 dark:border-slate-700">
             <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-6 text-center">{t('fill_form_to_confirm')}</Heading>
             
+            {/* Order Summary Top */}
+            <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-lg bg-white p-1 border border-slate-200 overflow-hidden shrink-0">
+                        <img src={getImageUrl(currentImage)} className="w-full h-full object-contain" />
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-bold text-sm line-clamp-1 text-slate-900 dark:text-white">{getLocalizedField(product, 'name', language)}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                            {selectedVariant ? [selectedSize, selectedColor].filter(Boolean).join(' / ') : ''}
+                        </div>
+                        <div className="font-bold text-sky-600 dark:text-sky-400">৳{currentPrice} x {quantity}</div>
+                    </div>
+                    <div className="text-right">
+                        <div className="font-bold text-lg text-slate-900 dark:text-white">৳{subtotal}</div>
+                    </div>
+                </div>
+                
+                {/* Free Shipping Bar */}
+                <div className="mt-4">
+                    <div className="flex justify-between text-xs mb-1.5">
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                            {isFreeShipping ? t('free_shipping_unlocked') : t('add_more_free_shipping', { amount: amountToFreeShipping.toString() })}
+                        </span>
+                        <span className="font-bold text-sky-600 dark:text-sky-400">{progress.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+                        <div 
+                            className={`h-full rounded-full transition-all duration-500 ${isFreeShipping ? 'bg-emerald-500' : 'bg-sky-500'}`} 
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </div>
+
             <form onSubmit={handlePlaceOrder} className="space-y-5">
                 {/* Saved Addresses - Animated */}
                 {savedAddresses.length > 0 && (

@@ -158,7 +158,15 @@ export default function LandingOfferPage() {
   const currentPrice = selectedVariant ? (selectedVariant.price || product.price) : product.price;
   const selectedDelivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
   const deliveryAmount = selectedDelivery ? parseFloat(selectedDelivery.amount) : 0;
-  const totalAmount = (parseFloat(currentPrice) * quantity) + deliveryAmount;
+  
+  // Free Shipping Logic
+  const subtotal = parseFloat(currentPrice) * quantity;
+  const freeShippingThreshold = parseFloat(settings.free_shipping_threshold || "5000");
+  const isFreeShipping = subtotal >= freeShippingThreshold;
+  const finalDeliveryAmount = isFreeShipping ? 0 : deliveryAmount;
+  const totalAmount = subtotal + finalDeliveryAmount;
+  const amountToFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+  const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
   const sizes = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.size).filter(Boolean))) : [];
   const colors = product.variants ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) : [];
@@ -213,7 +221,7 @@ export default function LandingOfferPage() {
                 <img 
                     src={getImageUrl(currentImage)} 
                     alt={landingPage.title || getLocalizedField(product, 'name', language)} 
-                    className={`absolute inset-0 w-full h-full object-contain p-2 ${isZoomed ? 'opacity-0' : 'opacity-100'}`}
+                    className={`absolute inset-0 w-full h-full object-contain p-2 ${isZoomed ? 'opacity-0' : 'opacity-100'}`} 
                 />
             </div>
             
@@ -320,6 +328,41 @@ export default function LandingOfferPage() {
         <div id="order-form" className={`${cardClass} p-6 sm:p-8 rounded-3xl shadow-lg border-2 border-sky-100 dark:border-slate-700`}>
             <Heading size="lg" className={`font-sans mb-6 text-center ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{t('fill_form_to_confirm')}</Heading>
             
+            {/* Order Summary Top */}
+            <div className={`mb-6 p-4 rounded-xl border ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                <div className="flex items-center gap-4 mb-4">
+                    <div className={`w-16 h-16 rounded-lg p-1 border overflow-hidden shrink-0 ${isDarkTheme ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                        <img src={getImageUrl(currentImage)} className="w-full h-full object-contain" />
+                    </div>
+                    <div className="flex-1">
+                        <div className={`font-bold text-sm line-clamp-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{getLocalizedField(product, 'name', language)}</div>
+                        <div className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {selectedVariant ? [selectedSize, selectedColor].filter(Boolean).join(' / ') : ''}
+                        </div>
+                        <div className="font-bold text-sky-600 dark:text-sky-400">৳{currentPrice} x {quantity}</div>
+                    </div>
+                    <div className="text-right">
+                        <div className={`font-bold text-lg ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>৳{subtotal}</div>
+                    </div>
+                </div>
+                
+                {/* Free Shipping Bar */}
+                <div className="mt-4">
+                    <div className="flex justify-between text-xs mb-1.5">
+                        <span className={`font-bold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                            {isFreeShipping ? t('free_shipping_unlocked') : t('add_more_free_shipping', { amount: amountToFreeShipping.toString() })}
+                        </span>
+                        <span className="font-bold text-sky-600 dark:text-sky-400">{progress.toFixed(0)}%</span>
+                    </div>
+                    <div className={`h-2 w-full rounded-full overflow-hidden ${isDarkTheme ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                        <div 
+                            className={`h-full rounded-full transition-all duration-500 ${isFreeShipping ? 'bg-emerald-500' : 'bg-sky-500'}`} 
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </div>
+
             <form onSubmit={handlePlaceOrder} className="space-y-5">
                 <Input 
                     label={t('full_name')} 
