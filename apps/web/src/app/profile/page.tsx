@@ -61,7 +61,7 @@ export default function ProfilePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
             <Heading size="xl" className="font-sans text-slate-900 dark:text-white font-bold">{t('my_profile')}</Heading>
-            <Button variant="outline" onClick={handleLogout} className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 py-2 px-5 text-sm">
+            <Button variant="outline" onClick={handleLogout} className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 py-3 px-6 text-sm sm:py-2 sm:px-5">
                 {t('logout')}
             </Button>
         </div>

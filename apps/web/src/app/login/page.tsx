@@ -16,12 +16,14 @@ export default function LoginPage() {
   const [isOtpLogin, setIsOtpLogin] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
   const { t } = useLanguage();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -34,9 +36,11 @@ export default function LoginPage() {
         handleSuccess(data);
       } else {
         addToast(t('login_failed'), "error");
+        setIsLoading(false);
       }
     } catch (error) {
       addToast(t('error'), "error");
+      setIsLoading(false);
     }
   };
 
@@ -46,6 +50,7 @@ export default function LoginPage() {
           addToast(t('error'), "error");
           return;
       }
+      setIsLoading(true);
       try {
           const res = await fetch(`${API_URL}/auth/otp/send`, {
               method: "POST",
@@ -60,10 +65,13 @@ export default function LoginPage() {
           }
       } catch (e) {
           addToast(t('error'), "error");
+      } finally {
+          setIsLoading(false);
       }
   };
 
   const handleVerifyOtp = async () => {
+      setIsLoading(true);
       try {
           const res = await fetch(`${API_URL}/auth/otp/login`, {
               method: "POST",
@@ -75,9 +83,11 @@ export default function LoginPage() {
               handleSuccess(data);
           } else {
               addToast(t('invalid_otp'), "error");
+              setIsLoading(false);
           }
       } catch (e) {
           addToast(t('error'), "error");
+          setIsLoading(false);
       }
   };
 
@@ -91,6 +101,7 @@ export default function LoginPage() {
     } else {
         router.push("/");
     }
+    // Don't set isLoading(false) here to prevent flash of login form before redirect
   };
 
   return (
@@ -106,12 +117,14 @@ export default function LoginPage() {
             <button 
                 className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${!isOtpLogin ? 'bg-white dark:bg-slate-600 shadow-sm text-sky-600' : 'text-slate-500 dark:text-slate-400'}`}
                 onClick={() => { setIsOtpLogin(false); setOtpSent(false); }}
+                disabled={isLoading}
             >
                 {t('password')}
             </button>
             <button 
                 className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${isOtpLogin ? 'bg-white dark:bg-slate-600 shadow-sm text-sky-600' : 'text-slate-500 dark:text-slate-400'}`}
                 onClick={() => setIsOtpLogin(true)}
+                disabled={isLoading}
             >
                 {t('otp_login')}
             </button>
@@ -127,6 +140,7 @@ export default function LoginPage() {
                 placeholder={t('phone_email_placeholder')}
                 required
                 className="py-2.5 text-sm"
+                disabled={isLoading}
             />
             <Input
                 label={t('password')}
@@ -136,10 +150,11 @@ export default function LoginPage() {
                 placeholder={t('password_placeholder')}
                 required
                 className="py-2.5 text-sm"
+                disabled={isLoading}
             />
             
-            <Button fullWidth type="submit" className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
-                {t('sign_in')}
+            <Button fullWidth type="submit" disabled={isLoading} className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
+                {isLoading ? t('loading') : t('sign_in')}
             </Button>
             </form>
         ) : (
@@ -154,9 +169,10 @@ export default function LoginPage() {
                             placeholder={t('phone_email_placeholder')}
                             required
                             className="py-2.5 text-sm"
+                            disabled={isLoading}
                         />
-                        <Button fullWidth type="submit" className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
-                            {t('send_otp')}
+                        <Button fullWidth type="submit" disabled={isLoading} className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
+                            {isLoading ? t('loading') : t('send_otp')}
                         </Button>
                     </form>
                 ) : (
@@ -165,10 +181,10 @@ export default function LoginPage() {
                             <p className="text-xs text-slate-500 mb-3">{t('enter_otp_code', { identifier })}</p>
                             <OtpInput length={6} onComplete={(val) => setOtp(val)} />
                         </div>
-                        <Button fullWidth onClick={handleVerifyOtp} className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
-                            {t('verify_login')}
+                        <Button fullWidth onClick={handleVerifyOtp} disabled={isLoading} className="py-2.5 text-base font-bold shadow-lg shadow-sky-500/20 rounded-xl">
+                            {isLoading ? t('loading') : t('verify_login')}
                         </Button>
-                        <button onClick={() => setOtpSent(false)} className="w-full text-center text-xs text-sky-500 hover:underline">
+                        <button onClick={() => setOtpSent(false)} disabled={isLoading} className="w-full text-center text-xs text-sky-500 hover:underline">
                             {t('change_number_email')}
                         </button>
                     </div>

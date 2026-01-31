@@ -15,14 +15,18 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand - Visible on Mobile */}
           <div className="space-y-4 text-center md:text-left">
-            <Link href="/" className="inline-block">
+            <Link href="/" className="inline-flex items-center gap-2 justify-center md:justify-start">
               <Image 
                   src="/logo.png" 
                   alt={settings.shop_name} 
                   width={140} 
                   height={48} 
-                  className="h-10 w-auto object-contain mx-auto md:mx-0"
+                  className="h-10 w-auto object-contain"
               />
+              <div className="flex flex-col leading-none text-left">
+                  <span className="font-bold text-lg text-sky-600 dark:text-sky-400">Prithibee</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">পৃথিবী</span>
+              </div>
             </Link>
             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed hidden md:block">
               {t('footer_desc')}
