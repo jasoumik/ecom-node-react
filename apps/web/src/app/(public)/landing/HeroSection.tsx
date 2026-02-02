@@ -13,7 +13,7 @@ export function HeroSection(props: HeroContent) {
   console.log('debug', API_URL);
 
   return (
-    <section className="w-full bg-white dark:bg-slate-900 py-12 border-b border-slate-100 dark:border-slate-800">
+    <section className="hidden md:block w-full bg-white dark:bg-slate-900 py-12 border-b border-slate-100 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-3xl mx-auto space-y-6">
           <Heading as="h1" size="xl" className="font-sans text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold tracking-tight">

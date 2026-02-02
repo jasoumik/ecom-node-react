@@ -14,10 +14,10 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
   const { t, language } = useLanguage();
 
   return (
-    <Section className="py-12 bg-slate-50 dark:bg-slate-950">
+    <Section className="py-8 sm:py-12 bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-end mb-8">
-            <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl">{t('browse_categories')}</Heading>
+        <div className="flex flex-col sm:flex-row justify-between items-end mb-6 sm:mb-8 gap-2">
+            <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl">{t('browse_categories')}</Heading>
             <Link href="/products" className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-white/50 shadow-sm transition-all hover:shadow-md dark:bg-slate-800/50 dark:border-slate-700">
                 {t('view_all')}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>

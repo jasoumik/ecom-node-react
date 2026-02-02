@@ -89,12 +89,12 @@ export function FeaturedProductsSection({
   };
 
   return (
-    <Section className="py-12 bg-white dark:bg-slate-900">
+    <Section className="py-8 sm:py-12 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-end mb-8 gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-end mb-6 sm:mb-8 gap-2">
             <div>
-                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-black text-3xl tracking-tight">{title}</Heading>
-                {subtitle && <p className="text-slate-500 dark:text-slate-400 text-base mt-1 font-medium">{subtitle}</p>}
+                <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl tracking-tight">{title}</Heading>
+                {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-1 font-medium">{subtitle}</p>}
             </div>
             {viewAllHref && (
                 <Link href={viewAllHref} className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-white/50 shadow-sm transition-all hover:shadow-md dark:bg-slate-800/50 dark:border-slate-700">

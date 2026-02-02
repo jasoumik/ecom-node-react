@@ -337,13 +337,17 @@ export function Header() {
                 </svg>
               </button>
 
-              {/* Language Toggle - Visible on Mobile now */}
-              <LanguageToggle className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 text-xs sm:text-sm" />
+              {/* Language Toggle - Hidden on Mobile */}
+              <div className="hidden sm:block">
+                  <LanguageToggle className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 text-xs sm:text-sm" />
+              </div>
 
-              {/* Theme Toggle - Visible on Mobile now */}
-              <ThemeToggle className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-yellow-400 text-xs sm:text-sm" />
+              {/* Theme Toggle - Hidden on Mobile */}
+              <div className="hidden sm:block">
+                  <ThemeToggle className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-yellow-400 text-xs sm:text-sm" />
+              </div>
 
-              {/* Wishlist Icon */}
+              {/* Wishlist Icon - Hidden on Mobile */}
               <Link href="/wishlist" className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800 hidden sm:block">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -402,22 +406,15 @@ export function Header() {
                     </button>
                   </div>
                 ) : (
-                  <Link href="/login">
-                    {/* Mobile: Icon Button */}
-                    <span className="lg:hidden inline-flex p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                            <polyline points="10 17 15 12 10 7"></polyline>
-                            <line x1="15" y1="12" x2="3" y2="12"></line>
-                        </svg>
-                    </span>
-                    {/* Desktop: Text Button */}
-                    <span className="hidden lg:inline-flex">
-                        <Button className="text-xs font-bold py-2 px-5 h-auto rounded-xl bg-sky-50 text-white hover:bg-sky-600 shadow-md shadow-sky-500/20 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-50">
-                        {t('login')}
-                        </Button>
-                    </span>
-                  </Link>
+                  <>
+                      {/* Mobile: User Icon */}
+                      <Link href="/login" className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="12" cy="7" r="4"></circle>
+                          </svg>
+                      </Link>
+                  </>
                 )}
               </div>
             </div>
@@ -429,50 +426,93 @@ export function Header() {
       {isMobileMenuOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <div className="absolute top-0 left-0 bottom-0 w-11/12 max-w-[300px] bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-left duration-300 flex flex-col">
-                  <div className="flex justify-between items-center mb-8">
-                      <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Image 
-                            src="/logo3.png"
-                            alt={settings.shop_name} 
-                            width={100} 
-                            height={32} 
-                            className="h-8 w-auto object-contain"
-                        />
-                      </Link>
-                      <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+              <div className="absolute top-0 left-0 bottom-0 w-10/12 max-w-[320px] bg-white dark:bg-slate-950 shadow-2xl overflow-y-auto animate-in slide-in-from-left duration-300 flex flex-col h-full border-r border-slate-100 dark:border-slate-800">
+
+                  {/* User Profile Section (Top) */}
+                  <div className="p-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-start mb-4">
+                          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Image
+                                src="/logo3.png"
+                                alt={settings.shop_name}
+                                width={100}
+                                height={32}
+                                className="h-8 w-auto object-contain"
+                            />
+                          </Link>
+                          <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+                      </div>
+
+                      {isLoggedIn ? (
+                          <div className="flex items-center gap-3 mt-4">
+                              <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-lg border border-sky-200 dark:border-sky-800">
+                                  {user.avatar ? (
+                                      <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                                  ) : (
+                                      user.name.charAt(0).toUpperCase()
+                                  )}
+                              </div>
+                              <div>
+                                  <div className="font-bold text-slate-900 dark:text-white">{user.name}</div>
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">{user.phone}</div>
+                              </div>
+                          </div>
+                      ) : (
+                          <div className="mt-4">
+                              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Welcome! Please login to continue.</p>
+                              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                  <Button fullWidth className="rounded-xl py-2.5 font-bold shadow-sm">
+                                      {t('login')}
+                                  </Button>
+                              </Link>
+                          </div>
+                      )}
                   </div>
                   
-                  <nav className="space-y-4 flex-1">
-                      <Link href="/" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>{t('home')}</Link>
+                  <nav className="flex-1 p-4 space-y-1">
+                      <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                          <span className="text-lg">🏠</span>
+                          {t('home')}
+                      </Link>
                       
-                      {/* Wishlist in Menu */}
-                      <Link href="/wishlist" className="flex items-center gap-3 text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>
-                          <span>Wishlist</span>
+                      <Link href="/products" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                          <span className="text-lg">🛍️</span>
+                          {t('shop')}
+                      </Link>
+
+                      <Link href="/wishlist" className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                          <div className="flex items-center gap-3">
+                              <span className="text-lg">❤️</span>
+                              <span>Wishlist</span>
+                          </div>
                           {mounted && wishlistItems.length > 0 && (
-                              <span className="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                   {wishlistItems.length}
                               </span>
                           )}
                       </Link>
 
-                      <div className="space-y-2">
+                      {/* Categories Accordion */}
+                      <div className="pt-2 pb-2">
                           <button 
                             onClick={() => setIsMobileCategoriesOpen(!isMobileCategoriesOpen)}
-                            className="flex items-center justify-between w-full text-lg font-bold text-slate-800 dark:text-white"
+                            className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                           >
-                              {t('categories')}
-                              <span className={`text-sm transition-transform duration-200 ${isMobileCategoriesOpen ? 'rotate-180' : ''}`}>▼</span>
+                              <div className="flex items-center gap-3">
+                                  <span className="text-lg">📂</span>
+                                  {t('categories')}
+                              </div>
+                              <span className={`text-xs transition-transform duration-200 ${isMobileCategoriesOpen ? 'rotate-180' : ''}`}>▼</span>
                           </button>
                           
                           {isMobileCategoriesOpen && (
-                              <div className="pl-4 space-y-2 border-l-2 border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2">
+                              <div className="pl-4 pr-2 space-y-1 mt-1 animate-in slide-in-from-top-2">
                                   {categories.map(cat => (
-                                      <div key={cat.id}>
-                                          <div className="flex items-center justify-between w-full text-left py-1">
+                                      <div key={cat.id} className="rounded-lg overflow-hidden">
+                                          <div className="flex items-center justify-between w-full text-left">
                                               <Link 
                                                 href={`/products?category=${cat.id}`}
-                                                className="text-sm font-medium text-slate-600 dark:text-slate-400 flex-1"
+                                                className="flex-1 py-2 px-4 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400"
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                               >
                                                   {getLocalizedField(cat, 'name', language)}
@@ -480,7 +520,7 @@ export function Header() {
                                               {cat.children && cat.children.length > 0 && (
                                                   <button 
                                                     onClick={() => toggleMobileCategory(cat.id)}
-                                                    className="p-1 text-slate-400"
+                                                    className="p-2 text-slate-400 hover:text-sky-500"
                                                   >
                                                       <span className={`text-xs transition-transform block ${expandedMobileCategories.includes(cat.id) ? 'rotate-180' : ''}`}>▼</span>
                                                   </button>
@@ -488,12 +528,12 @@ export function Header() {
                                           </div>
                                           
                                           {cat.children && cat.children.length > 0 && expandedMobileCategories.includes(cat.id) && (
-                                              <div className="pl-4 space-y-1 mt-1 animate-in slide-in-from-top-1">
+                                              <div className="pl-4 border-l-2 border-slate-100 dark:border-slate-800 ml-4 mb-2 space-y-1">
                                                   {cat.children.map((sub: any) => (
                                                       <Link 
                                                         key={sub.id}
                                                         href={`/products?category=${sub.id}`}
-                                                        className="block text-xs text-slate-500 dark:text-slate-500 py-1"
+                                                        className="block py-1.5 px-2 text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400"
                                                         onClick={() => setIsMobileMenuOpen(false)}
                                                       >
                                                           {getLocalizedField(sub, 'name', language)}
@@ -507,35 +547,48 @@ export function Header() {
                           )}
                       </div>
 
-                      <Link href="/products" className="block text-lg font-bold text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>{t('shop')}</Link>
-                      <Link href="/about" className="block text-lg font-bold text-slate-800 dark:text-slate-400" onClick={() => setIsMobileMenuOpen(false)}>{t('about')}</Link>
-                      <Link href="/contact" className="block text-lg font-bold text-slate-800 dark:text-slate-400" onClick={() => setIsMobileMenuOpen(false)}>{t('contact')}</Link>
-                      
-                      {/* Facebook Link in Menu */}
-                      <a href={settings.facebook_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-lg font-bold text-slate-800 dark:text-white">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-blue-600">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.333-4.669 1.212 0 2.493.216 2.493.216v2.733h-1.406c-1.492 0-1.956.926-1.956 1.874v2.25h3.072l-.487 3.47h-2.585v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                          </svg>
-                          Facebook
-                      </a>
+                      <div className="border-t border-slate-100 dark:border-slate-800 my-2"></div>
+
+                      <Link href="/about" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                          <span className="text-lg">ℹ️</span>
+                          {t('about')}
+                      </Link>
+                      <Link href="/contact" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                          <span className="text-lg">📞</span>
+                          {t('contact')}
+                      </Link>
                   </nav>
 
-                  {/* Mobile Logout */}
-                  {isLoggedIn && (
-                      <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                  {/* Bottom Actions */}
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-4">
+                      <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Settings</span>
+                          <div className="flex gap-2">
+                              <LanguageToggle className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-xs" />
+                              <ThemeToggle className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-xs" />
+                          </div>
+                      </div>
+                      
+                      {/* Facebook Link */}
+                      <a href={settings.facebook_link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#1877F2]/10 text-[#1877F2] text-xs font-bold hover:bg-[#1877F2]/20 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.333-4.669 1.212 0 2.493.216 2.493.216v2.733h-1.406c-1.492 0-1.956.926-1.956 1.874v2.25h3.072l-.487 3.47h-2.585v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                          Follow on Facebook
+                      </a>
+
+                      {isLoggedIn && (
                           <button 
                               onClick={handleLogout}
-                              className="flex items-center gap-2 text-red-500 font-bold w-full"
+                              className="flex items-center justify-center gap-2 text-red-500 font-bold w-full py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs"
                           >
                               {isLoggingOut ? (
-                                  <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                                  <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                               ) : (
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                               )}
                               {t('logout')}
                           </button>
-                      </div>
-                  )}
+                      )}
+                  </div>
               </div>
           </div>
       )}
