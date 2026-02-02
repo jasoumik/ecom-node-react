@@ -214,9 +214,9 @@ export function Header() {
                     <Image 
                         src="/logo3.png"
                         alt={settings.shop_name} 
-                        width={120} 
-                        height={50}
-                        className="h-8 sm:h-10 w-auto object-contain"
+                        width={160}
+                        height={80}
+                        className="h-12 sm:h-14 w-auto object-contain"
                         priority
                     />
                     <span className="font-bold text-lg text-sky-600 dark:text-sky-400">
@@ -427,22 +427,22 @@ export function Header() {
           <div className="fixed inset-0 z-50 lg:hidden">
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
               <div className="absolute top-0 left-0 bottom-0 w-10/12 max-w-[320px] bg-white dark:bg-slate-950 shadow-2xl overflow-y-auto animate-in slide-in-from-left duration-300 flex flex-col h-full border-r border-slate-100 dark:border-slate-800">
-
+                  
                   {/* User Profile Section (Top) */}
                   <div className="p-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex justify-between items-start mb-4">
                           <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                            <Image
-                                src="/logo3.png"
-                                alt={settings.shop_name}
-                                width={100}
-                                height={32}
+                            <Image 
+                                src="/logo3.png" 
+                                alt={settings.shop_name} 
+                                width={100} 
+                                height={32} 
                                 className="h-8 w-auto object-contain"
                             />
                           </Link>
                           <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
                       </div>
-
+                      
                       {isLoggedIn ? (
                           <div className="flex items-center gap-3 mt-4">
                               <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-lg border border-sky-200 dark:border-sky-800">
@@ -471,18 +471,18 @@ export function Header() {
                   
                   <nav className="flex-1 p-4 space-y-1">
                       <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                          <span className="text-lg">🏠</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                           {t('home')}
                       </Link>
                       
                       <Link href="/products" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                          <span className="text-lg">🛍️</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                           {t('shop')}
                       </Link>
 
                       <Link href="/wishlist" className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                           <div className="flex items-center gap-3">
-                              <span className="text-lg">❤️</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                               <span>Wishlist</span>
                           </div>
                           {mounted && wishlistItems.length > 0 && (
@@ -499,7 +499,7 @@ export function Header() {
                             className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                           >
                               <div className="flex items-center gap-3">
-                                  <span className="text-lg">📂</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                                   {t('categories')}
                               </div>
                               <span className={`text-xs transition-transform duration-200 ${isMobileCategoriesOpen ? 'rotate-180' : ''}`}>▼</span>
@@ -550,11 +550,11 @@ export function Header() {
                       <div className="border-t border-slate-100 dark:border-slate-800 my-2"></div>
 
                       <Link href="/about" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                          <span className="text-lg">ℹ️</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                           {t('about')}
                       </Link>
                       <Link href="/contact" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                          <span className="text-lg">📞</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                           {t('contact')}
                       </Link>
                   </nav>
