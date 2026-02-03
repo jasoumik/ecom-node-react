@@ -419,15 +419,19 @@ export function Header() {
 
               {/* Search Suggestions Dropdown */}
               <AnimatePresence>
-                {showSuggestions && (searchQuery.length >= 3 || recentSearches.length > 0) && (
+                {showSuggestions && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50"
                   >
-                    {suggestions.length > 0 ? (
+                    {/* Show search results if query >= 3 and has results */}
+                    {searchQuery.length >= 3 && suggestions.length > 0 ? (
                       <div className="p-2">
+                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">
+                          Search Results
+                        </p>
                         {suggestions.map((product) => (
                           <Link
                             key={product.id}
@@ -453,24 +457,63 @@ export function Header() {
                           </Link>
                         ))}
                       </div>
-                    ) : recentSearches.length > 0 ? (
-                      <div className="p-4">
-                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                          <Clock size={12} /> Recent Searches
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {recentSearches.map((term) => (
-                            <button
-                              key={term}
-                              onClick={() => performSearch(term)}
-                              className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                              {term}
-                            </button>
-                          ))}
+                    ) : (
+                      <div className="p-4 space-y-4">
+                        {/* Minimum characters hint */}
+                        {searchQuery.length > 0 && searchQuery.length < 3 && (
+                          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+                            <Search size={16} />
+                            <span>Type at least 3 characters to search</span>
+                          </div>
+                        )}
+
+                        {/* No results message */}
+                        {searchQuery.length >= 3 && suggestions.length === 0 && (
+                          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+                            <Search size={16} />
+                            <span>No products found for "{searchQuery}"</span>
+                          </div>
+                        )}
+
+                        {/* Popular Searches */}
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                            <TrendingUp size={12} /> Popular Searches
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {['Diapers', 'Baby Food', 'Stroller', 'Baby Clothes', 'Toys'].map((term) => (
+                              <button
+                                key={term}
+                                onClick={() => performSearch(term)}
+                                className="px-3 py-1.5 text-sm bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors"
+                              >
+                                {term}
+                              </button>
+                            ))}
+                          </div>
                         </div>
+
+                        {/* Recent Searches */}
+                        {recentSearches.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                              <Clock size={12} /> Recent Searches
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {recentSearches.map((term) => (
+                                <button
+                                  key={term}
+                                  onClick={() => performSearch(term)}
+                                  className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                  {term}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    ) : null}
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -686,6 +729,22 @@ export function Header() {
                   Cancel
                 </button>
               </div>
+
+              {/* Minimum characters hint */}
+              {searchQuery.length > 0 && searchQuery.length < 3 && (
+                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-3 rounded-lg mb-4">
+                  <Search size={16} />
+                  <span>Type at least 3 characters to search</span>
+                </div>
+              )}
+
+              {/* No results message */}
+              {searchQuery.length >= 3 && suggestions.length === 0 && (
+                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-3 rounded-lg mb-4">
+                  <Search size={16} />
+                  <span>No products found for "{searchQuery}"</span>
+                </div>
+              )}
 
               {/* Recent Searches */}
               {recentSearches.length > 0 && (
