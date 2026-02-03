@@ -96,18 +96,27 @@ export function Header() {
   // Handle scroll
   useEffect(() => {
     let lastScrollY = 0;
+    let ticking = false;
 
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setIsScrolled(currentScrollY > 50);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          setIsScrolled(currentScrollY > 50);
 
-      // Hide top bar when scrolling down, show when scrolling up
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsTopBarVisible(false);
-      } else {
-        setIsTopBarVisible(true);
+          // Only toggle top bar visibility with significant scroll changes (at least 10px)
+          const scrollDiff = currentScrollY - lastScrollY;
+          if (scrollDiff > 10 && currentScrollY > 100) {
+            setIsTopBarVisible(false);
+          } else if (scrollDiff < -10 || currentScrollY <= 50) {
+            setIsTopBarVisible(true);
+          }
+
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
       }
-      lastScrollY = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -212,10 +221,10 @@ export function Header() {
   return (
     <>
       {/* Top Offer Bar */}
-      <motion.div
-        initial={false}
-        animate={{ height: isTopBarVisible ? "auto" : 0, opacity: isTopBarVisible ? 1 : 0 }}
-        className="bg-sky-500 text-white overflow-hidden"
+      <div
+        className={`bg-sky-500 text-white overflow-hidden transition-all duration-300 ease-in-out ${
+          isTopBarVisible ? 'max-h-10 opacity-100' : 'max-h-0 opacity-0'
+        }`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2 text-[10px] sm:text-xs font-bold tracking-wide py-1.5 px-4">
           <div className="hidden sm:block">
@@ -278,7 +287,7 @@ export function Header() {
             </a>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Main Header */}
       <header
