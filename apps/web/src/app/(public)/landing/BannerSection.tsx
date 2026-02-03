@@ -142,8 +142,8 @@ export function BannerSection({ banners }: BannerSectionProps) {
                                 className: "hidden md:flex"
                             },
                         ].map((feature, i) => (
-                            <div key={i} className="p-6 flex items-center justify-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                <div className="text-sky-500">{feature.icon}</div>
+                            <div key={i} className={`p-6 items-center justify-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${feature.className}`}>
+                            <div className="text-sky-500">{feature.icon}</div>
                                 <div>
                                     <div className="font-bold text-slate-900 dark:text-white text-sm">{feature.title}</div>
                                     <div className="text-xs text-slate-500 dark:text-slate-400">{feature.desc}</div>
