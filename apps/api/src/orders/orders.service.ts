@@ -184,6 +184,13 @@ export class OrdersService {
     const orderItemsData: any[] = [];
 
     try {
+      // Check if user exists with this phone number
+      let validUserId = null;
+      const existingUser = await this.knex('users').where({ phone: orderData.customerPhone }).first();
+      if (existingUser) {
+        validUserId = existingUser.id;
+      }
+
       for (const item of items) {
         const product = await this.knex('products').where({ id: item.productId }).first();
         if (!product) {
@@ -223,6 +230,7 @@ export class OrdersService {
 
       return await this.knex.transaction(async (trx) => {
         const orderInsertData = {
+          user_id: validUserId,
           customer_name: orderData.customerName,
           customer_phone: orderData.customerPhone,
           customer_address: orderData.customerAddress,

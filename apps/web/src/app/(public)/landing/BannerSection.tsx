@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ResponsiveImage, Button } from "@repo/ui";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Banner {
     id: string;
@@ -20,28 +22,72 @@ interface BannerSectionProps {
 
 export function BannerSection({ banners }: BannerSectionProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
     const { t, language } = useLanguage();
+    const containerRef = useRef<HTMLDivElement>(null);
 
+    // Auto-scroll carousel
     useEffect(() => {
-        if (banners.length > 1) {
-            const interval = setInterval(() => {
-                setCurrentIndex((prev) => (prev + 1) % banners.length);
-            }, 5000);
-            return () => clearInterval(interval);
+        if (banners.length <= 1 || isPaused) return;
+
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % banners.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [banners.length, isPaused]);
+
+    const goToSlide = useCallback((index: number) => {
+        setCurrentIndex(index);
+    }, []);
+
+    const goNext = useCallback(() => {
+        setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }, [banners.length]);
+
+    const goPrev = useCallback(() => {
+        setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
+    }, [banners.length]);
+
+    // Handle swipe gestures
+    const handleDragEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        const threshold = 50;
+        if (info.offset.x > threshold) {
+            goPrev();
+        } else if (info.offset.x < -threshold) {
+            goNext();
         }
-    }, [banners]);
+    }, [goNext, goPrev]);
 
     if (!banners || banners.length === 0) return null;
 
     const currentBanner = banners[currentIndex];
 
     return (
-        <section className="w-full bg-slate-50 dark:bg-slate-950">
-            <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden group">
-                {currentBanner && (
-                    <div className="relative w-full h-full">
-                        {/* Image */}
-                        <div key={currentIndex} className="absolute inset-0 animate-fade-in">
+        <section
+            ref={containerRef}
+            className="w-full bg-slate-50 dark:bg-slate-950 relative overflow-hidden"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+        >
+            <div className="relative w-full h-[30vh] min-h-[200px] max-h-[300px] sm:h-[50vh] sm:min-h-[400px] sm:max-h-[600px] lg:h-[70vh] lg:max-h-[800px]">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute inset-0"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={handleDragEnd}
+                    >
+                        {/* Background Image */}
+                        <div className="absolute inset-0">
                             <ResponsiveImage
                                 src={getImageUrl(currentBanner.src)}
                                 alt={getLocalizedField(currentBanner, 'alt', language)}
@@ -50,29 +96,94 @@ export function BannerSection({ banners }: BannerSectionProps) {
                                 className="object-cover w-full h-full"
                                 priority
                             />
-                            {/* Dark Overlay for Text Readability */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent lg:from-black/60 lg:via-black/30" />
+                            {/* Mobile: Bottom gradient for text readability */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden" />
                         </div>
 
                         {/* Content Overlay */}
-                        <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:px-24 z-10">
-                            <div className="max-w-xl space-y-6">
-                                <div className="inline-block px-3 py-1 bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-md mb-2 animate-slide-in-from-bottom-2">
-                                    {t('featured')}
-                                </div>
-                                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-md animate-slide-in-from-bottom-4">
+                        <div className="absolute inset-0 flex items-end lg:items-center pb-8 sm:pb-16 lg:pb-0 px-3 sm:px-8 lg:px-16 xl:px-24 z-10">
+                            <div className="max-w-xl space-y-2 sm:space-y-4 lg:space-y-6">
+                                {/* Featured Badge - Hidden on mobile */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="hidden sm:inline-block"
+                                >
+                                    <span className="px-3 py-1.5 bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-lg">
+                                        {t('featured')}
+                                    </span>
+                                </motion.div>
+
+                                {/* Headline */}
+                                <motion.h1
+                                    initial={{ opacity: 0, y: 16 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-lg sm:text-3xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight drop-shadow-md"
+                                >
                                     {getLocalizedField(currentBanner, 'alt', language)}
-                                </h1>
-                                <div className="pt-4 animate-slide-in-from-bottom-8">
+                                </motion.h1>
+
+                                {/* CTA Button */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 24 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="pt-1 sm:pt-2"
+                                >
                                     <Link href={currentBanner.link || '/products'}>
-                                        <Button className="bg-sky-500 text-white hover:bg-sky-600 border-none font-bold px-8 py-3.5 rounded-full shadow-lg text-base">
+                                        <Button className="bg-sky-500 hover:bg-sky-600 text-white border-none font-bold px-4 py-2 sm:px-6 sm:py-2.5 rounded-full shadow-lg text-xs sm:text-sm min-h-[36px] sm:min-h-[44px]">
                                             {t('shop_now')}
                                         </Button>
                                     </Link>
-                                </div>
+                                </motion.div>
+
+                                {/* Trust Badges - Tablet Only (Hidden on mobile and desktop) */}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="hidden sm:grid lg:hidden grid-cols-2 gap-2 pt-4"
+                                >
+                                    <div className="flex items-center gap-2 text-white/90 text-xs">
+                                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>{t('authentic')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-white/90 text-xs">
+                                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>{t('fast_delivery')}</span>
+                                    </div>
+                                </motion.div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* Slider Navigation Arrows - Desktop */}
+                {banners.length > 1 && (
+                    <>
+                        <button
+                            onClick={goPrev}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all z-20 hidden sm:flex shadow-lg"
+                            aria-label="Previous slide"
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                        <button
+                            onClick={goNext}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all z-20 hidden sm:flex shadow-lg"
+                            aria-label="Next slide"
+                        >
+                            <ChevronRight size={24} />
+                        </button>
+                    </>
                 )}
 
                 {/* Slider Indicators */}
@@ -81,7 +192,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
                         {banners.map((_, idx) => (
                             <button
                                 key={idx}
-                                onClick={() => setCurrentIndex(idx)}
+                                onClick={() => goToSlide(idx)}
                                 className={`h-1.5 rounded-full transition-all duration-300 shadow-sm backdrop-blur-sm ${
                                     idx === currentIndex
                                         ? 'w-8 bg-white'
@@ -92,67 +203,8 @@ export function BannerSection({ banners }: BannerSectionProps) {
                         ))}
                     </div>
                 )}
-
-                {/* Slider Arrows */}
-                {banners.length > 1 && (
-                    <>
-                        <button
-                            onClick={() => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100 z-20"
-                        >
-                            ←
-                        </button>
-                        <button
-                            onClick={() => setCurrentIndex((prev) => (prev + 1) % banners.length)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100 z-20"
-                        >
-                            →
-                        </button>
-                    </>
-                )}
-            </div>
-
-            {/* Features Bar (Full Width) */}
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
-                        {[
-                            {
-                                icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>,
-                                title: t('fast_delivery'),
-                                desc: t('all_over_bangladesh'),
-                                className: "flex"
-                            },
-                            {
-                                icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>,
-                                title: t('authentic'),
-                                desc: t('guaranteed_products'),
-                                className: "flex"
-                            },
-                            {
-                                icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
-                                title: t('best_price'),
-                                desc: t('factory_direct_rates'),
-                                className: "hidden md:flex"
-                            },
-                            {
-                                icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>,
-                                title: t('support'),
-                                desc: t('always_here_for_you'),
-                                className: "hidden md:flex"
-                            },
-                        ].map((feature, i) => (
-                            <div key={i} className={`p-6 items-center justify-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${feature.className}`}>
-                            <div className="text-sky-500">{feature.icon}</div>
-                                <div>
-                                    <div className="font-bold text-slate-900 dark:text-white text-sm">{feature.title}</div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400">{feature.desc}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         </section>
     );
 }
+

@@ -5,3 +5,8 @@ export * from "./WhyChooseUsSection";
 export * from "./TestimonialsSection";
 export * from "./CallToActionSection";
 export * from "./CategoriesSection";
+export * from "./BannerSection";
+export * from "./BrandsSection";
+export * from "./ShopByAgeSection";
+export * from "./TrustSection";
+export * from "./NewsletterSection";

@@ -210,7 +210,7 @@ export default function OrderInvoicePage() {
         </div>
       </div>
 
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           @page { margin: 20px; size: auto; }
           body { visibility: hidden; }
@@ -230,7 +230,7 @@ export default function OrderInvoicePage() {
             -webkit-print-color-adjust: exact;
           }
         }
-      `}</style>
+      ` }} />
 
       {reviewProduct && (
           <ReviewModal 

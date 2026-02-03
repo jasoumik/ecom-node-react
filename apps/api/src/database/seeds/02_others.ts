@@ -13,6 +13,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('product_variants').del();
   await knex('products').del();
   await knex('categories').del();
+  await knex('age_groups').del();
   await knex('banners').del();
   await knex('media_files').del();
   await knex('media_folders').del();
@@ -30,6 +31,67 @@ export async function seed(knex: Knex): Promise<void> {
       console.log('Users not found. Please run 01_users seed first.');
       return;
   }
+
+  // Insert Age Groups (Shop by Age)
+  const [newborn] = await knex('age_groups').insert({
+    label: 'Newborn',
+    label_bn: 'নবজাতক',
+    icon: '👶',
+    age_range: '0-3 months',
+    description: 'Essentials for your newborn',
+    description_bn: 'নবজাতকের জন্য প্রয়োজনীয়',
+    sort_order: 1,
+    is_active: true,
+    tenant_id: 'default'
+  }).returning('id');
+
+  const [infant] = await knex('age_groups').insert({
+    label: 'Infant',
+    label_bn: 'শিশু',
+    icon: '🍼',
+    age_range: '3-6 months',
+    description: 'Growing baby needs',
+    description_bn: 'বড় হওয়া শিশুর প্রয়োজন',
+    sort_order: 2,
+    is_active: true,
+    tenant_id: 'default'
+  }).returning('id');
+
+  const [crawler] = await knex('age_groups').insert({
+    label: 'Crawler',
+    label_bn: 'হামাগুড়ি',
+    icon: '🧸',
+    age_range: '6-12 months',
+    description: 'Active explorer stage',
+    description_bn: 'সক্রিয় অন্বেষণ পর্যায়',
+    sort_order: 3,
+    is_active: true,
+    tenant_id: 'default'
+  }).returning('id');
+
+  const [toddler] = await knex('age_groups').insert({
+    label: 'Toddler',
+    label_bn: 'বাচ্চা',
+    icon: '🎈',
+    age_range: '1-2 years',
+    description: 'Fun learning products',
+    description_bn: 'মজাদার শেখার পণ্য',
+    sort_order: 4,
+    is_active: true,
+    tenant_id: 'default'
+  }).returning('id');
+
+  const [preschool] = await knex('age_groups').insert({
+    label: 'Preschool',
+    label_bn: 'প্রি-স্কুল',
+    icon: '🎨',
+    age_range: '2-4 years',
+    description: 'Prepare for school',
+    description_bn: 'স্কুলের জন্য প্রস্তুতি',
+    sort_order: 5,
+    is_active: true,
+    tenant_id: 'default'
+  }).returning('id');
 
   // Insert Categories
   const [diapers] = await knex('categories').insert({ 

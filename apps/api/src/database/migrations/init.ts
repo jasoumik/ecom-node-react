@@ -28,6 +28,21 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamps(true, true);
   });
 
+  // Age Groups Table (Shop by Age)
+  await knex.schema.createTable('age_groups', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('label').notNullable();
+    table.string('label_bn').nullable();
+    table.string('icon').notNullable();
+    table.string('age_range').notNullable();
+    table.string('description').nullable();
+    table.string('description_bn').nullable();
+    table.integer('sort_order').defaultTo(0);
+    table.boolean('is_active').defaultTo(true);
+    table.string('tenant_id').defaultTo('default');
+    table.timestamps(true, true);
+  });
+
   await knex.schema.createTable('categories', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
@@ -37,6 +52,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('image').nullable();
     table.string('banner_image').nullable(); // Added Banner Image
     table.uuid('parent_id').nullable().references('id').inTable('categories').onDelete('CASCADE');
+    table.uuid('age_group_id').nullable().references('id').inTable('age_groups').onDelete('SET NULL');
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
@@ -354,6 +370,7 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('countries');
   await knex.schema.dropTableIfExists('brands');
   await knex.schema.dropTableIfExists('categories');
+  await knex.schema.dropTableIfExists('age_groups');
   await knex.schema.dropTableIfExists('addresses');
   await knex.schema.dropTableIfExists('users');
 }

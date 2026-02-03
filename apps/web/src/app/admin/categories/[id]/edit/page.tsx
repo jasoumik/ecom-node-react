@@ -9,9 +9,18 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { getImageUrl } from "@/lib/utils";
 
+interface AgeGroup {
+  id: string;
+  label: string;
+  label_bn?: string;
+  age_range: string;
+  icon: string;
+}
+
 export default function EditCategoryPage() {
   const [category, setCategory] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
+  const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [mediaPickerTarget, setMediaPickerTarget] = useState<'image' | 'banner_image'>('image');
   const router = useRouter();
@@ -38,6 +47,16 @@ export default function EditCategoryPage() {
           setCategories(flatten(Array.isArray(data) ? data : []));
       })
       .catch(console.error);
+
+    // Fetch age groups
+    fetch(`${API_URL}/age-groups`)
+      .then(res => res.json())
+      .then(data => {
+          if (Array.isArray(data)) {
+            setAgeGroups(data);
+          }
+      })
+      .catch(console.error);
   }, [id]);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -45,6 +64,7 @@ export default function EditCategoryPage() {
     try {
         const payload = { ...category };
         if (!payload.parent_id) payload.parent_id = null;
+        if (!payload.age_group_id) payload.age_group_id = null;
         delete payload.children;
 
         const res = await fetch(`${API_URL}/categories/${id}`, {
@@ -115,6 +135,23 @@ export default function EditCategoryPage() {
                       </option>
                   ))}
               </select>
+          </div>
+
+          <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Shop by Age Group</label>
+              <select
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                  value={category.age_group_id || ""}
+                  onChange={e => setCategory({...category, age_group_id: e.target.value})}
+              >
+                  <option value="">None</option>
+                  {ageGroups.map(ag => (
+                      <option key={ag.id} value={ag.id}>
+                          {ag.icon} {ag.label} ({ag.age_range})
+                      </option>
+                  ))}
+              </select>
+              <p className="text-[10px] text-slate-500 mt-1">Optional: Link this category to an age group for "Shop by Age"</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">

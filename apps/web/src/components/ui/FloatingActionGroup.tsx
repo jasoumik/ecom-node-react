@@ -59,7 +59,7 @@ export function FloatingActionGroup() {
   return (
     <>
       {/* Adjusted bottom position for mobile to avoid sticky product bar. Increased z-index to be above sticky bars. */}
-      <div className="fixed bottom-18 sm:bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      <div className="fixed bottom-22 sm:bottom-20 right-6 z-50 flex flex-col items-end gap-3">
         {/* Expanded Actions */}
         <div className={`flex flex-col gap-3 transition-all duration-300 origin-bottom ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-10 pointer-events-none'}`}>
             

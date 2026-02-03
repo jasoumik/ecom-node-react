@@ -1,25 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Heading, Text } from "@repo/ui";
-import { Input } from "@/components/ui/Input";
+import { Text } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { Phone, Lock, ArrowRight, User, Mail } from "lucide-react";
+import { AuthLayout } from "@/components/ui/AuthLayout";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
   const { addToast } = useToast();
   const { t } = useLanguage();
 
+  // Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userStr = localStorage.getItem("user");
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role === 'admin') {
+          router.replace("/admin");
+        } else {
+          router.replace("/");
+        }
+      } catch {
+        setIsCheckingAuth(false);
+      }
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [router]);
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
@@ -36,65 +70,139 @@ export default function RegisterPage() {
         router.push("/");
       } else {
         addToast(t('register_failed'), "error");
+        setIsLoading(false);
       }
     } catch (error) {
       addToast(t('error'), "error");
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700">
-        <div className="text-center mb-8">
-          <Heading className="text-3xl font-serif text-slate-900 dark:text-white mb-2">{t('create_account_title')}</Heading>
-          <Text className="text-slate-500 dark:text-slate-400">{t('create_account_subtitle')}</Text>
+    <AuthLayout
+      title={t('create_account_title')}
+      subtitle={t('create_account_subtitle')}
+    >
+      <motion.form
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        onSubmit={handleRegister}
+        className="space-y-5"
+      >
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {t('full_name')}
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+              <User size={18} />
+            </div>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('full_name_placeholder')}
+              required
+              disabled={isLoading}
+              className="w-full h-12 pl-12 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all text-base"
+            />
+          </div>
         </div>
-        
-        <form onSubmit={handleRegister} className="space-y-6">
-          <Input
-            label={t('full_name')}
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('full_name_placeholder')}
-            required
-          />
-          <Input
-            label={t('phone_number')}
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="017..."
-            required
-          />
-          <Input
-            label={t('email_address')}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-          />
-          <Input
-            label={t('password')}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t('password_placeholder')}
-            required
-          />
-          
-          <Button fullWidth type="submit" className="py-3 text-lg font-bold shadow-lg shadow-sky-500/20">
-            {t('register')}
-          </Button>
-        </form>
-        
-        <div className="mt-8 text-center">
-            <Text className="text-slate-500 dark:text-slate-400">
-              {t('already_have_account')} <Link href="/login" className="text-sky-600 font-bold hover:text-sky-700 hover:underline dark:text-sky-400">{t('login')}</Link>
-            </Text>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {t('phone_number')}
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+              <Phone size={18} />
+            </div>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="017..."
+              required
+              disabled={isLoading}
+              className="w-full h-12 pl-12 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all text-base"
+            />
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {t('email_address')}
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+              <Mail size={18} />
+            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              disabled={isLoading}
+              className="w-full h-12 pl-12 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all text-base"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {t('password')}
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+              <Lock size={18} />
+            </div>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t('password_placeholder')}
+              required
+              disabled={isLoading}
+              className="w-full h-12 pl-12 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all text-base"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full h-12 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-400 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all flex items-center justify-center gap-2 text-base"
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              {t('register')}
+              <ArrowRight size={18} />
+            </>
+          )}
+        </button>
+      </motion.form>
+
+      {/* Login Link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="mt-8 text-center"
+      >
+        <Text className="text-sm text-slate-500 dark:text-slate-400">
+          {t('already_have_account')}{" "}
+          <Link
+            href="/login"
+            className="text-sky-600 dark:text-sky-400 font-bold hover:underline"
+          >
+            {t('login')}
+          </Link>
+        </Text>
+      </motion.div>
+    </AuthLayout>
   );
 }

@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/lib/language-context";
+import { motion, AnimatePresence } from "framer-motion";
+import { Home, Grid3X3, ShoppingCart, User } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -12,6 +14,8 @@ export function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const { t } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [prevCartCount, setPrevCartCount] = useState(0);
+  const [animateBadge, setAnimateBadge] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -19,80 +23,97 @@ export function BottomNav() {
     setIsLoggedIn(!!userStr);
   }, []);
 
+  // Animate badge when cart count changes
+  const cartCount = mounted ? totalItems() : 0;
+  useEffect(() => {
+    if (mounted && cartCount > prevCartCount && cartCount > 0) {
+      setAnimateBadge(true);
+      const timer = setTimeout(() => setAnimateBadge(false), 300);
+      return () => clearTimeout(timer);
+    }
+    setPrevCartCount(cartCount);
+  }, [cartCount, prevCartCount, mounted]);
+
   const navItems = [
     {
-      label: t('home'),
+      label: t("home"),
       href: "/",
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-      ),
+      Icon: Home,
     },
     {
-      label: t('categories'),
-      href: "/products", // Or a dedicated categories page if exists, but products page has filters
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-      ),
+      label: t("categories"),
+      href: "/products",
+      Icon: Grid3X3,
     },
     {
       label: "Cart",
       href: "/cart",
-      icon: (
-        <div className="relative">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          {mounted && totalItems() > 0 && (
-            <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-              {totalItems()}
-            </span>
-          )}
-        </div>
-      ),
+      Icon: ShoppingCart,
+      badge: cartCount > 0 ? cartCount : null,
     },
     {
-      label: isLoggedIn ? "Account" : t('login'),
+      label: isLoggedIn ? "Account" : t("login"),
       href: isLoggedIn ? "/profile" : "/login",
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-      ),
+      Icon: User,
     },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 z-50 lg:hidden pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 z-50 lg:hidden pb-safe">
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
+          const Icon = item.Icon;
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-                isActive
-                  ? "text-sky-600 dark:text-sky-400"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
+              className="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors touch-target"
             >
-              <span className={isActive ? "scale-110 transition-transform" : ""}>{item.icon}</span>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <div className="relative">
+                {/* Active background pill */}
+                {isActive && (
+                  <motion.div
+                    layoutId="bottomNavIndicator"
+                    className="absolute -inset-1.5 bg-sky-100 dark:bg-sky-900/50 rounded-xl"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+
+                <Icon
+                  size={22}
+                  className={`relative z-10 transition-all duration-200 ${
+                    isActive
+                      ? "text-sky-600 dark:text-sky-400 scale-105"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+
+                {/* Cart Badge */}
+                {item.badge && (
+                  <motion.span
+                    key={item.badge}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: animateBadge && item.href === "/cart" ? [1, 1.3, 1] : 1 }}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-orange-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center z-20 shadow-sm"
+                  >
+                    {item.badge > 9 ? "9+" : item.badge}
+                  </motion.span>
+                )}
+              </div>
+
+              <span
+                className={`text-[10px] font-medium transition-colors ${
+                  isActive ? "text-sky-600 dark:text-sky-400" : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

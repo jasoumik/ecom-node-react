@@ -11,7 +11,7 @@ export const Section: React.FC<SectionProps> = ({
   ...props
 }) => {
   const base =
-    "w-full px-4 py-16 sm:px-6 lg:px-8 flex justify-center bg-transparent";
+    "w-full px-4 py-10 sm:px-6 lg:px-8 flex justify-center bg-transparent";
   const inner =
     "w-full max-w-7xl"; // Increased max-width for more breathing room
   const variantClass =
