@@ -7,7 +7,8 @@ import { SettingsProvider } from "@/lib/settings-context";
 import { LanguageProvider } from "@/lib/language-context";
 import { FloatingActionGroup } from "@/components/ui/FloatingActionGroup";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
-import { ToastContainer } from "@/components/ui/Toast"; // Import ToastContainer
+import { ToastContainer } from "@/components/ui/Toast";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,16 +16,17 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <SettingsProvider>
-      <LanguageProvider> {/* Wrap with LanguageProvider */}
+      <LanguageProvider>
         {!isAdmin && <Header />}
-        <main className="flex-grow">
+        <main className="flex-grow pb-16 lg:pb-0"> {/* Add padding bottom for mobile nav */}
           {children}
         </main>
         {!isAdmin && (
           <>
               <Footer />
               <FloatingActionGroup />
-              <ToastContainer /> {/* Add ToastContainer back */}
+              <BottomNav />
+              <ToastContainer />
           </>
         )}
       </LanguageProvider>

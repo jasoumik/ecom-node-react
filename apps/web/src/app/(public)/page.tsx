@@ -6,6 +6,7 @@ import { TestimonialsSection } from "./landing/TestimonialsSection";
 import { CallToActionSection } from "./landing/CallToActionSection";
 import { API_URL } from "@/lib/config";
 import { BannerSection } from "./landing/BannerSection";
+import { BrandsSection } from "./landing/BrandsSection";
 
 export const dynamic = 'force-dynamic'; // Fix for dynamic server usage
 
@@ -36,6 +37,7 @@ export default async function LandingPage() {
       )}
       <HeroSection {...data.hero} />
       <CategoriesSection categories={data.categories} />
+      <BrandsSection />
       <FeaturedProductsSection {...data.featuredProducts} />
       <WhyChooseUsSection {...data.whyChooseUs} />
       <TestimonialsSection {...data.testimonials} />

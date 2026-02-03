@@ -14,6 +14,8 @@ import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
+const POPULAR_SEARCHES = ["Diapers", "Wipes", "Lotion", "Toys", "Milk", "Baby Oil", "Shampoo"];
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -143,6 +145,11 @@ export function Header() {
     }
   };
 
+  const clearSearch = () => {
+      setSearchQuery("");
+      setSuggestions([]);
+  };
+
   const handleLogout = () => {
     setIsLoggingOut(true);
     // Simulate a small delay for better UX
@@ -214,9 +221,9 @@ export function Header() {
                     <Image 
                         src="/logo3.png"
                         alt={settings.shop_name} 
-                        width={160}
-                        height={80}
-                        className="h-12 sm:h-14 w-auto object-contain"
+                        width={120} 
+                        height={50}
+                        className="h-8 sm:h-10 w-auto object-contain"
                         priority
                     />
                     <span className="font-bold text-lg text-sky-600 dark:text-sky-400">
@@ -276,6 +283,15 @@ export function Header() {
                   onFocus={() => setShowSuggestions(true)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-500"
                 />
+                {searchQuery && (
+                    <button 
+                        type="button"
+                        onClick={clearSearch}
+                        className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                )}
                 <button 
                   type="submit"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-500 transition-colors p-1"
@@ -287,9 +303,34 @@ export function Header() {
                 </button>
               </form>
               {/* Suggestions Dropdown */}
-              {showSuggestions && searchQuery.trim().length > 0 && (
+              {showSuggestions && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-                      {searchQuery.trim().length < 3 ? (
+                      {searchQuery.trim().length === 0 ? (
+                          <div className="p-4 text-sm text-slate-500">
+                              {recentSearches.length > 0 && (
+                                  <div className="mb-4">
+                                      <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Recent Searches</h4>
+                                      <div className="flex flex-wrap gap-2">
+                                          {recentSearches.map(s => (
+                                              <button key={s} onClick={() => performSearch(s)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                                  {s}
+                                              </button>
+                                          ))}
+                                      </div>
+                                  </div>
+                              )}
+                              <div>
+                                  <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Popular</h4>
+                                  <div className="flex flex-wrap gap-2">
+                                      {POPULAR_SEARCHES.map(s => (
+                                          <button key={s} onClick={() => performSearch(s)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                              {s}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          </div>
+                      ) : searchQuery.trim().length < 3 ? (
                           <div className="p-4 text-sm text-slate-500">Keep typing to see suggestions...</div>
                       ) : suggestions.length > 0 ? (
                           <ul>
@@ -407,7 +448,6 @@ export function Header() {
                   </div>
                 ) : (
                   <>
-                      {/* Mobile: User Icon */}
                       <Link href="/login" className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-300 dark:hover:bg-slate-800">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -605,6 +645,15 @@ export function Header() {
               autoFocus
               className="w-full px-5 py-3 rounded-2xl border border-sky-200 bg-sky-50/50 text-sky-900 placeholder-sky-400 text-base focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-sky-500 dark:focus:ring-sky-900"
             />
+            {searchQuery && (
+                <button 
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            )}
             <button 
               type="submit"
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-sky-500 text-white hover:bg-sky-600 transition-colors"
@@ -643,6 +692,33 @@ export function Header() {
                   ) : (
                       <div className="p-4 text-sm text-slate-500">No products found for "{searchQuery}".</div>
                   )}
+              </div>
+          )}
+          {/* Recent & Popular for Mobile (When query is empty) */}
+          {searchQuery.trim().length === 0 && (
+              <div className="mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden p-4">
+                  {recentSearches.length > 0 && (
+                      <div className="mb-4">
+                          <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Recent Searches</h4>
+                          <div className="flex flex-wrap gap-2">
+                              {recentSearches.map(s => (
+                                  <button key={s} onClick={() => performSearch(s)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                      {s}
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+                  )}
+                  <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Popular</h4>
+                      <div className="flex flex-wrap gap-2">
+                          {POPULAR_SEARCHES.map(s => (
+                              <button key={s} onClick={() => performSearch(s)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                  {s}
+                              </button>
+                          ))}
+                      </div>
+                  </div>
               </div>
           )}
         </div>

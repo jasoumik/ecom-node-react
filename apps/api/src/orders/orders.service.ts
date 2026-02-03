@@ -26,6 +26,10 @@ export class OrdersService {
       if (orderData.userId) {
         const user = await this.knex('users').where({ id: orderData.userId }).first();
         if (user) validUserId = user.id;
+      } else {
+          // Check if user exists with this phone (for guest checkout with existing account)
+          const user = await this.knex('users').where({ phone: orderData.customerPhone }).first();
+          if (user) validUserId = user.id;
       }
 
       for (const item of items) {

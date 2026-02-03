@@ -40,35 +40,49 @@ export function BannerSection({ banners }: BannerSectionProps) {
       <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden group">
         {currentBanner && (
             <div className="relative w-full h-full">
-                {/* Image */}
-                <div key={currentIndex} className="absolute inset-0 animate-fade-in">
-                    <ResponsiveImage
-                        src={getImageUrl(currentBanner.src)}
-                        alt={getLocalizedField(currentBanner, 'alt', language)}
-                        width={1920}
-                        height={800}
-                        className="object-cover w-full h-full"
-                        priority
-                    />
-                    {/* Dark Overlay for Text Readability */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
-                </div>
+                {/* Mobile: Full Image Linkable, No Button */}
+                <Link href={currentBanner.link || '/products'} className="block sm:hidden w-full h-full relative">
+                    <div key={currentIndex} className="absolute inset-0 animate-fade-in">
+                        <ResponsiveImage
+                            src={getImageUrl(currentBanner.src)}
+                            alt={getLocalizedField(currentBanner, 'alt', language)}
+                            width={800}
+                            height={600}
+                            className="object-cover w-full h-full"
+                            priority
+                        />
+                    </div>
+                </Link>
 
-                {/* Content Overlay */}
-                <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:px-24 z-10">
-                    <div className="max-w-xl space-y-6">
-                        <div className="inline-block px-3 py-1 bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-md mb-2 animate-slide-in-from-bottom-2">
-                            {t('featured')}
-                        </div>
-                        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-md animate-slide-in-from-bottom-4">
-                            {getLocalizedField(currentBanner, 'alt', language)}
-                        </h1>
-                        <div className="pt-4 animate-slide-in-from-bottom-8">
-                            <Link href={currentBanner.link || '/products'}>
-                                <Button className="bg-sky-500 text-white hover:bg-sky-600 border-none font-bold px-8 py-3.5 rounded-full shadow-lg text-base">
-                                    {t('shop_now')}
-                                </Button>
-                            </Link>
+                {/* Desktop: Image + Overlay + Button */}
+                <div className="hidden sm:block w-full h-full relative">
+                    <div key={currentIndex} className="absolute inset-0 animate-fade-in">
+                        <ResponsiveImage
+                            src={getImageUrl(currentBanner.src)}
+                            alt={getLocalizedField(currentBanner, 'alt', language)}
+                            width={1920}
+                            height={800}
+                            className="object-cover w-full h-full"
+                            priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:px-24 z-10">
+                        <div className="max-w-xl space-y-6">
+                            <div className="inline-block px-3 py-1 bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-md mb-2 animate-slide-in-from-bottom-2">
+                                {t('featured')}
+                            </div>
+                            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-md animate-slide-in-from-bottom-4">
+                                {getLocalizedField(currentBanner, 'alt', language)}
+                            </h1>
+                            <div className="pt-4 animate-slide-in-from-bottom-8">
+                                <Link href={currentBanner.link || '/products'}>
+                                    <Button className="bg-sky-500 text-white hover:bg-sky-600 border-none font-bold px-8 py-3.5 rounded-full shadow-lg text-base">
+                                        {t('shop_now')}
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -93,18 +107,18 @@ export function BannerSection({ banners }: BannerSectionProps) {
             </div>
         )}
 
-        {/* Slider Arrows */}
+        {/* Slider Arrows (Desktop Only) */}
         {banners.length > 1 && (
             <>
                 <button 
                     onClick={() => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100 z-20"
+                    className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100 z-20"
                 >
                     ←
                 </button>
                 <button 
                     onClick={() => setCurrentIndex((prev) => (prev + 1) % banners.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100 z-20"
+                    className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100 z-20"
                 >
                     →
                 </button>

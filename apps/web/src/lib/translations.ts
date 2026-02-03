@@ -24,6 +24,7 @@ export const translations = {
     explore_range: "Explore our wide range of products",
     view_all: "View All",
     shop_category: "Shop Now",
+    our_brands: "Our Brands",
     
     // Products
     add_to_cart: "Add to Cart",
@@ -275,6 +276,7 @@ export const translations = {
     explore_range: "আমাদের পণ্যের বিশাল সম্ভার দেখুন",
     view_all: "সব দেখুন",
     shop_category: "এখনই কিনুন",
+    our_brands: "আমাদের ব্র্যান্ড",
     
     // Products
     add_to_cart: "কার্টে যোগ করুন",
