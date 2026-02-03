@@ -5,6 +5,7 @@ import type { Category } from "./types";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import {getImageUrl, getLocalizedField} from "@/lib/utils";
+import { useRef } from "react";
 
 interface CategoriesSectionProps {
   categories: Category[];
@@ -12,6 +13,19 @@ interface CategoriesSectionProps {
 
 export function CategoriesSection({ categories }: CategoriesSectionProps) {
   const { t, language } = useLanguage();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+      if (scrollRef.current) {
+          const { current } = scrollRef;
+          const scrollAmount = 300;
+          if (direction === 'left') {
+              current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+          } else {
+              current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+          }
+      }
+  };
 
   return (
     <Section className="py-8 sm:py-12 bg-slate-50 dark:bg-slate-950">
@@ -24,27 +38,44 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
             </Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {categories.map((category) => (
-            <Link 
-                key={category.id} 
-                href={`/products?category=${category.id}`}
-                className="group flex flex-col items-center text-center gap-3"
+        <div className="relative group">
+            <button 
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 hidden sm:flex"
             >
-                <div className="w-full aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <ResponsiveImage
-                        src={getImageUrl(category.image)}
-                        alt={getLocalizedField(category, 'name', language)}
-                        width={200}
-                        height={200}
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                    />
-                </div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-sm group-hover:text-sky-600 transition-colors line-clamp-1">
-                    {getLocalizedField(category, 'name', language)}
-                </h3>
-            </Link>
-            ))}
+                ←
+            </button>
+            <div 
+                ref={scrollRef}
+                className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-4 px-1"
+            >
+                {categories.map((category) => (
+                <Link 
+                    key={category.id} 
+                    href={`/products?category=${category.id}`}
+                    className="group flex flex-col items-center text-center gap-2 sm:gap-3 min-w-[100px] sm:min-w-[160px]"
+                >
+                    <div className="w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                        <ResponsiveImage
+                            src={getImageUrl(category.image)}
+                            alt={getLocalizedField(category, 'name', language)}
+                            width={200}
+                            height={200}
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                        />
+                    </div>
+                    <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm group-hover:text-sky-600 transition-colors line-clamp-1">
+                        {getLocalizedField(category, 'name', language)}
+                    </h3>
+                </Link>
+                ))}
+            </div>
+            <button 
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all opacity-0 group-hover:opacity-100 hidden sm:flex"
+            >
+                →
+            </button>
         </div>
       </div>
     </Section>

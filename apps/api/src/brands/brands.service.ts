@@ -7,8 +7,18 @@ import { UpdateBrandDto } from './dto/update-brand.dto';
 export class BrandsService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
-  async findAll(): Promise<any[]> {
-    return this.knex('brands').select('*');
+  async findAll(publicOnly: boolean = false): Promise<any[]> {
+    const query = this.knex('brands').select('*');
+    
+    if (publicOnly) {
+        // Filter brands that have products with stock > 0
+        query.whereIn('id', function() {
+            this.select('brand_id').from('products').where('stock', '>', 0).whereNotNull('brand_id');
+        });
+        query.where('is_active', true);
+    }
+    
+    return query;
   }
 
   async findOne(id: string): Promise<any> {

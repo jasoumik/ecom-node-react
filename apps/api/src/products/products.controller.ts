@@ -12,9 +12,10 @@ export class ProductsController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('category') categoryId?: string,
-    @Query('search') search?: string
+    @Query('search') search?: string,
+    @Query('brand') brandId?: string
   ) {
-    return this.productsService.findAll(Number(page), Number(limit), categoryId, search);
+    return this.productsService.findAll(Number(page), Number(limit), categoryId, search, brandId);
   }
 
   @Get('batches')

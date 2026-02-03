@@ -10,10 +10,11 @@ import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ 
-      name: "", name_bn: "", price: "", old_price: "", cost_price: "", description: "", description_bn: "", images: "", category_id: "", stock: "", sku: "",
+      name: "", name_bn: "", price: "", old_price: "", cost_price: "", description: "", description_bn: "", images: "", category_id: "", brand_id: "", stock: "", sku: "",
       size: "", weight: "", color: "", material: "", is_active: true, country_id: "" 
   });
   const [categories, setCategories] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
@@ -34,6 +35,11 @@ export default function CreateProductPage() {
       })
       .catch(console.error);
 
+    fetch(`${API_URL}/brands`)
+      .then(res => res.json())
+      .then(data => setBrands(Array.isArray(data) ? data : []))
+      .catch(console.error);
+
     fetch(`${API_URL}/countries`)
       .then(res => res.json())
       .then(data => setCountries(Array.isArray(data) ? data : []))
@@ -44,11 +50,15 @@ export default function CreateProductPage() {
     e.preventDefault();
     const imagesArray = newProduct.images.split(",").map(s => s.trim());
     
+    const payload: any = { ...newProduct, images: imagesArray };
+    if (!payload.brand_id) delete payload.brand_id;
+    if (!payload.country_id) delete payload.country_id;
+    
     try {
         const res = await fetch(`${API_URL}/products`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...newProduct, images: imagesArray }),
+            body: JSON.stringify(payload),
         });
         
         if (res.ok) {
@@ -159,6 +169,19 @@ export default function CreateProductPage() {
                                 <option key={cat.id} value={cat.id}>
                                     {'\u00A0'.repeat(cat.level * 4)}{cat.name}
                                 </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Brand</label>
+                        <select 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                            value={newProduct.brand_id}
+                            onChange={e => setNewProduct({...newProduct, brand_id: e.target.value})}
+                        >
+                            <option value="">Select Brand</option>
+                            {brands.map(brand => (
+                                <option key={brand.id} value={brand.id}>{brand.name}</option>
                             ))}
                         </select>
                     </div>

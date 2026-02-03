@@ -35,6 +35,7 @@ interface Variant {
 export default function EditProductPage() {
   const [product, setProduct] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [newBatch, setNewBatch] = useState({ batch_number: "", purchase_price: "", selling_price: "", quantity: "", expiry_date: "" });
@@ -53,6 +54,7 @@ export default function EditProductPage() {
   useEffect(() => {
     fetchProduct();
     fetchCategories();
+    fetchBrands();
     fetchCountries();
   }, [id]);
 
@@ -88,6 +90,13 @@ export default function EditProductPage() {
       .catch(console.error);
   };
 
+  const fetchBrands = () => {
+    fetch(`${API_URL}/brands`)
+      .then(res => res.json())
+      .then(data => setBrands(Array.isArray(data) ? data : []))
+      .catch(console.error);
+  };
+
   const fetchCountries = () => {
     fetch(`${API_URL}/countries`)
       .then(res => res.json())
@@ -99,11 +108,14 @@ export default function EditProductPage() {
     e.preventDefault();
     const imagesArray = product.images.split(",").map((s: string) => s.trim());
     
-    const payload = {
+    const payload: any = {
         ...product,
         images: imagesArray,
         variants: variants
     };
+
+    if (!payload.brand_id) payload.brand_id = null;
+    if (!payload.country_id) payload.country_id = null;
 
     try {
         const res = await fetch(`${API_URL}/products/${id}`, {
@@ -344,6 +356,19 @@ export default function EditProductPage() {
                                 <option key={cat.id} value={cat.id}>
                                     {'\u00A0'.repeat(cat.level * 4)}{cat.name}
                                 </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Brand</label>
+                        <select 
+                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                            value={product.brand_id || ""}
+                            onChange={e => setProduct({...product, brand_id: e.target.value})}
+                        >
+                            <option value="">Select Brand</option>
+                            {brands.map(brand => (
+                                <option key={brand.id} value={brand.id}>{brand.name}</option>
                             ))}
                         </select>
                     </div>

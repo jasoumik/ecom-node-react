@@ -15,9 +15,11 @@ import Link from "next/link";
 function ProductsContent() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
+  const brandId = searchParams.get("brand");
   const searchQuery = searchParams.get("search");
   const [products, setProducts] = useState<any[]>([]);
   const [category, setCategory] = useState<any>(null);
+  const [brand, setBrand] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -27,9 +29,17 @@ function ProductsContent() {
   const { addToast } = useToast();
   const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        try {
+            setUser(JSON.parse(userStr));
+        } catch (e) {}
+    }
+
     // Reset when filters change
     setProducts([]);
     setPage(1);
@@ -41,10 +51,18 @@ function ProductsContent() {
             .then(res => res.json())
             .then(setCategory)
             .catch(console.error);
+        setBrand(null);
+    } else if (brandId) {
+        fetch(`${API_URL}/brands/${brandId}`)
+            .then(res => res.json())
+            .then(setBrand)
+            .catch(console.error);
+        setCategory(null);
     } else {
         setCategory(null);
+        setBrand(null);
     }
-  }, [categoryId, searchQuery]);
+  }, [categoryId, searchQuery, brandId]);
 
   const fetchProducts = async (pageNum: number, isInitial: boolean = false) => {
     if (isInitial) setLoading(true);
@@ -53,6 +71,7 @@ function ProductsContent() {
     let url = `${API_URL}/products?page=${pageNum}&limit=12`;
     
     if (categoryId) url += `&category=${categoryId}`;
+    if (brandId) url += `&brand=${brandId}`;
     if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
     
     try {
@@ -129,7 +148,7 @@ function ProductsContent() {
     addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
   };
 
-  const toggleWishlist = (product: any) => {
+  const toggleWishlist = async (product: any) => {
     let imageUrl = "https://picsum.photos/seed/default/800/800";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = getImageUrl(product.images[0]);
@@ -145,6 +164,11 @@ function ProductsContent() {
     if (isWishlisted) {
         removeFromWishlist(product.id);
         addToast("Removed from wishlist");
+        if (user) {
+            try {
+                await fetch(`${API_URL}/wishlist/${user.id}/${product.id}`, { method: 'DELETE' });
+            } catch (e) {}
+        }
     } else {
         addToWishlist({
             id: product.id,
@@ -153,6 +177,15 @@ function ProductsContent() {
             image: imageUrl
         });
         addToast("Added to wishlist");
+        if (user) {
+            try {
+                await fetch(`${API_URL}/wishlist/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: product.id })
+                });
+            } catch (e) {}
+        }
     }
   };
 
@@ -221,14 +254,41 @@ function ProductsContent() {
             </div>
         )}
 
+        {/* Brand Header */}
+        {brand && (
+            <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500 text-center">
+                <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center p-0 mb-4 overflow-hidden">
+                    {brand.logo ? (
+                        <ResponsiveImage 
+                            src={getImageUrl(brand.logo)} 
+                            alt={getLocalizedField(brand, 'name', language)} 
+                            width={160} 
+                            height={160} 
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-4xl font-bold text-slate-300">{brand.name.charAt(0)}</span>
+                    )}
+                </div>
+                <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl mb-2">
+                    {getLocalizedField(brand, 'name', language)}
+                </Heading>
+                {brand.description && (
+                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl mx-auto">
+                        {brand.description}
+                    </p>
+                )}
+            </div>
+        )}
+
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
             <div>
-                {!category && (
+                {!category && !brand && (
                     <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl">
                         {searchQuery ? `Search results for "${searchQuery}"` : t('shop_all_products')}
                     </Heading>
                 )}
-                {!category && !searchQuery && (
+                {!category && !brand && !searchQuery && (
                     <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t('discover_collection')}</Text>
                 )}
             </div>

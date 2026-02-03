@@ -13,12 +13,15 @@ export class ProductsService {
     private readonly requestsService: RequestsService
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string): Promise<any> {
+  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string, brandId?: string): Promise<any> {
     const offset = (page - 1) * limit;
     
     const baseQuery = this.knex('products');
     if (categoryId) {
       baseQuery.where({ category_id: categoryId });
+    }
+    if (brandId) {
+      baseQuery.where({ brand_id: brandId });
     }
     if (search) {
         baseQuery.where('name', 'ilike', `%${search}%`);
