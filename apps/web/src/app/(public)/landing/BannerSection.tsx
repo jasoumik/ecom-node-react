@@ -72,7 +72,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
             onTouchStart={() => setIsPaused(true)}
             onTouchEnd={() => setIsPaused(false)}
         >
-            <div className="relative w-full h-[30vh] min-h-[200px] max-h-[300px] sm:h-[50vh] sm:min-h-[400px] sm:max-h-[600px] lg:h-[70vh] lg:max-h-[800px]">
+            <div className="relative w-full h-[25vh] min-h-[160px] max-h-[220px] sm:h-[45vh] sm:min-h-[350px] sm:max-h-[500px] lg:h-[60vh] lg:max-h-[700px]">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentIndex}

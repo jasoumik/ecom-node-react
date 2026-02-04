@@ -72,7 +72,7 @@ export default async function LandingPage() {
       <NewsletterSection />
 
       {/* Call to Action */}
-      <CallToActionSection {...data.callToAction} />
+      {/*<CallToActionSection {...data.callToAction} />*/}
     </div>
   );
 }

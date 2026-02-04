@@ -55,7 +55,7 @@ export function NewsletterSection() {
   };
 
   return (
-    <Section className="py-12 sm:py-16 bg-gradient-to-br from-sky-500 to-sky-600 relative overflow-hidden">
+    <Section className="py-12 sm:py-16 bg-linear-to-br from-sky-500 to-sky-400 relative overflow-hidden">
       {/* Background Pattern */}
       <div
         className="absolute inset-0 opacity-10"

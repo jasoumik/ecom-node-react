@@ -62,6 +62,29 @@ export function Footer() {
   return (
     <footer className="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 pt-12 pb-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Free Shipping Banner - Mobile Only */}
+        <div className="md:hidden mb-6 -mt-6">
+          <div className="bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl p-4 text-center shadow-lg">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/>
+                <path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2"/>
+                <circle cx="7" cy="18" r="2"/>
+                <circle cx="17" cy="18" r="2"/>
+              </svg>
+              <span className="font-bold text-sm">
+                {language === "bn" ? "বিনামূল্যে শিপিং" : "FREE SHIPPING"}
+              </span>
+            </div>
+            <p className="text-xs text-sky-100">
+              {language === "bn"
+                ? `৳${settings.free_shipping_threshold || 5000} এর বেশি অর্ডারে • সারা বাংলাদেশে`
+                : `On orders over ৳${settings.free_shipping_threshold || 5000} • Whole Bangladesh`
+              }
+            </p>
+          </div>
+        </div>
+
         {/* Social Icons - Always visible on mobile */}
         <div className="flex items-center justify-center gap-4 mb-8 md:hidden">
           <a
