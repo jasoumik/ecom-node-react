@@ -550,7 +550,7 @@ export async function seed(knex: Knex): Promise<void> {
     }
   }
 
-  // Insert reviews
+  // Insert reviews (testimonials for landing page)
   const reviewsData = [
     { sku: 'DIA-S-001', rating: 5, comment: 'Best diapers we have ever used! Super soft and no leaks.' },
     { sku: 'SKN-LOT-001', rating: 5, comment: 'My baby loves this lotion. Great for sensitive skin.' },
@@ -581,5 +581,6 @@ export async function seed(knex: Knex): Promise<void> {
   console.log(`- ${Object.keys(brands).length} brands`);
   console.log(`- ${Object.keys(categories).length} categories`);
   console.log(`- ${Object.keys(products).length} products`);
+  console.log(`- ${reviewsData.length} reviews`);
 }
 

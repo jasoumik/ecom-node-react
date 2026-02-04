@@ -55,7 +55,7 @@ export function NewsletterSection() {
   };
 
   return (
-    <Section className="py-12 sm:py-16 bg-linear-to-br from-sky-500 to-sky-400 relative overflow-hidden">
+    <Section className="py-8 sm:py-12 md:py-16 bg-linear-to-br from-sky-500 to-sky-400 relative overflow-hidden">
       {/* Background Pattern */}
       <div
         className="absolute inset-0 opacity-10"
@@ -65,19 +65,19 @@ export function NewsletterSection() {
       />
 
       <div className="max-w-2xl mx-auto text-center relative z-10 px-4">
-        {/* Icon */}
-        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Mail className="w-8 h-8 text-white" />
+        {/* Icon - smaller on mobile */}
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-6">
+          <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
         </div>
 
         {/* Heading */}
-        <Heading size="lg" className="font-sans font-bold text-white mb-3">
+        <Heading size="lg" className="font-sans font-bold text-white mb-2 sm:mb-3 text-lg sm:text-xl md:text-2xl">
           {language === "bn"
             ? "আমাদের নিউজলেটার সাবস্ক্রাইব করুন"
             : "Subscribe to Our Newsletter"}
         </Heading>
 
-        <p className="text-sky-100 text-sm sm:text-base mb-8 max-w-md mx-auto">
+        <p className="text-sky-100 text-xs sm:text-sm md:text-base mb-4 sm:mb-8 max-w-md mx-auto">
           {language === "bn"
             ? "নতুন পণ্য, অফার এবং বিশেষ ছাড়ের খবর পেতে সাবস্ক্রাইব করুন।"
             : "Get updates on new products, exclusive offers, and special discounts."}

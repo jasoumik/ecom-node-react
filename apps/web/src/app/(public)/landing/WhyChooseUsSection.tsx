@@ -18,6 +18,11 @@ export function WhyChooseUsSection({
 }: WhyChooseUsSectionProps) {
   const { t, language } = useLanguage();
 
+  // Don't render if no reasons
+  if (!reasons || reasons.length === 0) {
+    return null;
+  }
+
   const getIcon = (iconStr: string) => {
       if (iconStr.startsWith('http') || iconStr.startsWith('/')) {
           return <img src={iconStr} alt="" className="w-8 h-8 object-contain" />;
@@ -40,20 +45,38 @@ export function WhyChooseUsSection({
   };
 
   return (
-    <Section variant="blue" className="py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-sky-100 text-sky-600 text-[10px] font-bold uppercase tracking-wider mb-3 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
+    <Section variant="blue" className="py-6 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-4 sm:mb-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-sky-100 text-sky-600 text-[10px] font-bold uppercase tracking-wider mb-2 sm:mb-3 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
           <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
           {t('our_promise')}
         </div>
-        <Heading size="lg" className="font-sans text-2xl sm:text-3xl text-slate-900 dark:text-white font-bold mb-3">{getLocalizedField({title, title_bn}, 'title', language)}</Heading>
-        <Text className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-2xl mx-auto">
+        <Heading size="lg" className="font-sans text-xl sm:text-2xl md:text-3xl text-slate-900 dark:text-white font-bold mb-1 sm:mb-3">{getLocalizedField({title, title_bn}, 'title', language)}</Heading>
+        <Text className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base max-w-2xl mx-auto hidden sm:block">
           {t('promise_tagline')}
         </Text>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {reasons.map((reason, i) => (
+      {/* Mobile: Horizontal scroll */}
+      <div className="sm:hidden overflow-x-auto scrollbar-hide -mx-4 px-4">
+        <div className="flex gap-3 pb-2" style={{ width: 'max-content' }}>
+          {reasons.map((reason) => (
+            <div key={reason.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-center w-[200px] flex-shrink-0">
+              <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center mb-2 mx-auto">
+                {getIcon(reason.iconUrl)}
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 font-sans line-clamp-1">{getLocalizedField(reason, 'title', language)}</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-xs line-clamp-2">
+                {getLocalizedField(reason, 'description', language)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: Grid */}
+      <div className="hidden sm:grid md:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {reasons.map((reason) => (
           <div key={reason.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 text-center hover:shadow-md transition-all duration-300 group">
             <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
               {getIcon(reason.iconUrl)}
