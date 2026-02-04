@@ -45,16 +45,21 @@ export class CategoriesService {
       }));
   }
 
-  private buildTreeWithFilter(categories: any[], parentId: string | null, countMap: Record<string, number>): any[] {
+  private buildTreeWithFilter(categories: any[], parentId: string | null, countMap: Record<string, number>, parentHasProducts: boolean = false): any[] {
       return categories
         .filter(cat => cat.parent_id === parentId)
         .map(cat => {
-            const children = this.buildTreeWithFilter(categories, cat.id, countMap);
             const productCount = countMap[cat.id] || 0;
             const hasProducts = productCount > 0;
+            // Pass true to children if this category has products
+            const children = this.buildTreeWithFilter(categories, cat.id, countMap, hasProducts);
             const hasChildrenWithProducts = children.length > 0;
             
-            if (hasProducts || hasChildrenWithProducts) {
+            // Include this category if:
+            // 1. It has products, OR
+            // 2. It has children with products, OR
+            // 3. Its parent has products (so subcategories are shown)
+            if (hasProducts || hasChildrenWithProducts || parentHasProducts) {
                 return { ...cat, children, productCount };
             }
             return null;

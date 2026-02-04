@@ -43,6 +43,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const searchRef = useRef<HTMLDivElement>(null);
@@ -315,18 +316,21 @@ export function Header() {
 
             {/* Navigation */}
             <nav className="flex items-center gap-1">
-              {/* Categories with Mega Menu */}
+{/* Categories with Mega Menu */}
               <div
                 className="relative"
                 onMouseEnter={() => handleMegaMenuEnter("categories")}
-                onMouseLeave={handleMegaMenuLeave}
+                onMouseLeave={() => {
+                  handleMegaMenuLeave();
+                  setHoveredCategory(null);
+                }}
               >
                 <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">
                   {t("categories")}
                   <ChevronDown size={16} className={`transition-transform ${activeMegaMenu === "categories" ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Mega Menu */}
+                {/* Mega Menu - Two Panel Layout */}
                 <AnimatePresence>
                   {activeMegaMenu === "categories" && (
                     <motion.div
@@ -334,39 +338,157 @@ export function Header() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 w-[600px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 p-6 mt-2"
+                      className="absolute top-full left-0 w-[750px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 mt-2 overflow-hidden"
                       onMouseEnter={() => handleMegaMenuEnter("categories")}
-                      onMouseLeave={handleMegaMenuLeave}
+                      onMouseLeave={() => {
+                        handleMegaMenuLeave();
+                        setHoveredCategory(null);
+                      }}
                     >
-                      <div className="grid grid-cols-3 gap-4">
-                        {categories.slice(0, 9).map((category) => (
-                          <Link
-                            key={category.id}
-                            href={`/products?category=${category.id}`}
-                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
-                          >
-                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-                              <Image
-                                src={getImageUrl(category.image)}
-                                alt={getLocalizedField(category, "name", language)}
-                                width={48}
-                                height={48}
-                                className="w-full h-full object-cover"
-                              />
+                      <div className="flex">
+                        {/* Left Panel - Parent Categories */}
+                        <div className="w-[280px] bg-slate-50 dark:bg-slate-800/50 p-4 border-r border-slate-100 dark:border-slate-800 max-h-[400px] overflow-y-auto">
+                          <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">
+                            Categories
+                          </h3>
+                          <div className="space-y-1">
+                            {categories.map((parentCategory: any) => {
+                              const hasChildren = parentCategory.children && parentCategory.children.length > 0;
+                              const isHovered = hoveredCategory === parentCategory.id;
+
+                              return (
+                                <div
+                                  key={parentCategory.id}
+                                  onMouseEnter={() => setHoveredCategory(parentCategory.id)}
+                                  className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all ${
+                                    isHovered 
+                                      ? 'bg-white dark:bg-slate-800 shadow-sm' 
+                                      : 'hover:bg-white/50 dark:hover:bg-slate-800/50'
+                                  }`}
+                                >
+                                  <Link
+                                    href={`/products?category=${parentCategory.id}`}
+                                    className="flex items-center gap-3 flex-1"
+                                  >
+                                    <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
+                                      <Image
+                                        src={getImageUrl(parentCategory.image)}
+                                        alt={getLocalizedField(parentCategory, "name", language)}
+                                        width={36}
+                                        height={36}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                    <span className={`text-sm font-medium transition-colors ${
+                                      isHovered 
+                                        ? 'text-sky-600 dark:text-sky-400' 
+                                        : 'text-slate-700 dark:text-slate-300'
+                                    }`}>
+                                      {getLocalizedField(parentCategory, "name", language)}
+                                    </span>
+                                  </Link>
+                                  {hasChildren && (
+                                    <ChevronRight
+                                      size={16}
+                                      className={`transition-colors ${
+                                        isHovered 
+                                          ? 'text-sky-600 dark:text-sky-400' 
+                                          : 'text-slate-400'
+                                      }`}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <Link
+                              href="/products"
+                              className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+                            >
+                              {t("view_all")} Products
+                              <ChevronRight size={16} />
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Right Panel - Subcategories */}
+                        <div className="flex-1 p-6 max-h-[400px] overflow-y-auto">
+                          {hoveredCategory ? (
+                            (() => {
+                              const parentCategory = categories.find((c: any) => c.id === hoveredCategory);
+                              const subCategories = parentCategory?.children || [];
+
+                              if (!parentCategory) return null;
+
+                              return (
+                                <div>
+                                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                      <Image
+                                        src={getImageUrl(parentCategory.image)}
+                                        alt={getLocalizedField(parentCategory, "name", language)}
+                                        width={48}
+                                        height={48}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                                        {getLocalizedField(parentCategory, "name", language)}
+                                      </h3>
+                                      <Link
+                                        href={`/products?category=${parentCategory.id}`}
+                                        className="text-xs text-sky-600 dark:text-sky-400 hover:underline"
+                                      >
+                                        View all products →
+                                      </Link>
+                                    </div>
+                                  </div>
+
+                                  {subCategories.length > 0 ? (
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {subCategories.map((subCat: any) => (
+                                        <Link
+                                          key={subCat.id}
+                                          href={`/products?category=${subCat.id}`}
+                                          className="flex items-center gap-2 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
+                                        >
+                                          <div className="w-2 h-2 rounded-full bg-sky-500 group-hover:scale-125 transition-transform" />
+                                          <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                                            {getLocalizedField(subCat, "name", language)}
+                                          </span>
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-8">
+                                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                                        No subcategories available
+                                      </p>
+                                      <Link
+                                        href={`/products?category=${parentCategory.id}`}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors"
+                                      >
+                                        Browse Products
+                                        <ChevronRight size={16} />
+                                      </Link>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                              <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                                <ChevronRight size={24} className="text-slate-400" />
+                              </div>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Hover over a category to see subcategories
+                              </p>
                             </div>
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-sky-600 dark:group-hover:text-sky-400 line-clamp-2">
-                              {getLocalizedField(category, "name", language)}
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <Link
-                          href="/products"
-                          className="text-sm font-medium text-sky-600 hover:text-sky-700 flex items-center gap-1"
-                        >
-                          {t("view_all")} <ChevronRight size={16} />
-                        </Link>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -379,14 +501,6 @@ export function Header() {
               >
                 {t("shop")}
               </Link>
-
-              <Link
-                href="/about"
-                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                {t("about")}
-              </Link>
-
               <Link
                 href="/contact"
                 className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -919,7 +1033,7 @@ export function Header() {
                     <span>{t("categories")}</span>
                     <ChevronDown
                       size={18}
-                      className={`transition-transform ${
+                      className={`transition-transform duration-200 ${
                         expandedMobileCategories.includes("main-categories") ? "rotate-180" : ""
                       }`}
                     />
@@ -930,28 +1044,105 @@ export function Header() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="pl-4 pb-2">
-                          {categories.map((category) => (
-                            <Link
-                              key={category.id}
-                              href={`/products?category=${category.id}`}
-                              onClick={() => setIsMobileMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg"
-                            >
-                              <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-                                <Image
-                                  src={getImageUrl(category.image)}
-                                  alt={getLocalizedField(category, "name", language)}
-                                  width={32}
-                                  height={32}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <span className="text-sm">{getLocalizedField(category, "name", language)}</span>
-                            </Link>
-                          ))}
+                        <div className="pl-2 pb-2 space-y-1">
+                          {categories.map((parentCategory: any) => {
+                              const subCategories = parentCategory.children || [];
+                              const hasSubCategories = subCategories.length > 0;
+                              const isExpanded = expandedMobileCategories.includes(parentCategory.id);
+
+                              return (
+                                <div key={parentCategory.id} className="border-l-2 border-slate-100 dark:border-slate-800 ml-2">
+                                  {hasSubCategories ? (
+                                    // Parent category with subcategories - entire row is clickable to expand
+                                    <button
+                                      onClick={() => toggleMobileCategory(parentCategory.id)}
+                                      className="flex items-center justify-between w-full px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                                          <Image
+                                            src={getImageUrl(parentCategory.image)}
+                                            alt={getLocalizedField(parentCategory, "name", language)}
+                                            width={32}
+                                            height={32}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex flex-col items-start">
+                                          <span className="text-sm font-medium">
+                                            {getLocalizedField(parentCategory, "name", language)}
+                                          </span>
+                                          <span className="text-xs text-slate-400 dark:text-slate-500">
+                                            {subCategories.length} subcategories
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <ChevronRight
+                                        size={18}
+                                        className={`text-slate-400 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                                      />
+                                    </button>
+                                  ) : (
+                                    // Parent category without subcategories - link directly
+                                    <Link
+                                      href={`/products?category=${parentCategory.id}`}
+                                      onClick={() => setIsMobileMenuOpen(false)}
+                                      className="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                    >
+                                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                                        <Image
+                                          src={getImageUrl(parentCategory.image)}
+                                          alt={getLocalizedField(parentCategory, "name", language)}
+                                          width={32}
+                                          height={32}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                      <span className="text-sm font-medium">
+                                        {getLocalizedField(parentCategory, "name", language)}
+                                      </span>
+                                    </Link>
+                                  )}
+
+                                  {/* Subcategories */}
+                                  <AnimatePresence>
+                                    {hasSubCategories && isExpanded && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="ml-4 pl-4 pb-2 pt-1 space-y-0.5 border-l-2 border-sky-100 dark:border-sky-900">
+                                          {/* View all link for parent category */}
+                                          <Link
+                                            href={`/products?category=${parentCategory.id}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="block px-3 py-2 text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-lg"
+                                          >
+                                            View All {getLocalizedField(parentCategory, "name", language)}
+                                          </Link>
+                                          {subCategories.map((subCat: any) => (
+                                            <Link
+                                              key={subCat.id}
+                                              href={`/products?category=${subCat.id}`}
+                                              onClick={() => setIsMobileMenuOpen(false)}
+                                              className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
+                                            >
+                                              {getLocalizedField(subCat, "name", language)}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              );
+                            })}
                         </div>
                       </motion.div>
                     )}
