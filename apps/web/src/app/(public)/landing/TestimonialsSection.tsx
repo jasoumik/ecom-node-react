@@ -46,7 +46,7 @@ export function TestimonialsSection({
   ];
 
   return (
-    <Section className="py-16 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+    <Section variant="blue" className="py-16 border-t border-slate-100 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-10">
           <div className="space-y-2 max-w-2xl">

@@ -40,7 +40,7 @@ export function WhyChooseUsSection({
   };
 
   return (
-    <Section className="py-12 bg-slate-50 dark:bg-slate-950">
+    <Section variant="blue" className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-sky-100 text-sky-600 text-[10px] font-bold uppercase tracking-wider mb-3 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400">
           <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
