@@ -20,7 +20,7 @@ export default function AdminBannersPage() {
 
   const fetchBanners = async () => {
     try {
-      const res = await fetch(`${API_URL}/banners`);
+      const res = await fetch(`${API_URL}/banners?all=true`);
       const data = await res.json();
       setBanners(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -45,6 +45,20 @@ export default function AdminBannersPage() {
     }
   };
 
+  const getBannerStatus = (banner: any) => {
+    const today = new Date().toISOString().split('T')[0];
+
+    if (!banner.is_active) return { label: 'Inactive', color: 'bg-slate-100 text-slate-600' };
+    if (banner.starts_at && banner.starts_at > today) return { label: 'Scheduled', color: 'bg-blue-50 text-blue-600' };
+    if (!banner.no_expiry && banner.expires_at && banner.expires_at < today) return { label: 'Expired', color: 'bg-red-50 text-red-600' };
+    return { label: 'Active', color: 'bg-green-50 text-green-600' };
+  };
+
+  const formatDate = (date: string | null) => {
+    if (!date) return '—';
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
   if (loading) return <FullScreenLoader />;
 
   return (
@@ -52,7 +66,7 @@ export default function AdminBannersPage() {
       <div className="flex justify-between items-center">
         <div>
             <Heading size="md" className="font-sans text-slate-800 dark:text-white mb-0.5">Banners</Heading>
-            <p className="text-xs text-slate-500">Manage homepage banners</p>
+            <p className="text-xs text-slate-500">Manage homepage banners and promotions</p>
         </div>
         <Button onClick={() => router.push("/admin/banners/create")} className="rounded-lg shadow-sm py-2 px-4 text-xs h-auto">
             + Add Banner
@@ -76,21 +90,48 @@ export default function AdminBannersPage() {
             className: "font-bold text-slate-900 dark:text-white text-xs"
           },
           {
-            header: "Link",
-            accessorKey: "link",
-            className: "text-slate-500 text-[10px] max-w-xs truncate"
+            header: "Position",
+            cell: (banner) => (
+              <span className="text-xs text-slate-600 dark:text-slate-400 capitalize">
+                {banner.position || 'hero'}
+              </span>
+            )
+          },
+          {
+            header: "Label",
+            cell: (banner) => banner.label_name ? (
+              <span
+                className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ backgroundColor: banner.label_bg_color || '#eff6ff', color: banner.label_color || '#3b82f6' }}
+              >
+                {banner.label_name}
+              </span>
+            ) : (
+              <span className="text-xs text-slate-400">—</span>
+            )
+          },
+          {
+            header: "Schedule",
+            cell: (banner) => (
+              <div className="text-xs text-slate-500">
+                {banner.no_expiry ? (
+                  <span className="text-green-600">No Expiry</span>
+                ) : (
+                  <span>{formatDate(banner.starts_at)} - {formatDate(banner.expires_at)}</span>
+                )}
+              </div>
+            )
           },
           {
             header: "Status",
-            cell: (banner) => (
-              <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
-                  banner.is_active 
-                  ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' 
-                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-              }`}>
-                  {banner.is_active ? 'Active' : 'Inactive'}
-              </span>
-            )
+            cell: (banner) => {
+              const status = getBannerStatus(banner);
+              return (
+                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${status.color}`}>
+                  {status.label}
+                </span>
+              );
+            }
           },
           {
             header: "Order",

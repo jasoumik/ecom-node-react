@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { Phone, Lock, ArrowRight } from "lucide-react";
 import { AuthLayout } from "@/components/ui/AuthLayout";
 import { Text } from "@repo/ui";
+import { Home } from "lucide-react";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -322,7 +323,7 @@ export default function LoginPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-8 text-center"
+        className="mt-8 text-center space-y-3"
       >
         <Text className="text-sm text-slate-500 dark:text-slate-400">
           {t('dont_have_account')}{" "}
@@ -333,6 +334,15 @@ export default function LoginPage() {
             {t('create_account')}
           </Link>
         </Text>
+
+        {/* Back to Home Link */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+        >
+          <Home size={16} />
+          <span>{t('back_to_home') || 'Back to Home'}</span>
+        </Link>
       </motion.div>
     </AuthLayout>
   );

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { BannersService } from './banners.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
@@ -8,8 +8,19 @@ export class BannersController {
   constructor(private readonly bannersService: BannersService) {}
 
   @Get()
-  findAll() {
-    return this.bannersService.findAll();
+  findAll(@Query('all') all?: string) {
+    const includeInactive = all === 'true';
+    return this.bannersService.findAll(includeInactive);
+  }
+
+  @Get('position/:position')
+  findByPosition(@Param('position') position: string) {
+    return this.bannersService.findByPosition(position);
+  }
+
+  @Get('label/:labelId')
+  findByLabel(@Param('labelId') labelId: string) {
+    return this.bannersService.findByLabel(labelId);
   }
 
   @Get(':id')

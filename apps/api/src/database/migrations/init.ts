@@ -145,14 +145,49 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamps(true, true);
   });
 
+  // Labels Table - For product/banner/section labeling
+  await knex.schema.createTable('labels', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('name').notNullable();
+    table.string('name_bn').nullable();
+    table.string('slug').unique().notNullable();
+    table.string('color').defaultTo('#3b82f6'); // Tailwind sky-500
+    table.string('bg_color').defaultTo('#eff6ff'); // Tailwind sky-50
+    table.text('description').nullable();
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Product Labels Junction Table
+  await knex.schema.createTable('product_labels', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('label_id').notNullable().references('id').inTable('labels').onDelete('CASCADE');
+    table.timestamps(true, true);
+    table.unique(['product_id', 'label_id']);
+  });
+
   // Coupons Table
   await knex.schema.createTable('coupons', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('code').unique().notNullable();
+    table.string('name').nullable(); // Friendly name for the coupon
+    table.string('description').nullable(); // Description for admin
     table.string('type').notNullable(); // 'percentage' or 'fixed'
     table.decimal('value', 10, 2).notNullable();
     table.decimal('min_order_amount', 10, 2).defaultTo(0);
+    table.decimal('max_discount_amount', 10, 2).nullable(); // Cap for percentage discounts
+    table.date('starts_at').nullable(); // Start date
     table.date('expires_at').nullable();
+    table.boolean('no_expiry').defaultTo(false); // Flag for no expiry
+    table.integer('usage_limit').nullable(); // Max number of total uses
+    table.integer('usage_limit_per_user').nullable(); // Max uses per customer
+    table.integer('times_used').defaultTo(0); // Track usage count
+    table.specificType('applicable_categories', 'uuid[]').nullable(); // Array of category IDs
+    table.specificType('applicable_products', 'uuid[]').nullable(); // Array of product IDs
+    table.specificType('excluded_products', 'uuid[]').nullable(); // Array of excluded product IDs
+    table.boolean('first_order_only').defaultTo(false); // Only for first-time customers
+    table.boolean('free_shipping').defaultTo(false); // Include free shipping
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
@@ -208,11 +243,17 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('banners', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('title').notNullable();
-    table.string('title_bn').nullable(); // Added Bangla Title
+    table.string('title_bn').nullable(); // Bangla Title
     table.string('image').notNullable();
     table.string('link').nullable();
     table.boolean('is_active').defaultTo(true);
     table.integer('order').defaultTo(0);
+    table.date('starts_at').nullable(); // Start date for banner
+    table.date('expires_at').nullable(); // End date for banner
+    table.boolean('no_expiry').defaultTo(true); // Flag for no expiry
+    table.uuid('label_id').nullable().references('id').inTable('labels').onDelete('SET NULL'); // Associated label
+    table.string('position').defaultTo('hero'); // hero, sidebar, popup, etc.
+    table.string('target').defaultTo('_self'); // _self or _blank for links
     table.timestamps(true, true);
   });
 
@@ -344,9 +385,20 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('updated_by').nullable(); // User ID of admin who updated
     table.timestamp('created_at').defaultTo(knex.fn.now());
   });
+
+  // Coupon Usage Tracking Table
+  await knex.schema.createTable('coupon_usages', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('coupon_id').notNullable().references('id').inTable('coupons').onDelete('CASCADE');
+    table.uuid('user_id').nullable().references('id').inTable('users').onDelete('SET NULL');
+    table.uuid('order_id').nullable().references('id').inTable('orders').onDelete('SET NULL');
+    table.decimal('discount_amount', 10, 2).notNullable();
+    table.timestamps(true, true);
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('coupon_usages');
   await knex.schema.dropTableIfExists('order_history');
   await knex.schema.dropTableIfExists('landing_pages');
   await knex.schema.dropTableIfExists('promises');
@@ -363,6 +415,8 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
   await knex.schema.dropTableIfExists('coupons');
+  await knex.schema.dropTableIfExists('product_labels');
+  await knex.schema.dropTableIfExists('labels');
   await knex.schema.dropTableIfExists('delivery_charges');
   await knex.schema.dropTableIfExists('product_batches');
   await knex.schema.dropTableIfExists('product_variants');

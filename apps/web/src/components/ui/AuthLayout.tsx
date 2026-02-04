@@ -5,6 +5,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Shield, Truck, Baby, Heart } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,39 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   const { language } = useLanguage();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
+      
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          if (user && user.id) {
+            // User is logged in, redirect to home or dashboard
+            if (user.role === 'admin') {
+              router.replace("/admin");
+            } else {
+              router.replace("/");
+            }
+            return;
+          }
+        } catch (e) {
+          // Invalid user data, continue to render auth page
+        }
+      }
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white dark:bg-slate-950">
