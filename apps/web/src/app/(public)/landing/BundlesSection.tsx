@@ -46,7 +46,7 @@ export function BundlesSection() {
       image: imageUrl,
       quantity: 1,
       stock: 999, // Bundles usually virtual stock, or check items stock
-      isBundle: true
+      // isBundle: true
     });
     
     addToast(
