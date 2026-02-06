@@ -57,7 +57,11 @@ export default function BundlesPage() {
       quantity: 1,
       stock: parseInt(product.stock) || 0 // Added stock
     });
-    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
+    addToast(
+      `Added ${getLocalizedField(product, 'name', language)} to cart`,
+      "success",
+      { label: "View Cart", href: "/cart" }
+    );
   };
 
   if (loading) return <FullScreenLoader />;

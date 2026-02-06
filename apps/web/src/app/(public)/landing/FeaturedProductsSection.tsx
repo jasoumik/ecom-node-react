@@ -65,7 +65,11 @@ export function FeaturedProductsSection({
     setAnimatingProductId(product.id);
     setTimeout(() => setAnimatingProductId(null), 500);
 
-    addToast(`Added ${getLocalizedField(product, 'name', language)} to cart`);
+    addToast(
+      `Added ${getLocalizedField(product, 'name', language)} to cart`,
+      "success",
+      { label: "View Cart", href: "/cart" }
+    );
   }, [addItem, addToast, language]);
 
   const toggleWishlist = useCallback(async (product: FeaturedProduct, e?: React.MouseEvent) => {

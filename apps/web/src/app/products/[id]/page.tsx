@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import { FlagIcon } from "@/components/ui/FlagIcon";
+import { Minus, Plus, Heart, Share2, CheckCircle2, AlertCircle, Truck, ShieldCheck, RefreshCw } from "lucide-react";
 
 export default function ProductPage() {
   const params = useParams();
@@ -26,7 +27,7 @@ export default function ProductPage() {
   // Variant Selection State
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
-  const [selectedWeight, setSelectedWeight] = useState<string>(""); // Added Weight State
+  const [selectedWeight, setSelectedWeight] = useState<string>("");
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -129,7 +130,6 @@ export default function ProductPage() {
       if (variant) {
           setSelectedVariant(variant);
       } else {
-          // Fallback logic if exact match fails (prioritize weight if selected)
           const fallback = product.variants.find((v: any) => 
               (selectedWeight && v.weight === selectedWeight) ||
               (selectedSize && v.size === selectedSize)
@@ -141,7 +141,6 @@ export default function ProductPage() {
 
   const handleSizeChange = (newSize: string) => {
       setSelectedSize(newSize);
-      // Reset others if needed or try to find best match
   };
 
   const handleColorChange = (newColor: string) => {
@@ -195,7 +194,11 @@ export default function ProductPage() {
       quantity: quantity,
       stock: finalStock
     });
-    addToast(`Added ${quantity} x ${getLocalizedField(product, 'name', language)} to cart`);
+    addToast(
+      `Added ${quantity} x ${getLocalizedField(product, 'name', language)} to cart`,
+      "success",
+      { label: "View Cart", href: "/cart" }
+    );
   };
 
   const handleOrderNow = () => {
@@ -334,8 +337,8 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-24 transition-colors duration-300">
       {/* Breadcrumbs */}
-      <div className="bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <Link href="/" className="hover:text-sky-500">{t('home')}</Link>
                   <span>/</span>
@@ -347,17 +350,24 @@ export default function ProductPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid md:grid-cols-12 gap-8 lg:gap-16">
+        <div className="grid md:grid-cols-12 gap-8 lg:gap-12">
           {/* Left Column: Media Gallery */}
-          <div className="md:col-span-6 lg:col-span-7 space-y-4">
+          <div className="md:col-span-6 lg:col-span-6 space-y-4">
             <div 
-                className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 relative group cursor-zoom-in"
+                className="aspect-square rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 relative group cursor-zoom-in shadow-sm"
                 ref={imageRef}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsZoomed(true)}
                 onMouseLeave={() => setIsZoomed(false)}
                 onClick={() => setIsZoomed(!isZoomed)}
             >
+              {/* Discount Badge */}
+              {product.old_price && (
+                <div className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                  {Math.round(((parseFloat(product.old_price) - parseFloat(currentPrice)) / parseFloat(product.old_price)) * 100)}% OFF
+                </div>
+              )}
+
               {isVideo(selectedMedia) ? (
                   <video 
                     src={getImageUrl(selectedMedia)} 
@@ -393,7 +403,7 @@ export default function ProductPage() {
                 {mediaList.map((media: string, i: number) => (
                     <button 
                         key={i} 
-                        className={`w-20 h-20 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900 cursor-pointer hover:opacity-80 border-2 shrink-0 transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-800'}`}
+                        className={`w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-slate-900 cursor-pointer hover:opacity-80 border-2 shrink-0 transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-800'}`}
                         onClick={() => setSelectedMedia(media)}
                     >
                         {isVideo(media) ? (
@@ -417,33 +427,15 @@ export default function ProductPage() {
           </div>
 
           {/* Right Column: Product Details */}
-          <div className="md:col-span-6 lg:col-span-5 space-y-6">
+          <div className="md:col-span-6 lg:col-span-6 space-y-6">
             <div>
-              <div className="flex justify-between items-start mb-3">
-                  <div className="text-xs font-bold text-sky-600 uppercase tracking-wider bg-sky-50 dark:bg-sky-900/30 px-2 py-1 rounded-md">{getLocalizedField(product, 'category_name', language)}</div>
-                  <div className="flex gap-2">
-                      <button onClick={toggleWishlist} className={`p-2 rounded-full transition-colors ${isWishlisted ? 'text-rose-500 bg-rose-50 dark:bg-slate-800' : 'text-slate-500 hover:text-rose-500 bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700'}`}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                      </button>
-                      <button onClick={handleShare} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-500 hover:text-sky-500 transition-colors">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                      </button>
-                  </div>
-              </div>
-              
-              <Heading as="h1" size="lg" className="font-sans dark:text-white text-xl sm:text-2xl lg:text-3xl font-bold leading-tight mb-2 text-slate-900">{getLocalizedField(product, 'name', language)}</Heading>
-              
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                  <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-800">
-                      <RatingStars rating={avgRating} size="sm" />
-                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 ml-1">{avgRating.toFixed(1)}</span>
-                  </div>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium border-l border-slate-200 dark:border-slate-700 pl-3">{reviews.length} {t('reviews')}</span>
+              <div className="flex justify-between items-start mb-2">
+                  <div className="text-xs font-bold text-sky-600 uppercase tracking-wider bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded-md">{getLocalizedField(product, 'category_name', language)}</div>
                   
                   {/* Country Label */}
                   {product.country_id && (
-                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t('product_of')} {getLocalizedField(product, 'country_name', language) || 'Origin'}</span>
+                    <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-100 dark:border-slate-700">
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{getLocalizedField(product, 'country_name', language)}</span>
                         {product.country_flag && (
                             product.country_flag.startsWith('http') || product.country_flag.startsWith('/') ? (
                                 <img src={getImageUrl(product.country_flag)} alt="Flag" className="w-4 h-2.5 object-cover rounded-sm shadow-sm" />
@@ -456,15 +448,26 @@ export default function ProductPage() {
                     </div>
                   )}
               </div>
-
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 mb-4">
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">৳{currentPrice}</div>
-                    {product.old_price && <div className="text-base text-slate-400 line-through font-medium">৳{product.old_price}</div>}
+              
+              <Heading as="h1" size="lg" className="font-sans dark:text-white text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight mb-3 text-slate-900">{getLocalizedField(product, 'name', language)}</Heading>
+              
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                  <div className="flex items-center gap-1">
+                      <RatingStars rating={avgRating} size="sm" />
+                      <span className="text-sm font-medium text-slate-500 dark:text-slate-400 ml-1">({reviews.length} {t('reviews')})</span>
                   </div>
+                  
+                  <div className={`flex items-center gap-1.5 text-sm font-medium px-2.5 py-0.5 rounded-full ${currentStock > 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'}`}>
+                      {currentStock > 0 ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                      {currentStock > 0 ? t('in_stock') : t('out_of_stock')}
+                  </div>
+              </div>
+
+              <div className="flex items-end gap-3 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+                  <div className="text-3xl sm:text-4xl font-bold text-sky-600 dark:text-sky-400">৳{currentPrice}</div>
                   {product.old_price && (
-                      <div className="text-xs font-bold text-red-500">
-                          You save ৳{parseFloat(product.old_price) - parseFloat(currentPrice)}
+                      <div className="flex flex-col mb-1">
+                          <div className="text-lg text-slate-400 line-through font-medium">৳{product.old_price}</div>
                       </div>
                   )}
               </div>
@@ -472,16 +475,16 @@ export default function ProductPage() {
 
             {/* Variant Selectors */}
             {product.has_variants && (
-                <div className="space-y-4">
+                <div className="space-y-5">
                     {sizes.length > 0 && (
                         <div>
-                            <label className="block text-xs font-bold text-slate-900 dark:text-white mb-2">{t('size')}</label>
+                            <label className="block text-sm font-bold text-slate-900 dark:text-white mb-3">{t('size')}: <span className="font-normal text-slate-500">{selectedSize}</span></label>
                             <div className="flex flex-wrap gap-2">
                                 {sizes.map((size: any) => (
                                     <button
                                         key={size}
                                         onClick={() => handleSizeChange(size)}
-                                        className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all min-w-[2.5rem] ${
+                                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all min-w-[3rem] ${
                                             selectedSize === size 
                                             ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 ring-1 ring-sky-500' 
                                             : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800'
@@ -496,7 +499,7 @@ export default function ProductPage() {
                     
                     {colors.length > 0 && (
                         <div>
-                            <label className="block text-xs font-bold text-slate-900 dark:text-white mb-2">{t('color')}</label>
+                            <label className="block text-sm font-bold text-slate-900 dark:text-white mb-3">{t('color')}: <span className="font-normal text-slate-500">{selectedColor}</span></label>
                             <div className="flex flex-wrap gap-2">
                                 {colors.map((color: any) => {
                                     const isAvailable = isColorAvailableForSize(color);
@@ -504,7 +507,7 @@ export default function ProductPage() {
                                         <button
                                             key={color}
                                             onClick={() => handleColorChange(color)}
-                                            className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all ${
+                                            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                                                 selectedColor === color 
                                                 ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 ring-1 ring-sky-500' 
                                                 : isAvailable 
@@ -523,13 +526,13 @@ export default function ProductPage() {
                     {/* Weight Selector */}
                     {weights.length > 0 && (
                         <div>
-                            <label className="block text-xs font-bold text-slate-900 dark:text-white mb-2">{t('weight')}</label>
+                            <label className="block text-sm font-bold text-slate-900 dark:text-white mb-3">{t('weight')}: <span className="font-normal text-slate-500">{selectedWeight}</span></label>
                             <div className="flex flex-wrap gap-2">
                                 {weights.map((weight: any) => (
                                     <button
                                         key={weight}
                                         onClick={() => setSelectedWeight(weight)}
-                                        className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all min-w-[2.5rem] ${
+                                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all min-w-[3rem] ${
                                             selectedWeight === weight 
                                             ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 ring-1 ring-sky-500' 
                                             : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800'
@@ -545,16 +548,16 @@ export default function ProductPage() {
             )}
 
             {/* Quantity & Actions */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
+            <div className="pt-6">
+                <div className="flex items-center gap-6 mb-6">
+                    <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800 rounded-xl p-1.5 border border-slate-200 dark:border-slate-700">
                         <button 
                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                            className="w-8 h-8 rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-600 transition-all font-bold"
+                            className="w-10 h-10 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm"
                         >
-                            -
+                            <Minus size={18} />
                         </button>
-                        <span className="font-bold w-8 text-center text-slate-900 dark:text-white text-base">{quantity}</span>
+                        <span className="font-bold w-8 text-center text-slate-900 dark:text-white text-lg">{quantity}</span>
                         <button 
                             onClick={() => {
                                 if (quantity < currentStock) {
@@ -563,28 +566,25 @@ export default function ProductPage() {
                                     addToast(`Only ${currentStock} items available`, "error");
                                 }
                             }}
-                            className={`w-8 h-8 rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center transition-all font-bold ${quantity >= currentStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-600'}`}
+                            className={`w-10 h-10 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center transition-all shadow-sm ${quantity >= currentStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-600'}`}
                             disabled={quantity >= currentStock}
                         >
-                            +
+                            <Plus size={18} />
                         </button>
-                    </div>
-                    <div className={`text-xs font-medium ${currentStock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                        {currentStock > 0 ? `${t('in_stock')}: ${currentStock}` : t('out_of_stock')}
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
                     {currentStock > 0 ? (
                         <>
                             <Button 
-                                className="flex-1 py-3.5 text-sm rounded-lg bg-sky-600 text-white font-bold shadow-sm hover:bg-sky-700 transition-all duration-300"
+                                className="flex-1 py-4 text-base rounded-xl bg-sky-600 text-white font-bold shadow-lg shadow-sky-500/20 hover:bg-sky-700 hover:shadow-sky-500/30 transition-all duration-300"
                                 onClick={handleAddToCart}
                             >
                                 {t('add_to_cart')}
                             </Button>
                             <Button 
-                                className="flex-1 py-3.5 text-sm rounded-lg bg-slate-900 text-white font-bold shadow-sm hover:bg-slate-800 transition-all duration-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                                className="flex-1 py-4 text-base rounded-xl bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 transition-all duration-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
                                 onClick={handleOrderNow}
                             >
                                 {t('buy_now')}
@@ -592,82 +592,125 @@ export default function ProductPage() {
                         </>
                     ) : (
                         <Button 
-                            className="w-full py-3.5 text-sm rounded-lg bg-amber-500 text-white font-bold shadow-sm hover:bg-amber-600 transition-all duration-300"
+                            className="w-full py-4 text-base rounded-xl bg-amber-500 text-white font-bold shadow-lg hover:bg-amber-600 transition-all duration-300"
                             onClick={() => setShowNotifyModal(true)}
                         >
                             {t('notify_me')}
                         </Button>
                     )}
                 </div>
+
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={toggleWishlist} 
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${isWishlisted ? 'border-rose-200 bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:border-rose-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}`}
+                    >
+                        <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+                        {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+                    </button>
+                    <button 
+                        onClick={handleShare} 
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                        <Share2 size={18} />
+                        Share
+                    </button>
+                </div>
             </div>
 
-            {/* Reviews & Description (No Tabs) */}
-            <div className="mt-8 space-y-8">
-                {/* Reviews Section */}
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-                    <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
-                    <div className="space-y-6">
-                        {reviews.length === 0 ? (
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4 py-6 border-t border-slate-100 dark:border-slate-800 mt-6">
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                        <Truck size={20} />
+                    </div>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Fast Delivery</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                        <ShieldCheck size={20} />
+                    </div>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">100% Authentic</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                        <RefreshCw size={20} />
+                    </div>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Easy Returns</span>
+                </div>
+            </div>
+
+            {/* Description Section */}
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
+                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">Description</Heading>
+                <div 
+                    className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm"
+                    dangerouslySetInnerHTML={{ __html: getLocalizedField(product, 'description', language) }}
+                />
+                
+                {/* Specifications */}
+                {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
+                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Specifications</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                            {(selectedVariant?.material || product.material) && (
+                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                    <span className="text-slate-500">Material</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
+                                </div>
+                            )}
+                            {currentWeight && (
+                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                    <span className="text-slate-500">Weight</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
+                                </div>
+                            )}
+                            {(selectedVariant?.sku || product.sku) && (
+                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                    <span className="text-slate-500">SKU</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Reviews Section */}
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
+                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
+                <div className="space-y-6">
+                    {reviews.length === 0 ? (
+                        <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
                             <p className="text-slate-500 dark:text-slate-400 text-sm">{t('no_reviews')}</p>
-                        ) : (
-                            reviews.map((review) => (
-                                <div key={review.id} className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0 last:pb-0">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
+                        </div>
+                    ) : (
+                        reviews.map((review) => (
+                            <div key={review.id} className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0 last:pb-0">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-xs">
+                                            {review.user_name.charAt(0)}
+                                        </div>
+                                        <div>
                                             <div className="font-bold text-slate-900 dark:text-white text-sm">{review.user_name}</div>
                                             <RatingStars rating={review.rating} size="sm" />
                                         </div>
-                                        <div className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</div>
                                     </div>
-                                    <p className="text-slate-600 dark:text-slate-300 text-sm">{review.comment}</p>
-                                    {review.images && (
-                                        <div className="flex gap-2 mt-3">
-                                            {parseReviewImages(review.images).map((img: string, i: number) => (
-                                                <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
-                                                    <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <div className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</div>
                                 </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-
-                {/* Description Section */}
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-                    <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">Description</Heading>
-                    <div 
-                        className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm"
-                        dangerouslySetInnerHTML={{ __html: getLocalizedField(product, 'description', language) }}
-                    />
-                    
-                    {/* Specifications */}
-                    {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
-                        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-3 text-sm">Specifications</h4>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                {(selectedVariant?.material || product.material) && (
-                                    <div>
-                                        <span className="text-slate-500 block text-xs">Material</span>
-                                        <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
-                                    </div>
-                                )}
-                                {currentWeight && (
-                                    <div>
-                                        <span className="text-slate-500 block text-xs">Weight</span>
-                                        <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
-                                    </div>
-                                )}
-                                {(selectedVariant?.sku || product.sku) && (
-                                    <div>
-                                        <span className="text-slate-500 block text-xs">SKU</span>
-                                        <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
+                                <p className="text-slate-600 dark:text-slate-300 text-sm mt-2">{review.comment}</p>
+                                {review.images && (
+                                    <div className="flex gap-2 mt-3">
+                                        {parseReviewImages(review.images).map((img: string, i: number) => (
+                                            <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
+                                                <ResponsiveImage src={getImageUrl(img)} alt="Review" width={100} height={100} className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        ))
                     )}
                 </div>
             </div>
@@ -676,7 +719,7 @@ export default function ProductPage() {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-            <div className="mb-16 border-t border-slate-100 dark:border-slate-800 pt-16">
+            <div className="mb-16 border-t border-slate-100 dark:border-slate-800 pt-16 mt-16">
                 <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-8 text-center">{t('you_might_like')}</Heading>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                     {relatedProducts.map((p: any) => {
