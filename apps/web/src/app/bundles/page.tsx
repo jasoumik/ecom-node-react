@@ -57,7 +57,7 @@ export default function BundlesPage() {
       image: imageUrl,
       quantity: 1,
       stock: 999, // Bundles usually virtual stock
-      isBundle: true
+      // isBundle: true
     });
 
     addToast(
