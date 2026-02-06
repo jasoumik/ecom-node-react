@@ -9,7 +9,7 @@ import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {ShoppingCart, ArrowRight, ChevronRight} from "lucide-react";
+import {ShoppingCart, ChevronRight} from "lucide-react";
 
 export function BundlesSection() {
   const [bundles, setBundles] = useState<any[]>([]);
