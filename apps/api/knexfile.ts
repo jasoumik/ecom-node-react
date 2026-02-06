@@ -2,13 +2,7 @@ import type { Knex } from 'knex';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({
-  path: [
-    path.resolve(__dirname, '../../.env.local'),
-    path.resolve(__dirname, '../../.env.production'),
-    path.resolve(__dirname, '../../.env'),
-  ],
-});
+dotenv.config();
 
 
 const config: Knex.Config = {
