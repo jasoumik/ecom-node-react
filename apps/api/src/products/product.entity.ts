@@ -23,6 +23,9 @@ export class Product {
   @Column('int', { default: 0 })
   stock: number;
 
+  @Column('simple-array', { nullable: true })
+  age_groups: string[]; // Store age group IDs
+
   @CreateDateColumn()
   createdAt: Date;
 

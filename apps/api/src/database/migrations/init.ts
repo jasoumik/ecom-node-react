@@ -101,6 +101,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('material').nullable();
     table.boolean('has_variants').defaultTo(false); // Flag to check if we should look at variants table
     table.boolean('is_active').defaultTo(true);
+    table.text('age_groups').nullable(); // Store age group IDs as comma-separated string
     table.timestamps(true, true);
   });
 

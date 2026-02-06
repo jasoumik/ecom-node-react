@@ -11,11 +11,12 @@ import { MediaPicker } from "@/components/ui/MediaPicker";
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ 
       name: "", name_bn: "", price: "", old_price: "", cost_price: "", description: "", description_bn: "", images: "", category_id: "", brand_id: "", stock: "", sku: "",
-      size: "", weight: "", color: "", material: "", is_active: true, country_id: "" 
+      size: "", weight: "", color: "", material: "", is_active: true, country_id: "", age_groups: [] as string[]
   });
   const [categories, setCategories] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
+  const [ageGroups, setAgeGroups] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
@@ -44,6 +45,11 @@ export default function CreateProductPage() {
       .then(res => res.json())
       .then(data => setCountries(Array.isArray(data) ? data : []))
       .catch(console.error);
+
+    fetch(`${API_URL}/age-groups`)
+      .then(res => res.json())
+      .then(data => setAgeGroups(Array.isArray(data) ? data : []))
+      .catch(console.error);
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -70,6 +76,18 @@ export default function CreateProductPage() {
     } catch (e) {
         addToast("Error creating product", "error");
     }
+  };
+
+  const toggleAgeGroup = (id: string) => {
+      setNewProduct(prev => {
+          const exists = prev.age_groups.includes(id);
+          return {
+              ...prev,
+              age_groups: exists 
+                  ? prev.age_groups.filter(g => g !== id)
+                  : [...prev.age_groups, id]
+          };
+      });
   };
 
   return (
@@ -197,6 +215,24 @@ export default function CreateProductPage() {
                                 <option key={country.id} value={country.id}>{country.name}</option>
                             ))}
                         </select>
+                    </div>
+                    
+                    {/* Age Groups Selection */}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Shop by Age</label>
+                        <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/50 dark:bg-slate-800/50">
+                            {ageGroups.map(group => (
+                                <label key={group.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={newProduct.age_groups.includes(group.id)}
+                                        onChange={() => toggleAgeGroup(group.id)}
+                                        className="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                                    />
+                                    <span className="text-sm text-slate-700 dark:text-slate-300">{group.label} ({group.age_range})</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -7,7 +7,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoriesService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
-  async findAll(publicOnly: boolean = false) {
+  async findAll(publicOnly: boolean = false, ageId?: string) {
     let query = this.knex('categories').select('*');
     
     if (publicOnly) {
@@ -16,13 +16,44 @@ export class CategoriesService {
     
     const categories = await query;
     
+    // If filtering by age, we need to find categories that have products associated with this age group
+    if (ageId && ageId !== 'undefined' && ageId !== 'null') {
+        // Find products that match this age group
+        const products = await this.knex('products')
+            .where('age_groups', 'like', `%${ageId}%`)
+            .andWhere('is_active', true)
+            .andWhere('stock', '>', 0)
+            .select('category_id')
+            .distinct();
+            
+        if (products.length === 0) {
+            return [];
+        }
+            
+        const categoryIdsWithProducts = new Set(products.map(p => p.category_id).filter(Boolean));
+        
+        // Filter categories to only include those that have products for this age group
+        // Or are parents of such categories
+        
+        // Helper to check if a category or its descendants have products
+        const hasRelevantProducts = (catId: string): boolean => {
+            if (categoryIdsWithProducts.has(catId)) return true;
+            const children = categories.filter(c => c.parent_id === catId);
+            return children.some(child => hasRelevantProducts(child.id));
+        };
+
+        const relevantCategories = categories.filter(cat => hasRelevantProducts(cat.id));
+        return this.buildTree(relevantCategories);
+    }
+    
     // If publicOnly, we want to filter out categories that have no products AND no children with products
     if (publicOnly) {
         // Get product counts for all categories
         const productCounts = await this.knex('products')
             .select('category_id')
             .count('* as count')
-            .where('stock', '>', 0) // Only count in-stock products? Maybe.
+            .where('is_active', true) // Only count active products
+            .where('stock', '>', 0)
             .groupBy('category_id');
             
         const countMap = productCounts.reduce<Record<string, number>>((acc, curr) => {

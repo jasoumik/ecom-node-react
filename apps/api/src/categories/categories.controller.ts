@@ -8,8 +8,8 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  findAll(@Query('public') publicOnly?: string) {
-    return this.categoriesService.findAll(publicOnly === 'true');
+  findAll(@Query('public') publicOnly?: string, @Query('age') ageId?: string) {
+    return this.categoriesService.findAll(publicOnly === 'true', ageId);
   }
 
   @Get(':id')

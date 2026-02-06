@@ -13,9 +13,10 @@ export class ProductsController {
     @Query('limit') limit: number = 10,
     @Query('category') categoryId?: string,
     @Query('search') search?: string,
-    @Query('brand') brandId?: string
+    @Query('brand') brandId?: string,
+    @Query('age') ageId?: string
   ) {
-    return this.productsService.findAll(Number(page), Number(limit), categoryId, search, brandId);
+    return this.productsService.findAll(Number(page), Number(limit), categoryId, search, brandId, ageId);
   }
 
   @Get('batches')

@@ -13,7 +13,7 @@ export class ProductsService {
     private readonly requestsService: RequestsService
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string, brandId?: string): Promise<any> {
+  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string, brandId?: string, ageId?: string): Promise<any> {
     const offset = (page - 1) * limit;
     
     const baseQuery = this.knex('products');
@@ -22,6 +22,14 @@ export class ProductsService {
     }
     if (brandId) {
       baseQuery.where({ brand_id: brandId });
+    }
+    if (ageId) {
+        // Check if ageId is in the age_groups array (simple-array stores as comma-separated string in some DBs or text array)
+        // For simple-array in TypeORM/Knex with Postgres, it might be stored as 'id1,id2' string or '{id1,id2}' array
+        // Since we defined it as simpleArray in TypeORM entity but knex migration might be text or array
+        // Let's assume it's stored as a string or array that we can query with LIKE or array operators
+        // For broader compatibility with simple-array (often comma separated string):
+        baseQuery.where('age_groups', 'like', `%${ageId}%`);
     }
     if (search) {
         baseQuery.where('name', 'ilike', `%${search}%`);
@@ -128,12 +136,13 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto): Promise<any> {
-    const { images, variants, ...productData } = createProductDto;
+    const { images, variants, age_groups, ...productData } = createProductDto;
     
     return this.knex.transaction(async (trx) => {
         const [product] = await trx('products').insert({
             ...productData,
             images: JSON.stringify(images),
+            age_groups: age_groups ? age_groups.join(',') : null, // Store as comma-separated string
             has_variants: variants && variants.length > 0
         }).returning('*');
 
@@ -172,6 +181,7 @@ export class ProductsService {
     const { 
         images, 
         variants,
+        age_groups,
         // @ts-ignore
         batches, 
         // @ts-ignore
@@ -209,6 +219,10 @@ export class ProductsService {
     
     if (images) {
         dataToUpdate.images = JSON.stringify(images);
+    }
+
+    if (age_groups) {
+        dataToUpdate.age_groups = Array.isArray(age_groups) ? age_groups.join(',') : age_groups;
     }
     
     if (variants) {

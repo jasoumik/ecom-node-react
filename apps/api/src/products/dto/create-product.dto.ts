@@ -30,4 +30,5 @@ export class CreateProductDto {
   has_variants?: boolean;
   variants?: CreateVariantDto[];
   is_active?: boolean;
+  age_groups?: string[]; // Added Age Groups
 }

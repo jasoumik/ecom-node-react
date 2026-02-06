@@ -14,7 +14,7 @@ export class PublicService {
   async getLandingPageData(tenant: string) {
     const categories = await this.categoriesService.findAll();
     // Return top 8 categories instead of 4
-    const displayCategories = categories.slice(0, 8).map(cat => ({
+    const displayCategories = categories.slice(0, 15).map(cat => ({
         id: cat.id,
         name: cat.name,
         name_bn: cat.name_bn, // Added Bangla Name

@@ -11,15 +11,19 @@ import { FullScreenLoader } from "@/components/ui/Loader";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
+import { ProductRequestButton } from "@/components/ui/ProductRequestButton";
 
 function ProductsContent() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
   const brandId = searchParams.get("brand");
+  const ageId = searchParams.get("age");
   const searchQuery = searchParams.get("search");
   const [products, setProducts] = useState<any[]>([]);
   const [category, setCategory] = useState<any>(null);
   const [brand, setBrand] = useState<any>(null);
+  const [ageGroup, setAgeGroup] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -52,17 +56,42 @@ function ProductsContent() {
             .then(setCategory)
             .catch(console.error);
         setBrand(null);
+        setAgeGroup(null);
+        setCategories([]);
     } else if (brandId) {
         fetch(`${API_URL}/brands/${brandId}`)
             .then(res => res.json())
             .then(setBrand)
             .catch(console.error);
         setCategory(null);
+        setAgeGroup(null);
+        setCategories([]);
+    } else if (ageId) {
+        fetch(`${API_URL}/age-groups/${ageId}`)
+            .then(res => res.json())
+            .then(setAgeGroup)
+            .catch(console.error);
+        
+        // Fetch categories for this age group
+        fetch(`${API_URL}/categories?public=true&age=${ageId}`)
+            .then(res => res.json())
+            .then(data => setCategories(Array.isArray(data) ? data : []))
+            .catch(console.error);
+
+        setCategory(null);
+        setBrand(null);
     } else {
         setCategory(null);
         setBrand(null);
+        setAgeGroup(null);
+        
+        // Fetch all categories for main products page
+        fetch(`${API_URL}/categories?public=true`)
+            .then(res => res.json())
+            .then(data => setCategories(Array.isArray(data) ? data : []))
+            .catch(console.error);
     }
-  }, [categoryId, searchQuery, brandId]);
+  }, [categoryId, searchQuery, brandId, ageId]);
 
   const fetchProducts = async (pageNum: number, isInitial: boolean = false) => {
     if (isInitial) setLoading(true);
@@ -72,6 +101,7 @@ function ProductsContent() {
     
     if (categoryId) url += `&category=${categoryId}`;
     if (brandId) url += `&brand=${brandId}`;
+    if (ageId) url += `&age=${ageId}`;
     if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
     
     try {
@@ -228,6 +258,20 @@ function ProductsContent() {
                     </div>
                 )}
                 
+                {/* Always show header for category page */}
+                {!category.banner_image && (
+                    <div className="text-center mb-8">
+                        <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl mb-2">
+                            {getLocalizedField(category, 'name', language)}
+                        </Heading>
+                        {category.description && (
+                            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl mx-auto">
+                                {getLocalizedField(category, 'description', language)}
+                            </p>
+                        )}
+                    </div>
+                )}
+                
                 {category.children && category.children.length > 0 && (
                     <div className="mb-8">
                         <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-lg">{t('subcategories')}</h3>
@@ -285,22 +329,97 @@ function ProductsContent() {
             </div>
         )}
 
+        {/* Age Group Header & Categories */}
+        {ageGroup && (
+            <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="text-center mb-8">
+                    <div className="w-20 h-20 mx-auto rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-4xl mb-4">
+                        {ageGroup.icon}
+                    </div>
+                    <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl mb-2">
+                        {getLocalizedField(ageGroup, 'label', language)}
+                    </Heading>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl mx-auto">
+                        {getLocalizedField(ageGroup, 'description', language) || ageGroup.age_range}
+                    </p>
+                </div>
+
+                {/* Categories for this Age Group */}
+                {categories.length > 0 && (
+                    <div className="mb-8">
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-lg text-center">{t('browse_categories')}</h3>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {categories.map((cat: any) => (
+                                <Link 
+                                    key={cat.id} 
+                                    href={`/products?category=${cat.id}&age=${ageId}`}
+                                    className="flex flex-col items-center gap-3 w-[100px] group"
+                                >
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 overflow-hidden group-hover:border-sky-500 group-hover:shadow-md transition-all duration-300">
+                                        <ResponsiveImage 
+                                            src={getImageUrl(cat.image)} 
+                                            alt={getLocalizedField(cat, 'name', language)} 
+                                            width={100} 
+                                            height={100} 
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 text-center group-hover:text-sky-500 transition-colors line-clamp-2">
+                                        {getLocalizedField(cat, 'name', language)}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        )}
+
+          {!category && !brand && !ageGroup && !searchQuery && categories.length > 0 && (
+              <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-lg text-center">{t('browse_categories')}</h3>
+                  <div className="flex flex-wrap justify-center gap-4">
+                      {categories.map((cat: any) => (
+                          <Link
+                              key={cat.id}
+                              href={`/products?category=${cat.id}`}
+                              className="flex flex-col items-center gap-3 w-[100px] group"
+                          >
+                              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 overflow-hidden group-hover:border-sky-500 group-hover:shadow-md transition-all duration-300">
+                                  <ResponsiveImage
+                                      src={getImageUrl(cat.image)}
+                                      alt={getLocalizedField(cat, 'name', language)}
+                                      width={100}
+                                      height={100}
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                  />
+                              </div>
+                              <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 text-center group-hover:text-sky-500 transition-colors line-clamp-2">
+                                {getLocalizedField(cat, 'name', language)}
+                            </span>
+                          </Link>
+                      ))}
+                  </div>
+              </div>
+          )}
+
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
             <div>
-                {!category && !brand && (
+                {!category && !brand && !ageGroup && (
                     <Heading size="lg" className="font-sans text-slate-900 dark:text-white font-bold text-2xl sm:text-3xl">
                         {searchQuery ? `Search results for "${searchQuery}"` : t('shop_all_products')}
                     </Heading>
                 )}
-                {!category && !brand && !searchQuery && (
+                {!category && !brand && !ageGroup && !searchQuery && (
                     <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t('discover_collection')}</Text>
                 )}
             </div>
         </div>
 
         {products.length === 0 ? (
-            <div className="text-center text-slate-500 dark:text-slate-400 py-20 bg-white dark:bg-slate-800 rounded-2xl shadow-sm">
-                {t('no_products_found')}
+            <div className="text-center text-slate-500 dark:text-slate-400 py-20 bg-white dark:bg-slate-800 rounded-2xl shadow-sm flex flex-col items-center justify-center">
+                <p className="mb-4">{t('no_products_found')}</p>
+                <ProductRequestButton />
             </div>
         ) : (
             <>
@@ -360,6 +479,12 @@ function ProductsContent() {
                                         {getLocalizedField(product, 'name', language)}
                                     </Link>
                                 </h3>
+                                {/* Category Name */}
+                                {product.category_name && (
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                                        {product.category_name}
+                                    </p>
+                                )}
                             </div>
                             
                             <div className="mt-auto pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">

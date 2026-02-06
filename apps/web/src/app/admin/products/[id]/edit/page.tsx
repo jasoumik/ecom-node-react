@@ -37,6 +37,7 @@ export default function EditProductPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
+  const [ageGroups, setAgeGroups] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [newBatch, setNewBatch] = useState({ batch_number: "", purchase_price: "", selling_price: "", quantity: "", expiry_date: "" });
   const [isAddingBatch, setIsAddingBatch] = useState(false);
@@ -56,6 +57,7 @@ export default function EditProductPage() {
     fetchCategories();
     fetchBrands();
     fetchCountries();
+    fetchAgeGroups();
   }, [id]);
 
   const fetchProduct = () => {
@@ -68,7 +70,7 @@ export default function EditProductPage() {
           } else if (Array.isArray(images)) {
               images = images.join(', ');
           }
-          setProduct({ ...data, images });
+          setProduct({ ...data, images, age_groups: data.age_groups || [] });
           setVariants(Array.isArray(data.variants) ? data.variants : []);
       })
       .catch(err => console.error(err));
@@ -101,6 +103,13 @@ export default function EditProductPage() {
     fetch(`${API_URL}/countries`)
       .then(res => res.json())
       .then(data => setCountries(Array.isArray(data) ? data : []))
+      .catch(console.error);
+  };
+
+  const fetchAgeGroups = () => {
+    fetch(`${API_URL}/age-groups`)
+      .then(res => res.json())
+      .then(data => setAgeGroups(Array.isArray(data) ? data : []))
       .catch(console.error);
   };
 
@@ -171,6 +180,18 @@ export default function EditProductPage() {
       const newVariants = [...variants];
       newVariants.splice(index, 1);
       setVariants(newVariants);
+  };
+
+  const toggleAgeGroup = (id: string) => {
+      setProduct((prev: any) => {
+          const exists = prev.age_groups.includes(id);
+          return {
+              ...prev,
+              age_groups: exists 
+                  ? prev.age_groups.filter((g: string) => g !== id)
+                  : [...prev.age_groups, id]
+          };
+      });
   };
 
   if (!product) return <div>Loading...</div>;
@@ -384,6 +405,24 @@ export default function EditProductPage() {
                                 <option key={country.id} value={country.id}>{country.name}</option>
                             ))}
                         </select>
+                    </div>
+
+                    {/* Age Groups Selection */}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Shop by Age</label>
+                        <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/50 dark:bg-slate-800/50">
+                            {ageGroups.map(group => (
+                                <label key={group.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={product.age_groups?.includes(group.id)}
+                                        onChange={() => toggleAgeGroup(group.id)}
+                                        className="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                                    />
+                                    <span className="text-sm text-slate-700 dark:text-slate-300">{group.label} ({group.age_range})</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

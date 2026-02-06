@@ -19,7 +19,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
 
   const scroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollAmount = 300;
+      const scrollAmount = 400;
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -54,7 +54,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
           {/* Desktop Navigation Arrows */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 hidden lg:flex"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 hidden lg:flex pointer-events-auto"
             aria-label="Scroll left"
           >
             <ChevronLeft size={20} />
@@ -102,7 +102,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
           {/* Desktop Navigation Arrow Right */}
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 hidden lg:flex"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 hidden lg:flex pointer-events-auto"
             aria-label="Scroll right"
           >
             <ChevronRight size={20} />
