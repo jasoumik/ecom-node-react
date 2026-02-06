@@ -193,6 +193,31 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamps(true, true);
   });
 
+  // Bundles Table
+  await knex.schema.createTable('bundles', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('title').notNullable();
+    table.string('title_bn').nullable();
+    table.text('description').nullable();
+    table.text('description_bn').nullable();
+    table.string('image').nullable();
+    table.decimal('price', 10, 2).notNullable(); // The selling price of the bundle
+    table.decimal('original_price', 10, 2).nullable(); // The sum of original prices (for showing discount)
+    table.boolean('is_free_shipping').defaultTo(false);
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Bundle Items Table
+  await knex.schema.createTable('bundle_items', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('bundle_id').notNullable().references('id').inTable('bundles').onDelete('CASCADE');
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('SET NULL');
+    table.integer('quantity').defaultTo(1);
+    table.timestamps(true, true);
+  });
+
   await knex.schema.createTable('orders', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.increments('order_number').unique().notNullable(); // Auto-incrementing numeric ID for display
@@ -220,6 +245,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('product_id').nullable().references('id').inTable('products').onDelete('SET NULL');
     table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('SET NULL'); // Track variant
     table.uuid('batch_id').nullable().references('id').inTable('product_batches').onDelete('SET NULL'); // Track which batch
+    table.uuid('bundle_id').nullable().references('id').inTable('bundles').onDelete('SET NULL'); // Track bundle
     table.string('product_name').notNullable(); // Snapshot of product name
     table.string('variant_name').nullable(); // Snapshot of variant details (e.g. "Size: M, Color: Red")
     table.decimal('price', 10, 2).notNullable(); // Snapshot of price
@@ -415,6 +441,8 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('stock_movements');
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
+  await knex.schema.dropTableIfExists('bundle_items');
+  await knex.schema.dropTableIfExists('bundles');
   await knex.schema.dropTableIfExists('coupons');
   await knex.schema.dropTableIfExists('product_labels');
   await knex.schema.dropTableIfExists('labels');

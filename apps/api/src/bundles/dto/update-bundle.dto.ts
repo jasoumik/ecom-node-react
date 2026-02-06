@@ -1,0 +1,14 @@
+import { CreateBundleItemDto } from './create-bundle.dto';
+
+export class UpdateBundleDto {
+  title?: string;
+  title_bn?: string;
+  description?: string;
+  description_bn?: string;
+  image?: string;
+  price?: number;
+  original_price?: number;
+  is_free_shipping?: boolean;
+  is_active?: boolean;
+  items?: CreateBundleItemDto[];
+}

@@ -23,6 +23,7 @@ import { LandingPagesModule } from './landing-pages/landing-pages.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { AgeGroupsModule } from './age-groups/age-groups.module';
 import { LabelsModule } from './labels/labels.module';
+import { BundlesModule } from './bundles/bundles.module';
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -52,6 +53,7 @@ import { join } from 'path';
     WishlistModule,
     AgeGroupsModule,
     LabelsModule,
+    BundlesModule,
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',

@@ -9,6 +9,7 @@ import { BrandsSection } from "./landing/BrandsSection";
 import { ShopByAgeSection } from "./landing/ShopByAgeSection";
 import { TrustSection } from "./landing/TrustSection";
 import { NewsletterSection } from "./landing/NewsletterSection";
+import { BundlesSection } from "./landing/BundlesSection";
 
 export const dynamic = 'force-dynamic'; // Fix for dynamic server usage
 
@@ -55,6 +56,9 @@ export default async function LandingPage() {
 
       {/* Shop by Age Timeline */}
       <ShopByAgeSection />
+
+      {/* Bundles & Combos Section */}
+      <BundlesSection />
 
       {/* Featured Products */}
       <FeaturedProductsSection {...data.featuredProducts} />
