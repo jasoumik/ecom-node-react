@@ -82,11 +82,10 @@ export default function BundlesPage() {
               cell: (bundle: any) => (
                 <div className="flex gap-2">
                   <Link href={`/admin/bundles/${bundle.id}/edit`}>
-                    <Button variant="outline" size="sm" className="h-8 px-3 text-xs">Edit</Button>
+                    <Button variant="outline" className="h-8 px-3 text-xs">Edit</Button>
                   </Link>
                   <Button 
-                    variant="outline" 
-                    size="sm" 
+                    variant="outline"
                     className="h-8 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
                     onClick={() => handleDelete(bundle.id)}
                   >

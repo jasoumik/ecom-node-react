@@ -176,7 +176,7 @@ export default function EditBundlePage() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                     <h3 className="font-bold text-base text-slate-900 dark:text-white">Bundle Items</h3>
-                    <Button type="button" onClick={addItem} size="sm" className="h-8 text-xs">+ Add Item</Button>
+                    <Button type="button" onClick={addItem} className="h-8 text-xs">+ Add Item</Button>
                 </div>
                 
                 <div className="space-y-3">
