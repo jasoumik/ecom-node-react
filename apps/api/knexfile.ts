@@ -3,7 +3,11 @@ import * as dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({
-  path: path.resolve(__dirname, '../../.env'),
+  path: [
+    path.resolve(__dirname, '../../.env.local'),
+    path.resolve(__dirname, '../../.env.production'),
+    path.resolve(__dirname, '../../.env'),
+  ],
 });
 
 
