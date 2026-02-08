@@ -96,24 +96,40 @@ export async function seed(knex: Knex): Promise<void> {
   }
 
   // ============================================
-  // INSERT BRANDS (15)
+  // INSERT BRANDS (25)
   // ============================================
   const brandsData = [
-    { name: 'Huggies', name_bn: 'হাগিস', logo: 'https://picsum.photos/seed/huggies/200/200' },
-    { name: 'Pampers', name_bn: 'প্যাম্পার্স', logo: 'https://picsum.photos/seed/pampers/200/200' },
-    { name: 'Johnson & Johnson', name_bn: 'জনসন অ্যান্ড জনসন', logo: 'https://picsum.photos/seed/jnj/200/200' },
+    // Skincare Brands
+    { name: 'CeraVe', name_bn: 'সেরাভি', logo: 'https://picsum.photos/seed/cerave/200/200' },
+    {
+      name: 'The Ordinary',
+      name_bn: 'দ্য অর্ডিনারি',
+      logo: 'https://picsum.photos/seed/ordinary/200/200',
+    },
+    { name: 'COSRX', name_bn: 'কোসআরএক্স', logo: 'https://picsum.photos/seed/cosrx/200/200' },
+    { name: 'Simple', name_bn: 'সিম্পল', logo: 'https://picsum.photos/seed/simple/200/200' },
+    { name: 'Neutrogena', name_bn: 'নিউট্রোজেনা', logo: 'https://picsum.photos/seed/neutrogena/200/200' },
+    { name: 'Innisfree', name_bn: 'ইনিসফ্রি', logo: 'https://picsum.photos/seed/innisfree/200/200' },
+    { name: 'Laneige', name_bn: 'ল্যানেজ', logo: 'https://picsum.photos/seed/laneige/200/200' },
+    { name: 'Some By Mi', name_bn: 'সাম বাই মি', logo: 'https://picsum.photos/seed/somebymi/200/200' },
+    { name: 'Bioderma', name_bn: 'বায়োডার্মা', logo: 'https://picsum.photos/seed/bioderma/200/200' },
+    { name: 'Beauty of Joseon', name_bn: 'বিউটি অফ জেসন', logo: 'https://picsum.photos/seed/joseon/200/200' },
+    { name: 'La Roche-Posay', name_bn: 'লা রোশ-পোজে', logo: 'https://picsum.photos/seed/laroche/200/200' },
+    
+    // Baby Brands
     { name: 'Aveeno Baby', name_bn: 'অ্যাভিনো বেবি', logo: 'https://picsum.photos/seed/aveeno/200/200' },
+    { name: 'Cetaphil', name_bn: 'সেটাফিল', logo: 'https://picsum.photos/seed/cetaphil/200/200' },
+    { name: 'Johnson & Johnson', name_bn: 'জনসন অ্যান্ড জনসন', logo: 'https://picsum.photos/seed/jnj/200/200' },
+    { name: 'Pampers', name_bn: 'প্যাম্পার্স', logo: 'https://picsum.photos/seed/pampers/200/200' },
+    { name: 'Huggies', name_bn: 'হাগিস', logo: 'https://picsum.photos/seed/huggies/200/200' },
+    { name: 'Sudocrem', name_bn: 'সুডোক ক্রিম', logo: 'https://picsum.photos/seed/sudocrem/200/200' },
     { name: 'Mustela', name_bn: 'মাস্টেলা', logo: 'https://picsum.photos/seed/mustela/200/200' },
-    { name: 'Chicco', name_bn: 'চিক্কো', logo: 'https://picsum.photos/seed/chicco/200/200' },
+    { name: 'Sebamed', name_bn: 'সেবামেড', logo: 'https://picsum.photos/seed/sebamed/200/200' },
+    { name: 'Pigeon', name_bn: 'পিজিয়ন', logo: 'https://picsum.photos/seed/pigeon/200/200' },
     { name: 'Philips Avent', name_bn: 'ফিলিপস অ্যাভেন্ট', logo: 'https://picsum.photos/seed/avent/200/200' },
     { name: 'Dr. Browns', name_bn: 'ডক্টর ব্রাউনস', logo: 'https://picsum.photos/seed/drbrowns/200/200' },
-    { name: 'Fisher-Price', name_bn: 'ফিশার-প্রাইস', logo: 'https://picsum.photos/seed/fisherprice/200/200' },
-    { name: 'Graco', name_bn: 'গ্রেকো', logo: 'https://picsum.photos/seed/graco/200/200' },
-    { name: 'Carters', name_bn: 'কার্টার্স', logo: 'https://picsum.photos/seed/carters/200/200' },
     { name: 'Gerber', name_bn: 'গারবার', logo: 'https://picsum.photos/seed/gerber/200/200' },
-    { name: 'Pigeon', name_bn: 'পিজিয়ন', logo: 'https://picsum.photos/seed/pigeon/200/200' },
-    { name: 'Mee Mee', name_bn: 'মি মি', logo: 'https://picsum.photos/seed/meemee/200/200' },
-    { name: 'Babyhug', name_bn: 'বেবিহাগ', logo: 'https://picsum.photos/seed/babyhug/200/200' },
+    { name: 'Heinz', name_bn: 'হেইঞ্জ', logo: 'https://picsum.photos/seed/heinz/200/200' },
   ];
 
   const brands: Record<string, any> = {};
@@ -123,21 +139,18 @@ export async function seed(knex: Knex): Promise<void> {
   }
 
   // ============================================
-  // INSERT CATEGORIES (25) - With hierarchy
+  // INSERT CATEGORIES
   // ============================================
 
   // Parent Categories
   const parentCategoriesData = [
-    { name: 'Diapers & Wipes', name_bn: 'ডায়াপার এবং ওয়াইপস', image: 'https://picsum.photos/seed/diapers/800/800' },
-    { name: 'Feeding', name_bn: 'ফিডিং', image: 'https://picsum.photos/seed/feeding/800/800' },
-    { name: 'Clothing', name_bn: 'পোশাক', image: 'https://picsum.photos/seed/clothing/800/800' },
     { name: 'Skincare', name_bn: 'স্কিনকেয়ার', image: 'https://picsum.photos/seed/skincare/800/800' },
-    { name: 'Toys & Games', name_bn: 'খেলনা ও গেমস', image: 'https://picsum.photos/seed/toys/800/800' },
-    { name: 'Nursery & Furniture', name_bn: 'নার্সারি ও ফার্নিচার', image: 'https://picsum.photos/seed/nursery/800/800' },
-    { name: 'Bath & Safety', name_bn: 'গোসল ও নিরাপত্তা', image: 'https://picsum.photos/seed/bath/800/800' },
-    { name: 'Health & Medicine', name_bn: 'স্বাস্থ্য ও ওষুধ', image: 'https://picsum.photos/seed/health/800/800' },
-    { name: 'Travel & Gear', name_bn: 'ভ্রমণ ও গিয়ার', image: 'https://picsum.photos/seed/travel/800/800' },
+    { name: 'Baby Care', name_bn: 'বেবি কেয়ার', image: 'https://picsum.photos/seed/babycare/800/800' },
+    { name: 'Hair Care', name_bn: 'হেয়ার কেয়ার', image: 'https://picsum.photos/seed/haircare/800/800' },
+    { name: 'Makeup', name_bn: 'মেকআপ', image: 'https://picsum.photos/seed/makeup/800/800' },
     { name: 'Mom Care', name_bn: 'মায়ের যত্ন', image: 'https://picsum.photos/seed/momcare/800/800' },
+    { name: 'Feeding', name_bn: 'ফিডিং', image: 'https://picsum.photos/seed/feeding/800/800' },
+    { name: 'Diapers', name_bn: 'ডায়াপার', image: 'https://picsum.photos/seed/diapers/800/800' },
   ];
 
   const categories: Record<string, any> = {};
@@ -148,21 +161,29 @@ export async function seed(knex: Knex): Promise<void> {
 
   // Sub Categories
   const subCategoriesData = [
-    { name: 'Disposable Diapers', name_bn: 'ডিসপোজেবল ডায়াপার', parent: 'diaperswipes' },
-    { name: 'Cloth Diapers', name_bn: 'কাপড়ের ডায়াপার', parent: 'diaperswipes' },
-    { name: 'Wipes', name_bn: 'ওয়াইপস', parent: 'diaperswipes' },
-    { name: 'Baby Bottles', name_bn: 'বেবি বোতল', parent: 'feeding' },
-    { name: 'Breast Pumps', name_bn: 'ব্রেস্ট পাম্প', parent: 'feeding' },
-    { name: 'Baby Food', name_bn: 'বেবি ফুড', parent: 'feeding' },
-    { name: 'Bodysuits', name_bn: 'বডিসুট', parent: 'clothing' },
-    { name: 'Sleepwear', name_bn: 'স্লিপওয়্যার', parent: 'clothing' },
-    { name: 'Winter Wear', name_bn: 'শীতের পোশাক', parent: 'clothing' },
-    { name: 'Lotions & Creams', name_bn: 'লোশন ও ক্রিম', parent: 'skincare' },
-    { name: 'Baby Oil', name_bn: 'বেবি অয়েল', parent: 'skincare' },
+    // Skincare Subs
+    { name: 'Cleansers', name_bn: 'ক্লিনজার', parent: 'skincare' },
+    { name: 'Toners', name_bn: 'টোনার', parent: 'skincare' },
+    { name: 'Serums', name_bn: 'সিরাম', parent: 'skincare' },
+    { name: 'Moisturizers', name_bn: 'ময়েশ্চারাইজার', parent: 'skincare' },
     { name: 'Sunscreen', name_bn: 'সানস্ক্রিন', parent: 'skincare' },
-    { name: 'Educational Toys', name_bn: 'শিক্ষামূলক খেলনা', parent: 'toysgames' },
-    { name: 'Soft Toys', name_bn: 'নরম খেলনা', parent: 'toysgames' },
-    { name: 'Strollers', name_bn: 'স্ট্রলার', parent: 'travelgear' },
+    { name: 'Masks', name_bn: 'মাস্ক', parent: 'skincare' },
+    
+    // Baby Care Subs
+    { name: 'Baby Lotion', name_bn: 'বেবি লোশন', parent: 'babycare' },
+    { name: 'Baby Wash', name_bn: 'বেবি ওয়াশ', parent: 'babycare' },
+    { name: 'Rash Cream', name_bn: 'র‍্যাশ ক্রিম', parent: 'babycare' },
+    { name: 'Baby Oil', name_bn: 'বেবি অয়েল', parent: 'babycare' },
+    
+    // Feeding Subs
+    { name: 'Baby Food', name_bn: 'বেবি ফুড', parent: 'feeding' },
+    { name: 'Feeders', name_bn: 'ফিডার', parent: 'feeding' },
+    { name: 'Accessories', name_bn: 'এক্সেসরিজ', parent: 'feeding' },
+
+    // Diapers Subs
+    { name: 'Tape Diapers', name_bn: 'টেপ ডায়াপার', parent: 'diapers' },
+    { name: 'Pant Diapers', name_bn: 'প্যান্ট ডায়াপার', parent: 'diapers' },
+    { name: 'Wipes', name_bn: 'ওয়াইপস', parent: 'diapers' },
   ];
 
   for (const subCat of subCategoriesData) {
@@ -180,74 +201,39 @@ export async function seed(knex: Knex): Promise<void> {
   }
 
   // ============================================
-  // INSERT PRODUCTS (50)
+  // INSERT PRODUCTS (Updated with Klassy & Nuha style)
   // ============================================
   const productsData = [
-    // Diapers & Wipes (8 products)
-    { name: 'Premium Soft Diapers - Small', name_bn: 'প্রিমিয়াম সফট ডায়াপার - ছোট', description: 'Ultra-soft diapers for sensitive skin. 12-hour protection.', price: 2800, old_price: 3200, category: 'diaperswipes', brand: 'huggies', country: 'US', sku: 'DIA-S-001' },
-    { name: 'Premium Soft Diapers - Medium', name_bn: 'প্রিমিয়াম সফট ডায়াপার - মাঝারি', description: 'Ultra-soft diapers for growing babies. 12-hour protection.', price: 3200, old_price: 3500, category: 'diaperswipes', brand: 'huggies', country: 'US', sku: 'DIA-M-001' },
-    { name: 'Premium Soft Diapers - Large', name_bn: 'প্রিমিয়াম সফট ডায়াপার - বড়', description: 'Ultra-soft diapers for active toddlers. 12-hour protection.', price: 3500, old_price: 3800, category: 'diaperswipes', brand: 'huggies', country: 'US', sku: 'DIA-L-001' },
-    { name: 'Baby Dry Diapers Pack', name_bn: 'বেবি ড্রাই ডায়াপার প্যাক', description: 'Extra dry layer keeps baby comfortable all day.', price: 2500, category: 'diaperswipes', brand: 'pampers', country: 'US', sku: 'DIA-DRY-001' },
-    { name: 'Organic Cotton Diapers', name_bn: 'অর্গানিক কটন ডায়াপার', description: '100% organic cotton, gentle on baby skin.', price: 4200, old_price: 4800, category: 'diaperswipes', brand: 'babyhug', country: 'BD', sku: 'DIA-ORG-001' },
-    { name: 'Sensitive Baby Wipes 80pcs', name_bn: 'সেনসিটিভ বেবি ওয়াইপস ৮০টি', description: 'Alcohol-free, fragrance-free wipes for sensitive skin.', price: 350, category: 'diaperswipes', brand: 'johnsonjohnson', country: 'US', sku: 'WIP-SEN-001' },
-    { name: 'Water Wipes 60pcs', name_bn: 'ওয়াটার ওয়াইপস ৬০টি', description: 'Pure water and fruit extract. Worlds purest wipes.', price: 450, old_price: 520, category: 'diaperswipes', brand: 'mustela', country: 'FR', sku: 'WIP-WAT-001' },
-    { name: 'Diaper Rash Cream', name_bn: 'ডায়াপার র‍্যাশ ক্রিম', description: 'Zinc oxide cream for diaper rash prevention and treatment.', price: 680, category: 'diaperswipes', brand: 'aveenobaby', country: 'US', sku: 'CRM-RSH-001' },
+    // --- SKINCARE (Klassy Style) ---
+    { name: 'CeraVe Foaming Facial Cleanser', name_bn: 'সেরাভি ফোমিং ফেসিয়াল ক্লিনজার', description: 'For normal to oily skin. Cleanses and removes oil without disrupting the protective skin barrier.', price: 1850, old_price: 2200, category: 'cleansers', brand: 'cerave', country: 'US', sku: 'SKN-CER-001' },
+    { name: 'The Ordinary Niacinamide 10% + Zinc 1%', name_bn: 'দ্য অর্ডিনারি নিয়াসিনামাইড ১০% + জিঙ্ক ১%', description: 'High-strength vitamin and mineral blemish formula.', price: 1250, old_price: 1500, category: 'serums', brand: 'theordinary', country: 'CA', sku: 'SKN-ORD-001' },
+    { name: 'COSRX Advanced Snail 96 Mucin Power Essence', name_bn: 'কোসআরএক্স স্নেইল ৯৬ মিউসিন এসেন্স', description: 'Lightweight essence which absorbs into skin fast to give skin a natural glow from the inside.', price: 1650, old_price: 1900, category: 'serums', brand: 'cosrx', country: 'KR', sku: 'SKN-COS-001' },
+    { name: 'Simple Kind to Skin Refreshing Facial Wash', name_bn: 'সিম্পল রিফ্রেশিং ফেসিয়াল ওয়াশ', description: '100% soap-free gel face wash removes dirt, oil and impurities.', price: 650, old_price: 850, category: 'cleansers', brand: 'simple', country: 'GB', sku: 'SKN-SIM-001' },
+    { name: 'Neutrogena Hydro Boost Water Gel', name_bn: 'নিউট্রোজেনা হাইড্রো বুস্ট ওয়াটার জেল', description: 'Instantly quenches dry skin and keeps it looking smooth, supple and hydrated.', price: 1950, old_price: 2400, category: 'moisturizers', brand: 'neutrogena', country: 'US', sku: 'SKN-NEU-001' },
+    { name: 'Innisfree Super Volcanic Pore Clay Mask', name_bn: 'ইনিসফ্রি সুপার ভলক্যানিক পোর ক্লে মাস্ক', description: '6-in-1 pore care: shrinks pores + controls sebum + exfoliates + deep cleanses + brightens tone + cools.', price: 1450, category: 'masks', brand: 'innisfree', country: 'KR', sku: 'SKN-INN-001' },
+    { name: 'Bioderma Sensibio H2O Micellar Water', name_bn: 'বায়োডার্মা সেন্সিবিও এইচ২ও', description: 'Cleanses and removes make-up from the face and eyes.', price: 1550, category: 'cleansers', brand: 'bioderma', country: 'FR', sku: 'SKN-BIO-001' },
+    { name: 'Some By Mi AHA BHA PHA 30 Days Miracle Toner', name_bn: 'সাম বাই মি মিরাকল টোনার', description: 'Exfoliating toner for clearer skin in 30 days.', price: 1600, old_price: 1800, category: 'toners', brand: 'somebymi', country: 'KR', sku: 'SKN-SBM-001' },
+    { name: 'Laneige Lip Sleeping Mask Berry', name_bn: 'ল্যানেজ লিপ স্লিপিং মাস্ক', description: 'Gently melts away dead skin cells from the lips to make the lips feel smooth and elastic.', price: 1800, category: 'masks', brand: 'laneige', country: 'KR', sku: 'SKN-LAN-001' },
+    { name: 'Beauty of Joseon Relief Sun: Rice + Probiotics', name_bn: 'বিউটি অফ জেসন রিলিফ সান', description: 'Organic sunscreen that applies gently on the skin.', price: 1550, old_price: 1800, category: 'sunscreen', brand: 'beautyofjoseon', country: 'KR', sku: 'SKN-BOJ-001' },
+    { name: 'La Roche-Posay Effaclar Purifying Foaming Gel', name_bn: 'লা রোশ-পোজে এফাক্লার জেল', description: 'Foaming cleanser for oily sensitive skin.', price: 2100, category: 'cleansers', brand: 'larocheposay', country: 'FR', sku: 'SKN-LRP-001' },
+    { name: 'Cetaphil Gentle Skin Cleanser', name_bn: 'সেটাফিল জেন্টল স্কিন ক্লিনজার', description: 'Mild, non-irritating formulation that soothes skin as it cleans.', price: 1350, category: 'cleansers', brand: 'cetaphil', country: 'US', sku: 'SKN-CET-001' },
 
-    // Feeding (8 products)
-    { name: 'Anti-Colic Bottle 250ml', name_bn: 'অ্যান্টি-কলিক বোতল ২৫০মিলি', description: 'Reduces colic, gas and reflux with unique vent system.', price: 1200, old_price: 1400, category: 'feeding', brand: 'drbrowns', country: 'US', sku: 'BOT-AC-001' },
-    { name: 'Natural Glass Bottle Set', name_bn: 'ন্যাচারাল গ্লাস বোতল সেট', description: 'Set of 3 glass bottles with silicone sleeve.', price: 2800, category: 'feeding', brand: 'philipsavent', country: 'GB', sku: 'BOT-GL-001' },
-    { name: 'Electric Breast Pump', name_bn: 'ইলেকট্রিক ব্রেস্ট পাম্প', description: 'Quiet and efficient double electric pump.', price: 8500, old_price: 9500, category: 'feeding', brand: 'philipsavent', country: 'GB', sku: 'PMP-EL-001' },
-    { name: 'Manual Breast Pump', name_bn: 'ম্যানুয়াল ব্রেস্ট পাম্প', description: 'Portable and easy to use manual pump.', price: 2200, category: 'feeding', brand: 'pigeon', country: 'JP', sku: 'PMP-MN-001' },
-    { name: 'Silicone Feeding Set', name_bn: 'সিলিকন ফিডিং সেট', description: 'BPA-free silicone bowl, spoon and bib set.', price: 1800, old_price: 2200, category: 'feeding', brand: 'chicco', country: 'DE', sku: 'FED-SIL-001' },
-    { name: 'Baby Food Maker', name_bn: 'বেবি ফুড মেকার', description: 'Steam, blend and warm baby food in one device.', price: 6500, category: 'feeding', brand: 'chicco', country: 'DE', sku: 'FED-MKR-001' },
-    { name: 'Organic Rice Cereal', name_bn: 'অর্গানিক রাইস সিরিয়াল', description: 'Iron-fortified organic rice cereal for babies.', price: 480, category: 'feeding', brand: 'gerber', country: 'US', sku: 'FOD-RIC-001' },
-    { name: 'Fruit Puree Variety Pack', name_bn: 'ফ্রুট পিউরি ভ্যারাইটি প্যাক', description: 'Pack of 6 organic fruit purees.', price: 850, old_price: 950, category: 'feeding', brand: 'gerber', country: 'US', sku: 'FOD-FRT-001' },
-
-    // Clothing (8 products)
-    { name: 'Organic Cotton Onesie Set', name_bn: 'অর্গানিক কটন ওয়ানসি সেট', description: 'Set of 5 soft organic cotton onesies.', price: 2500, old_price: 2900, category: 'clothing', brand: 'carters', country: 'US', sku: 'CLO-ONE-001' },
-    { name: 'Baby Romper Pack', name_bn: 'বেবি রম্পার প্যাক', description: 'Pack of 3 colorful rompers with snaps.', price: 1800, category: 'clothing', brand: 'babyhug', country: 'BD', sku: 'CLO-ROM-001' },
-    { name: 'Newborn Sleep Suit', name_bn: 'নবজাতক স্লিপ স্যুট', description: 'Cozy zip-up sleep suit for newborns.', price: 950, category: 'clothing', brand: 'carters', country: 'US', sku: 'CLO-SLP-001' },
-    { name: 'Winter Jacket with Hood', name_bn: 'হুডসহ শীতের জ্যাকেট', description: 'Warm padded jacket with removable hood.', price: 3200, old_price: 3800, category: 'clothing', brand: 'meemee', country: 'IN', sku: 'CLO-WIN-001' },
-    { name: 'Baby Socks 6-Pack', name_bn: 'বেবি মোজা ৬-প্যাক', description: 'Soft cotton socks with grip bottoms.', price: 450, category: 'clothing', brand: 'babyhug', country: 'BD', sku: 'CLO-SOC-001' },
-    { name: 'Muslin Swaddle Blanket Set', name_bn: 'মসলিন স্বাডল ব্ল্যাংকেট সেট', description: 'Set of 3 breathable muslin swaddles.', price: 1600, old_price: 1900, category: 'clothing', brand: 'carters', country: 'US', sku: 'CLO-SWD-001' },
-    { name: 'Baby Hat and Mittens Set', name_bn: 'বেবি টুপি ও হাতমোজা সেট', description: 'Soft knitted hat and mittens for cold weather.', price: 680, category: 'clothing', brand: 'meemee', country: 'IN', sku: 'CLO-HAT-001' },
-    { name: 'Formal Baby Dress', name_bn: 'ফরমাল বেবি ড্রেস', description: 'Beautiful dress for special occasions.', price: 2200, category: 'clothing', brand: 'carters', country: 'US', sku: 'CLO-DRS-001' },
-
-    // Skincare (8 products)
-    { name: 'Organic Baby Lotion', name_bn: 'অর্গানিক বেবি লোশন', description: 'Gentle moisturizing lotion with aloe and chamomile.', price: 750, category: 'skincare', brand: 'aveenobaby', country: 'US', sku: 'SKN-LOT-001' },
-    { name: 'Baby Massage Oil', name_bn: 'বেবি ম্যাসাজ অয়েল', description: 'Natural oil blend for baby massage.', price: 520, old_price: 620, category: 'skincare', brand: 'johnsonjohnson', country: 'US', sku: 'SKN-OIL-001' },
-    { name: 'Baby Shampoo 500ml', name_bn: 'বেবি শ্যাম্পু ৫০০মিলি', description: 'No tears gentle baby shampoo.', price: 480, category: 'skincare', brand: 'johnsonjohnson', country: 'US', sku: 'SKN-SHP-001' },
-    { name: 'Baby Body Wash', name_bn: 'বেবি বডি ওয়াশ', description: 'Tear-free, soap-free body wash.', price: 420, category: 'skincare', brand: 'pigeon', country: 'JP', sku: 'SKN-BWS-001' },
-    { name: 'Baby Sunscreen SPF50', name_bn: 'বেবি সানস্ক্রিন এসপিএফ৫০', description: 'Mineral sunscreen safe for sensitive baby skin.', price: 980, old_price: 1100, category: 'skincare', brand: 'mustela', country: 'FR', sku: 'SKN-SUN-001' },
-    { name: 'Eczema Care Cream', name_bn: 'একজিমা কেয়ার ক্রিম', description: 'Soothing cream for eczema-prone skin.', price: 1200, category: 'skincare', brand: 'aveenobaby', country: 'US', sku: 'SKN-ECZ-001' },
-    { name: 'Baby Powder 400g', name_bn: 'বেবি পাউডার ৪০০গ্রাম', description: 'Talc-free baby powder for freshness.', price: 380, category: 'skincare', brand: 'johnsonjohnson', country: 'US', sku: 'SKN-PWD-001' },
-    { name: 'Nipple Cream for Moms', name_bn: 'মায়েদের জন্য নিপল ক্রিম', description: 'Lanolin cream for breastfeeding moms.', price: 850, category: 'skincare', brand: 'mustela', country: 'FR', sku: 'SKN-NIP-001' },
-
-    // Toys & Games (6 products)
-    { name: 'Stacking Rings Toy', name_bn: 'স্ট্যাকিং রিংস টয়', description: 'Classic colorful stacking rings for motor skills.', price: 450, category: 'toysgames', brand: 'fisherprice', country: 'US', sku: 'TOY-STK-001' },
-    { name: 'Musical Activity Gym', name_bn: 'মিউজিক্যাল অ্যাক্টিভিটি জিম', description: 'Play gym with lights, music and hanging toys.', price: 4500, old_price: 5200, category: 'toysgames', brand: 'fisherprice', country: 'US', sku: 'TOY-GYM-001' },
-    { name: 'Soft Plush Teddy Bear', name_bn: 'সফট প্লাশ টেডি বিয়ার', description: 'Cuddly teddy bear with embroidered eyes.', price: 850, category: 'toysgames', brand: 'meemee', country: 'IN', sku: 'TOY-TED-001' },
-    { name: 'Baby Rattle Set', name_bn: 'বেবি র‍্যাটল সেট', description: 'Set of 4 colorful rattles for sensory play.', price: 580, category: 'toysgames', brand: 'fisherprice', country: 'US', sku: 'TOY-RAT-001' },
-    { name: 'Shape Sorter Cube', name_bn: 'শেপ সর্টার কিউব', description: 'Educational shape sorting toy.', price: 780, old_price: 880, category: 'toysgames', brand: 'fisherprice', country: 'US', sku: 'TOY-SHP-001' },
-    { name: 'Bath Toys Set', name_bn: 'বাথ টয়স সেট', description: 'Set of 8 floating bath toys.', price: 650, category: 'toysgames', brand: 'meemee', country: 'IN', sku: 'TOY-BTH-001' },
-
-    // Nursery & Furniture (4 products)
-    { name: 'Baby Crib with Mattress', name_bn: 'ম্যাট্রেসসহ বেবি ক্রিব', description: 'Convertible crib with organic mattress.', price: 28000, old_price: 32000, category: 'nurseryfurniture', brand: 'graco', country: 'US', sku: 'NUR-CRB-001' },
-    { name: 'Baby Changing Table', name_bn: 'বেবি চেঞ্জিং টেবিল', description: 'Sturdy changing table with storage.', price: 12000, category: 'nurseryfurniture', brand: 'graco', country: 'US', sku: 'NUR-CHG-001' },
-    { name: 'Baby Monitor with Camera', name_bn: 'ক্যামেরাসহ বেবি মনিটর', description: 'HD video monitor with night vision.', price: 8500, old_price: 9500, category: 'nurseryfurniture', brand: 'philipsavent', country: 'GB', sku: 'NUR-MON-001' },
-    { name: 'Nursery Night Light', name_bn: 'নার্সারি নাইট লাইট', description: 'Soft glow night light with timer.', price: 1200, category: 'nurseryfurniture', brand: 'chicco', country: 'DE', sku: 'NUR-NIT-001' },
-
-    // Bath & Safety (4 products)
-    { name: 'Baby Bath Tub', name_bn: 'বেবি বাথ টাব', description: 'Ergonomic bath tub with temperature indicator.', price: 2200, old_price: 2600, category: 'bathsafety', brand: 'chicco', country: 'DE', sku: 'BTH-TUB-001' },
-    { name: 'Hooded Baby Towel Set', name_bn: 'হুডেড বেবি তোয়ালে সেট', description: 'Soft cotton hooded towel with washcloths.', price: 950, category: 'bathsafety', brand: 'babyhug', country: 'BD', sku: 'BTH-TWL-001' },
-    { name: 'Safety Cabinet Locks 10-Pack', name_bn: 'সেফটি ক্যাবিনেট লক ১০-প্যাক', description: 'Child-proof cabinet locks.', price: 580, category: 'bathsafety', brand: 'meemee', country: 'IN', sku: 'SAF-LCK-001' },
-    { name: 'Corner Protectors 8-Pack', name_bn: 'কর্নার প্রোটেক্টর ৮-প্যাক', description: 'Soft corner guards for furniture.', price: 380, category: 'bathsafety', brand: 'meemee', country: 'IN', sku: 'SAF-CRN-001' },
-
-    // Travel & Gear (4 products)
-    { name: 'Lightweight Stroller', name_bn: 'লাইটওয়েট স্ট্রলার', description: 'Compact foldable stroller for travel.', price: 15000, old_price: 18000, category: 'travelgear', brand: 'graco', country: 'US', sku: 'TRV-STR-001' },
-    { name: 'Baby Car Seat', name_bn: 'বেবি কার সিট', description: 'Rear-facing infant car seat with base.', price: 18000, category: 'travelgear', brand: 'graco', country: 'US', sku: 'TRV-CAR-001' },
-    { name: 'Baby Carrier Wrap', name_bn: 'বেবি ক্যারিয়ার র‍্যাপ', description: 'Ergonomic baby carrier for newborns.', price: 3500, old_price: 4000, category: 'travelgear', brand: 'chicco', country: 'DE', sku: 'TRV-CRR-001' },
-    { name: 'Diaper Bag Backpack', name_bn: 'ডায়াপার ব্যাগ ব্যাকপ্যাক', description: 'Stylish backpack with multiple compartments.', price: 2800, category: 'travelgear', brand: 'babyhug', country: 'BD', sku: 'TRV-BAG-001' },
+    // --- BABY CARE (Nuha Baby Style) ---
+    { name: 'Aveeno Baby Daily Moisture Lotion', name_bn: 'অ্যাভিনো বেবি ডেইলি ময়েশ্চার লোশন', description: 'Nourishes and protects baby’s sensitive skin for 24 hours.', price: 1650, old_price: 1900, category: 'babylotion', brand: 'aveenobaby', country: 'US', sku: 'BAB-AVE-001' },
+    { name: 'Sudocrem Antiseptic Healing Cream 125g', name_bn: 'সুডোক ক্রিম ১২৫গ্রাম', description: 'For diaper rash, cuts, grazes and minor burns.', price: 850, old_price: 1000, category: 'rashcream', brand: 'sudocrem', country: 'GB', sku: 'BAB-SUD-001' },
+    { name: 'Cetaphil Baby Wash & Shampoo', name_bn: 'সেটাফিল বেবি ওয়াশ ও শ্যাম্পু', description: 'Tear-free formula that gently cleanses baby’s skin and hair.', price: 1450, category: 'babywash', brand: 'cetaphil', country: 'DE', sku: 'BAB-CET-001' },
+    { name: 'Pampers Premium Care Diapers (Newborn)', name_bn: 'প্যাম্পার্স প্রিমিয়াম কেয়ার (নিউবর্ন)', description: 'Softest comfort and best skin protection.', price: 2200, old_price: 2500, category: 'tapediapers', brand: 'pampers', country: 'US', sku: 'BAB-PAM-001' },
+    { name: 'Huggies Wonder Pants (Large)', name_bn: 'হাগিস ওয়ান্ডার প্যান্টস (লার্জ)', description: 'Bubble-bed technology for soft comfort.', price: 1800, category: 'pantdiapers', brand: 'huggies', country: 'US', sku: 'BAB-HUG-001' },
+    { name: 'Gerber Rice Cereal', name_bn: 'গারবার রাইস সিরিয়াল', description: 'Iron-fortified cereal for supported sitters.', price: 650, category: 'babyfood', brand: 'gerber', country: 'US', sku: 'BAB-GER-001' },
+    { name: 'Heinz Biscotti', name_bn: 'হেইঞ্জ বিস্কটি', description: 'Delicious finger food for babies.', price: 450, category: 'babyfood', brand: 'heinz', country: 'IT', sku: 'BAB-HEI-001' },
+    { name: 'Philips Avent Natural Feeding Bottle 260ml', name_bn: 'ফিলিপস অ্যাভেন্ট ফিডিং বোতল', description: 'Natural latch on due to the wide breast shaped nipple.', price: 1250, category: 'feeders', brand: 'philipsavent', country: 'GB', sku: 'BAB-AVE-002' },
+    { name: 'Dr. Browns Options+ Wide-Neck Bottle', name_bn: 'ডক্টর ব্রাউনস ওয়াইড-নেক বোতল', description: 'Clinically proven to reduce colic.', price: 1350, old_price: 1500, category: 'feeders', brand: 'drbrowns', country: 'US', sku: 'BAB-DRB-001' },
+    { name: 'Mustela Bebe Gentle Cleansing Gel', name_bn: 'মাস্টেলা বেবি ক্লিনজিং জেল', description: 'Cleanses and protects from birth on.', price: 1750, category: 'babywash', brand: 'mustela', country: 'FR', sku: 'BAB-MUS-001' },
+    { name: 'Sebamed Baby Rash Cream', name_bn: 'সেবামেড বেবি র‍্যাশ ক্রিম', description: 'Promotes the development of the acid mantle.', price: 950, category: 'rashcream', brand: 'sebamed', country: 'DE', sku: 'BAB-SEB-001' },
+    { name: 'Pigeon Peristaltic Nipple (M)', name_bn: 'পিজিয়ন নিপল (M)', description: 'Super soft and flexible nipple.', price: 350, category: 'accessories', brand: 'pigeon', country: 'JP', sku: 'BAB-PIG-001' },
+    { name: 'Johnson\'s Baby Oil 500ml', name_bn: 'জনসন বেবি অয়েল', description: 'Locks in up to 10 times more moisture.', price: 850, category: 'babyoil', brand: 'johnsonjohnson', country: 'TH', sku: 'BAB-JNJ-001' },
+    { name: 'Aveeno Baby Wash & Shampoo', name_bn: 'অ্যাভিনো বেবি ওয়াশ', description: 'Gentle cleansing for hair and body.', price: 1550, category: 'babywash', brand: 'aveenobaby', country: 'US', sku: 'BAB-AVE-003' },
+    { name: 'Neutrogena Pure & Free Baby Sunscreen', name_bn: 'নিউট্রোজেনা বেবি সানস্ক্রিন', description: 'Zinc oxide sunscreen for baby protection.', price: 1600, category: 'babycare', brand: 'neutrogena', country: 'US', sku: 'BAB-NEU-001' },
   ];
 
   const products: Record<string, any> = {};
@@ -280,21 +266,16 @@ export async function seed(knex: Knex): Promise<void> {
   // ASSIGN PRODUCT LABELS
   // ============================================
   const productLabelAssignments = [
-    { sku: 'DIA-S-001', labels: ['best-sellers', 'featured'] },
-    { sku: 'DIA-M-001', labels: ['best-sellers'] },
-    { sku: 'DIA-ORG-001', labels: ['eco-friendly', 'premium'] },
-    { sku: 'BOT-AC-001', labels: ['best-sellers'] },
-    { sku: 'PMP-EL-001', labels: ['featured', 'premium'] },
-    { sku: 'CLO-ONE-001', labels: ['new-arrivals'] },
-    { sku: 'CLO-WIN-001', labels: ['trending'] },
-    { sku: 'SKN-LOT-001', labels: ['best-sellers'] },
-    { sku: 'SKN-SUN-001', labels: ['eco-friendly'] },
-    { sku: 'TOY-GYM-001', labels: ['featured', 'trending'] },
-    { sku: 'NUR-CRB-001', labels: ['premium'] },
-    { sku: 'TRV-STR-001', labels: ['on-sale', 'best-sellers'] },
-    { sku: 'TRV-CAR-001', labels: ['featured'] },
-    { sku: 'FED-SIL-001', labels: ['new-arrivals', 'eco-friendly'] },
-    { sku: 'WIP-WAT-001', labels: ['eco-friendly', 'premium'] },
+    { sku: 'SKN-CER-001', labels: ['best-sellers', 'featured'] },
+    { sku: 'SKN-ORD-001', labels: ['trending', 'best-sellers'] },
+    { sku: 'SKN-COS-001', labels: ['featured', 'premium'] },
+    { sku: 'SKN-BOJ-001', labels: ['trending', 'new-arrivals'] },
+    { sku: 'BAB-AVE-001', labels: ['best-sellers', 'premium'] },
+    { sku: 'BAB-SUD-001', labels: ['best-sellers'] },
+    { sku: 'BAB-PAM-001', labels: ['premium'] },
+    { sku: 'BAB-HUG-001', labels: ['on-sale'] },
+    { sku: 'SKN-SIM-001', labels: ['best-sellers'] },
+    { sku: 'SKN-SBM-001', labels: ['trending'] },
   ];
 
   for (const assignment of productLabelAssignments) {
@@ -317,10 +298,10 @@ export async function seed(knex: Knex): Promise<void> {
   // ============================================
   await knex('banners').insert([
     {
-      title: 'Summer Sale - Up to 40% Off',
-      title_bn: 'গ্রীষ্মকালীন সেল - ৪০% পর্যন্ত ছাড়',
-      image: 'https://picsum.photos/seed/summersale/1200/400',
-      link: '/products?label=on-sale',
+      title: 'K-Beauty Essentials',
+      title_bn: 'কোরিয়ান বিউটি এসেনশিয়ালস',
+      image: 'https://picsum.photos/seed/kbeauty/1200/400',
+      link: '/products?category=skincare',
       is_active: true,
       order: 1,
       no_expiry: false,
@@ -328,43 +309,43 @@ export async function seed(knex: Knex): Promise<void> {
       expires_at: '2026-03-31',
       position: 'hero',
       target: '_self',
-      label_id: labels['on-sale'].id,
+      label_id: labels['trending'].id,
     },
     {
-      title: 'New Arrivals Collection',
-      title_bn: 'নতুন কালেকশন',
-      image: 'https://picsum.photos/seed/newarrivals/1200/400',
-      link: '/products?label=new-arrivals',
+      title: 'Premium Baby Care',
+      title_bn: 'প্রিমিয়াম বেবি কেয়ার',
+      image: 'https://picsum.photos/seed/babybanner/1200/400',
+      link: '/products?category=babycare',
       is_active: true,
       order: 2,
-      no_expiry: true,
-      position: 'hero',
-      target: '_self',
-      label_id: labels['new-arrivals'].id,
-    },
-    {
-      title: 'Premium Baby Essentials',
-      title_bn: 'প্রিমিয়াম বেবি এসেনশিয়ালস',
-      image: 'https://picsum.photos/seed/premium/1200/400',
-      link: '/products?label=premium',
-      is_active: true,
-      order: 3,
       no_expiry: true,
       position: 'hero',
       target: '_self',
       label_id: labels['premium'].id,
     },
     {
-      title: 'Eco Friendly Products',
-      title_bn: 'পরিবেশ বান্ধব পণ্য',
-      image: 'https://picsum.photos/seed/ecofriendly/1200/400',
-      link: '/products?label=eco-friendly',
+      title: 'Summer Skincare Sale',
+      title_bn: 'সামার স্কিনকেয়ার সেল',
+      image: 'https://picsum.photos/seed/summerskin/1200/400',
+      link: '/products?label=on-sale',
+      is_active: true,
+      order: 3,
+      no_expiry: true,
+      position: 'hero',
+      target: '_self',
+      label_id: labels['on-sale'].id,
+    },
+    {
+      title: 'Authentic Diapers & Wipes',
+      title_bn: 'আসল ডায়াপার এবং ওয়াইপস',
+      image: 'https://picsum.photos/seed/diaperbanner/1200/400',
+      link: '/products?category=diapers',
       is_active: true,
       order: 4,
       no_expiry: true,
       position: 'hero',
       target: '_self',
-      label_id: labels['eco-friendly'].id,
+      label_id: labels['best-sellers'].id,
     },
     {
       title: 'Free Shipping Over ৳5000',
@@ -538,7 +519,7 @@ export async function seed(knex: Knex): Promise<void> {
   }).returning('*');
 
   // Insert order items
-  const productSkus = ['DIA-S-001', 'SKN-LOT-001', 'CLO-ONE-001'];
+  const productSkus = ['SKN-CER-001', 'BAB-AVE-001'];
   for (const sku of productSkus) {
     const product = products[sku];
     if (product) {
@@ -554,11 +535,11 @@ export async function seed(knex: Knex): Promise<void> {
 
   // Insert reviews (testimonials for landing page)
   const reviewsData = [
-    { sku: 'DIA-S-001', rating: 5, comment: 'Best diapers we have ever used! Super soft and no leaks.' },
-    { sku: 'SKN-LOT-001', rating: 5, comment: 'My baby loves this lotion. Great for sensitive skin.' },
-    { sku: 'CLO-ONE-001', rating: 4, comment: 'Good quality onesies. Soft cotton fabric.' },
-    { sku: 'BOT-AC-001', rating: 5, comment: 'Reduced colic significantly. Highly recommended!' },
-    { sku: 'TOY-GYM-001', rating: 5, comment: 'Our baby loves playing with this gym. Great quality.' },
+    { sku: 'SKN-CER-001', rating: 5, comment: 'Amazing cleanser! Really helped with my oily skin.' },
+    { sku: 'BAB-AVE-001', rating: 5, comment: 'Best lotion for my baby. Very gentle.' },
+    { sku: 'SKN-ORD-001', rating: 4, comment: 'Good serum, saw results in 2 weeks.' },
+    { sku: 'BAB-PAM-001', rating: 5, comment: 'Premium quality diapers. No leaks at all.' },
+    { sku: 'SKN-BOJ-001', rating: 5, comment: 'Best sunscreen ever! No white cast.' },
   ];
 
   for (const review of reviewsData) {
@@ -585,4 +566,3 @@ export async function seed(knex: Knex): Promise<void> {
   console.log(`- ${Object.keys(products).length} products`);
   console.log(`- ${reviewsData.length} reviews`);
 }
-

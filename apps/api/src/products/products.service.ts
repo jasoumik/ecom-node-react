@@ -29,7 +29,11 @@ export class ProductsService {
     const baseQuery = this.knex('products');
     
     if (categoryId) {
-      baseQuery.where({ category_id: categoryId });
+      // Find subcategories
+      const subCategories = await this.knex('categories').where({ parent_id: categoryId }).select('id');
+      const categoryIds = [categoryId, ...subCategories.map(c => c.id)];
+      
+      baseQuery.whereIn('category_id', categoryIds);
     }
     if (brandId) {
       baseQuery.where({ brand_id: brandId });
