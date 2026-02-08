@@ -6,7 +6,8 @@ import { API_URL } from "@/lib/config";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Baby, Heart, LayoutGrid, ChevronRight } from "lucide-react";
 
 interface Brand {
   id: string;
@@ -23,6 +24,7 @@ interface BrandsSectionProps {
 
 export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
   const [brands, setBrands] = useState<Brand[]>([]);
+  // Default to null (All)
   const [selectedMotherCategory, setSelectedMotherCategory] = useState<string | null>(null);
   const { t, language } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,12 +40,6 @@ export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
       .catch(console.error);
   }, []);
 
-  useEffect(() => {
-      if (motherCategories.length > 0 && !selectedMotherCategory) {
-          setSelectedMotherCategory(motherCategories[0].id);
-      }
-  }, [motherCategories]);
-
   if (brands.length === 0) return null;
 
   const filteredBrands = selectedMotherCategory 
@@ -55,47 +51,93 @@ export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
     ? [...filteredBrands, ...filteredBrands, ...filteredBrands] 
     : filteredBrands;
 
+  // Helper to get icon based on slug
+  const getIcon = (slug: string) => {
+      if (slug === 'baby-care') return <Baby size={16} />;
+      if (slug === 'mom-care') return <Heart size={16} />;
+      return <LayoutGrid size={16} />;
+  };
+
+  // Get current selection name for dynamic title
+  const currentSelectionName = selectedMotherCategory 
+    ? getLocalizedField(motherCategories.find(mc => mc.id === selectedMotherCategory), 'name', language)
+    : "";
+
   return (
     <Section className="py-8 sm:py-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Tabs - Centered and Prominent */}
+        {motherCategories.length > 0 && (
+            <div className="flex justify-center mb-8">
+                <div className="inline-flex bg-slate-50 dark:bg-slate-800 p-1.5 rounded-full shadow-inner">
+                    <button
+                        onClick={() => setSelectedMotherCategory(null)}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                            selectedMotherCategory === null
+                                ? 'text-white'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
+                    >
+                        {selectedMotherCategory === null && (
+                            <motion.div
+                                layoutId="activeTabBrand"
+                                className="absolute inset-0 bg-sky-500 rounded-full shadow-md"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <span className="relative z-10 flex items-center gap-2">
+                            <LayoutGrid size={16} />
+                            {language === 'bn' ? 'সব' : 'All'}
+                        </span>
+                    </button>
+
+                    {motherCategories.map((mc) => (
+                        <button
+                            key={mc.id}
+                            onClick={() => setSelectedMotherCategory(mc.id)}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                                selectedMotherCategory === mc.id
+                                    ? 'text-white'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                            }`}
+                        >
+                            {selectedMotherCategory === mc.id && (
+                                <motion.div
+                                    layoutId="activeTabBrand"
+                                    className="absolute inset-0 bg-sky-500 rounded-full shadow-md"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+                            <span className="relative z-10 flex items-center gap-2">
+                                {getIcon(mc.slug)}
+                                {getLocalizedField(mc, 'name', language)}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        )}
+
         <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4">
           <div>
             <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl">
-              {t('top_brands')}
+              {selectedMotherCategory 
+                ? `${t('top_brands')} - ${currentSelectionName}`
+                : t('top_brands')
+              }
             </Heading>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               {language === "bn" ? "বিশ্বস্ত ব্র্যান্ড থেকে পণ্য" : "Products from trusted brands"}
             </p>
           </div>
           
-          {/* Mother Category Tabs */}
-          {motherCategories.length > 0 && (
-              <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-full">
-                  {motherCategories.map((mc) => (
-                      <button
-                          key={mc.id}
-                          onClick={() => setSelectedMotherCategory(mc.id)}
-                          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                              selectedMotherCategory === mc.id
-                                  ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm'
-                                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                          }`}
-                      >
-                          {getLocalizedField(mc, 'name', language)}
-                      </button>
-                  ))}
-              </div>
-          )}
-
           <Link
             href="/brands"
             className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md dark:bg-slate-800/50"
           >
             {t('view_all')}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
+            <ChevronRight size={16} />
           </Link>
         </div>
 
