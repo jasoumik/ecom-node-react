@@ -127,7 +127,7 @@ export const translations = {
     items: "items",
     
     // Footer
-    footer_desc: "Your trusted partner in parenting. We provide premium, safe, and sustainable products for mothers and babies across Bangladesh.",
+    footer_desc: "Your trusted partner in parenting. We provide premium, safe, and sustainable baby care and skin care products across Bangladesh.",
     developed_by: "Developed by",
     rights_reserved: "All rights reserved.",
     privacy_policy: "Privacy Policy",
@@ -166,7 +166,7 @@ export const translations = {
 
     // About
     shop_name: "Prithibee",
-    about_hero_subtitle: "We are on a mission to provide the safest, most comfortable, and sustainable products for mothers and babies across Bangladesh.",
+    about_hero_subtitle: "We are on a mission to provide the safest, most comfortable, and sustainable baby care and skin care products across Bangladesh.",
     our_story: "Our Story",
     story_headline: "Born from Love, Built for Trust",
     story_paragraph_1: "Prithibee started with a simple question: \"Why is it so hard to find genuine, safe baby products?\" As parents ourselves, we understood the anxiety of choosing the right diaper, the right lotion, or the right food for our little ones.",
@@ -391,7 +391,7 @@ export const translations = {
     items: "টি আইটেম",
     
     // Footer
-    footer_desc: "প্যারেন্টিংয়ে আপনার বিশ্বস্ত সঙ্গী। আমরা সারা বাংলাদেশে মা এবং শিশুদের জন্য প্রিমিয়াম, নিরাপদ এবং টেকসই পণ্য সরবরাহ করি।",
+    footer_desc: "প্যারেন্টিংয়ে আপনার বিশ্বস্ত সঙ্গী। আমরা সারা বাংলাদেশে মা এবং শিশুদের জন্য প্রিমিয়াম, নিরাপদ এবং টেকসই বেবি কেয়ার এবং স্কিন কেয়ার পণ্য সরবরাহ করি।",
     developed_by: "ডেভেলপ করেছে",
     rights_reserved: "সর্বস্বত্ব সংরক্ষিত।",
     privacy_policy: "গোপনীয়তা নীতি",
@@ -430,7 +430,7 @@ export const translations = {
 
     // About
     shop_name: "পৃথিবী",
-    about_hero_subtitle: "আমরা সারা বাংলাদেশে মা এবং শিশুদের জন্য সবচেয়ে নিরাপদ, আরামদায়ক এবং টেকসই পণ্য সরবরাহ করার মিশনে আছি।",
+    about_hero_subtitle: "আমরা সারা বাংলাদেশে মা এবং শিশুদের জন্য সবচেয়ে নিরাপদ, আরামদায়ক এবং টেকসই বেবি কেয়ার এবং স্কিন কেয়ার পণ্য সরবরাহ করার মিশনে আছি।",
     our_story: "আমাদের গল্প",
     story_headline: "ভালোবাসা থেকে জন্ম, বিশ্বাসের উপর নির্মিত",
     story_paragraph_1: "পৃথিবী একটি সাধারণ প্রশ্ন দিয়ে শুরু হয়েছিল: \"আসল, নিরাপদ শিশু পণ্য খুঁজে পাওয়া এত কঠিন কেন?\" অভিভাবক হিসেবে, আমরা আমাদের ছোটদের জন্য সঠিক ডায়াপার, সঠিক লোশন বা সঠিক খাবার বেছে নেওয়ার উদ্বেগ বুঝতে পেরেছিলাম।",

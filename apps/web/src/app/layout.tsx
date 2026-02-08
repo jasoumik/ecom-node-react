@@ -15,8 +15,43 @@ const hindSiliguri = Hind_Siliguri({
 });
 
 export const metadata: Metadata = {
-  title: "Prithibee | Baby & Mom Shop",
-  description: "Premium baby and mom products in Bangladesh",
+  metadataBase: new URL('https://prithibee.com'), // Replace with actual domain
+  title: {
+    default: "Prithibee | Baby Care & Skin Care Products",
+    template: "%s | Prithibee"
+  },
+  description: "Premium baby care and skin care products in Bangladesh. Shop for diapers, feeding essentials, clothing, toys, and authentic skin care items.",
+  keywords: ["baby care", "skin care", "diapers", "baby food", "toys", "bangladesh", "online shopping", "cosmetics", "beauty"],
+  authors: [{ name: "Prithibee" }],
+  creator: "Prithibee",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://prithibee.com",
+    title: "Prithibee | Baby Care & Skin Care Products",
+    description: "Premium baby care and skin care products in Bangladesh",
+    siteName: "Prithibee",
+    images: [
+      {
+        url: "/prithibee.png", // Ensure this image exists in public folder
+        width: 1200,
+        height: 630,
+        alt: "Prithibee",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prithibee | Baby Care & Skin Care Products",
+    description: "Premium baby care and skin care products in Bangladesh",
+    images: ["/prithibee.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/logo2.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
