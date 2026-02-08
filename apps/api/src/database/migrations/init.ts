@@ -43,6 +43,18 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamps(true, true);
   });
 
+  // Mother Categories Table
+  await knex.schema.createTable('mother_categories', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('name').notNullable();
+    table.string('name_bn').nullable();
+    table.string('slug').unique().notNullable();
+    table.string('image').nullable();
+    table.boolean('is_active').defaultTo(true);
+    table.integer('sort_order').defaultTo(0);
+    table.timestamps(true, true);
+  });
+
   await knex.schema.createTable('categories', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
@@ -53,6 +65,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('banner_image').nullable(); // Added Banner Image
     table.uuid('parent_id').nullable().references('id').inTable('categories').onDelete('CASCADE');
     table.uuid('age_group_id').nullable().references('id').inTable('age_groups').onDelete('SET NULL');
+    table.uuid('mother_category_id').nullable().references('id').inTable('mother_categories').onDelete('SET NULL');
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
@@ -64,6 +77,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name_bn').nullable(); // Added Bangla Name
     table.string('logo').nullable();
     table.text('description').nullable();
+    table.uuid('mother_category_id').nullable().references('id').inTable('mother_categories').onDelete('SET NULL');
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
@@ -453,6 +467,7 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('countries');
   await knex.schema.dropTableIfExists('brands');
   await knex.schema.dropTableIfExists('categories');
+  await knex.schema.dropTableIfExists('mother_categories'); // Added
   await knex.schema.dropTableIfExists('age_groups');
   await knex.schema.dropTableIfExists('addresses');
   await knex.schema.dropTableIfExists('users');

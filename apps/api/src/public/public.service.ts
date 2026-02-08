@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CategoriesService } from '../categories/categories.service';
 import { ProductsService } from '../products/products.service';
+import { MotherCategoriesService } from '../mother-categories/mother-categories.service';
 import { Knex } from 'knex';
 
 @Injectable()
@@ -8,17 +9,22 @@ export class PublicService {
   constructor(
     private readonly categoriesService: CategoriesService,
     private readonly productsService: ProductsService,
+    private readonly motherCategoriesService: MotherCategoriesService,
     @Inject('KNEX_CONNECTION') private readonly knex: Knex,
   ) {}
 
   async getLandingPageData(tenant: string) {
+    // Fetch Mother Categories
+    const motherCategories = await this.motherCategoriesService.findAll();
+
     const categories = await this.categoriesService.findAll();
-    // Return top 8 categories instead of 4
+    // Return top 15 categories
     const displayCategories = categories.slice(0, 15).map(cat => ({
         id: cat.id,
         name: cat.name,
         name_bn: cat.name_bn, // Added Bangla Name
-        image: cat.image || "https://picsum.photos/seed/default/800/800"
+        image: cat.image || "https://picsum.photos/seed/default/800/800",
+        mother_category_id: cat.mother_category_id // Added mother category id
     }));
 
     // Fetch Trending Products (Most Ordered)
@@ -137,6 +143,7 @@ export class PublicService {
           { label: "Happy Families", label_bn: "সুখী পরিবার", value: "1K+" },
         ],
       },
+      motherCategories, // Added mother categories
       categories: displayCategories,
       trustBadges: {
         title: "Only the best for Mom & Baby",

@@ -17,9 +17,10 @@ interface AgeGroup {
 }
 
 export default function CreateCategoryPage() {
-  const [newCategory, setNewCategory] = useState({ name: "", name_bn: "", description: "", description_bn: "", image: "", banner_image: "", parent_id: "", age_group_id: "", is_active: true });
+  const [newCategory, setNewCategory] = useState({ name: "", name_bn: "", description: "", description_bn: "", image: "", banner_image: "", parent_id: "", age_group_id: "", mother_category_id: "", is_active: true });
   const [categories, setCategories] = useState<any[]>([]);
   const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
+  const [motherCategories, setMotherCategories] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [mediaPickerTarget, setMediaPickerTarget] = useState<'image' | 'banner_image'>('image');
   const router = useRouter();
@@ -50,6 +51,16 @@ export default function CreateCategoryPage() {
           }
       })
       .catch(console.error);
+
+    // Fetch mother categories
+    fetch(`${API_URL}/mother-categories`)
+      .then(res => res.json())
+      .then(data => {
+          if (Array.isArray(data)) {
+            setMotherCategories(data);
+          }
+      })
+      .catch(console.error);
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -58,6 +69,7 @@ export default function CreateCategoryPage() {
         const payload = { ...newCategory };
         if (!payload.parent_id) delete (payload as any).parent_id;
         if (!payload.age_group_id) delete (payload as any).age_group_id;
+        if (!payload.mother_category_id) delete (payload as any).mother_category_id;
 
         const res = await fetch(`${API_URL}/categories`, {
             method: "POST",
@@ -111,20 +123,38 @@ export default function CreateCategoryPage() {
             <Input label="Name (Bangla)" value={newCategory.name_bn} onChange={e => setNewCategory({...newCategory, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
           </div>
           
-          <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Parent Category</label>
-              <select 
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
-                  value={newCategory.parent_id}
-                  onChange={e => setNewCategory({...newCategory, parent_id: e.target.value})}
-              >
-                  <option value="">None (Root Category)</option>
-                  {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>
-                          {'\u00A0'.repeat(cat.level * 4)}{cat.name}
-                      </option>
-                  ))}
-              </select>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Parent Category</label>
+                <select 
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                    value={newCategory.parent_id}
+                    onChange={e => setNewCategory({...newCategory, parent_id: e.target.value})}
+                >
+                    <option value="">None (Root Category)</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                            {'\u00A0'.repeat(cat.level * 4)}{cat.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Mother Category</label>
+                <select 
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                    value={newCategory.mother_category_id}
+                    onChange={e => setNewCategory({...newCategory, mother_category_id: e.target.value})}
+                >
+                    <option value="">None</option>
+                    {motherCategories.map(mc => (
+                        <option key={mc.id} value={mc.id}>
+                            {mc.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
           </div>
 
           <div>

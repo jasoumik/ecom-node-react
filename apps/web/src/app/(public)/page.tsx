@@ -52,13 +52,10 @@ export default async function LandingPage() {
       <TrustSection />
 
       {/* Categories Section */}
-      <CategoriesSection categories={data.categories} />
+      <CategoriesSection categories={data.categories} motherCategories={data.motherCategories} />
 
       {/* Brands Section */}
-      <BrandsSection />
-
-      {/* Shop by Age Timeline */}
-      {/*<ShopByAgeSection />*/}
+      <BrandsSection motherCategories={data.motherCategories} />
 
       {/* Bundles & Combos Section */}
       <BundlesSection />
@@ -66,6 +63,8 @@ export default async function LandingPage() {
       {/* Featured Products */}
       <FeaturedProductsSection {...data.featuredProducts} />
 
+      {/* Shop by Age Timeline */}
+      <ShopByAgeSection />
       {/* Why Choose Us / Our Promise */}
       <WhyChooseUsSection {...data.whyChooseUs} />
 

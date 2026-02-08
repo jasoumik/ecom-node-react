@@ -5,17 +5,25 @@ import type { Category } from "./types";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getImageUrl, getLocalizedField } from "@/lib/utils";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CategoriesSectionProps {
   categories: Category[];
+  motherCategories?: any[];
 }
 
-export function CategoriesSection({ categories }: CategoriesSectionProps) {
+export function CategoriesSection({ categories, motherCategories = [] }: CategoriesSectionProps) {
   const { t, language } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [selectedMotherCategory, setSelectedMotherCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+      if (motherCategories.length > 0 && !selectedMotherCategory) {
+          setSelectedMotherCategory(motherCategories[0].id);
+      }
+  }, [motherCategories]);
 
   const scroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -26,6 +34,10 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
       });
     }
   }, []);
+
+  const filteredCategories = selectedMotherCategory
+    ? categories.filter((c: any) => c.mother_category_id === selectedMotherCategory)
+    : categories;
 
   return (
     <Section variant="blue" className="py-6 sm:py-6">
@@ -40,6 +52,26 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
               {t('explore_range')}
             </p>
           </div>
+
+          {/* Mother Category Tabs */}
+          {motherCategories.length > 0 && (
+              <div className="flex gap-2 bg-white dark:bg-slate-800 p-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
+                  {motherCategories.map((mc) => (
+                      <button
+                          key={mc.id}
+                          onClick={() => setSelectedMotherCategory(mc.id)}
+                          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                              selectedMotherCategory === mc.id
+                                  ? 'bg-sky-500 text-white shadow-sm'
+                                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                          {getLocalizedField(mc, 'name', language)}
+                      </button>
+                  ))}
+              </div>
+          )}
+
           <Link
             href="/products"
             className="text-sm font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 bg-white dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md"
@@ -65,38 +97,42 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
             ref={scrollRef}
             className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 -mx-4 px-4 touch-pan-x"
           >
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05, duration: 0.3 }}
-                className="snap-start flex-shrink-0"
-              >
-                <Link
-                  href={`/products?category=${category.id}`}
-                  className="group/card flex flex-col items-center text-center gap-2 sm:gap-3"
+            {filteredCategories.length > 0 ? (
+                filteredCategories.map((category, index) => (
+                <motion.div
+                    key={category.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                    className="snap-start flex-shrink-0"
                 >
-                  {/* Category Image */}
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 relative bg-white dark:bg-slate-800 group-hover/card:scale-105 active:scale-95">
-                    <ResponsiveImage
-                      src={getImageUrl(category.image)}
-                      alt={getLocalizedField(category, 'name', language)}
-                      width={128}
-                      height={128}
-                      className="object-cover w-full h-full"
-                    />
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-sky-500/0 group-hover/card:bg-sky-500/10 transition-colors" />
-                  </div>
+                    <Link
+                    href={`/products?category=${category.id}`}
+                    className="group/card flex flex-col items-center text-center gap-2 sm:gap-3"
+                    >
+                    {/* Category Image */}
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 relative bg-white dark:bg-slate-800 group-hover/card:scale-105 active:scale-95">
+                        <ResponsiveImage
+                        src={getImageUrl(category.image)}
+                        alt={getLocalizedField(category, 'name', language)}
+                        width={128}
+                        height={128}
+                        className="object-cover w-full h-full"
+                        />
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-sky-500/0 group-hover/card:bg-sky-500/10 transition-colors" />
+                    </div>
 
-                  {/* Category Name */}
-                  <h3 className="font-semibold text-slate-800 dark:text-white text-xs sm:text-sm group-hover/card:text-sky-600 dark:group-hover/card:text-sky-400 transition-colors line-clamp-2 w-20 sm:w-28 lg:w-32">
-                    {getLocalizedField(category, 'name', language)}
-                  </h3>
-                </Link>
-              </motion.div>
-            ))}
+                    {/* Category Name */}
+                    <h3 className="font-semibold text-slate-800 dark:text-white text-xs sm:text-sm group-hover/card:text-sky-600 dark:group-hover/card:text-sky-400 transition-colors line-clamp-2 w-20 sm:w-28 lg:w-32">
+                        {getLocalizedField(category, 'name', language)}
+                    </h3>
+                    </Link>
+                </motion.div>
+                ))
+            ) : (
+                <div className="w-full text-center py-8 text-slate-500">No categories found.</div>
+            )}
           </div>
 
           {/* Desktop Navigation Arrow Right */}

@@ -24,6 +24,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { AgeGroupsModule } from './age-groups/age-groups.module';
 import { LabelsModule } from './labels/labels.module';
 import { BundlesModule } from './bundles/bundles.module';
+import { MotherCategoriesModule } from './mother-categories/mother-categories.module';
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -54,6 +55,7 @@ import { join } from 'path';
     AgeGroupsModule,
     LabelsModule,
     BundlesModule,
+    MotherCategoriesModule,
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',

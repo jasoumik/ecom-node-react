@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Heading } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
@@ -9,18 +9,34 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 
 export default function CreateBrandPage() {
-  const [newBrand, setNewBrand] = useState({ name: "", name_bn: "", logo: "", description: "", is_active: true });
+  const [newBrand, setNewBrand] = useState({ name: "", name_bn: "", logo: "", description: "", mother_category_id: "", is_active: true });
+  const [motherCategories, setMotherCategories] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
 
+  useEffect(() => {
+    // Fetch mother categories
+    fetch(`${API_URL}/mother-categories`)
+      .then(res => res.json())
+      .then(data => {
+          if (Array.isArray(data)) {
+            setMotherCategories(data);
+          }
+      })
+      .catch(console.error);
+  }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+        const payload = { ...newBrand };
+        if (!payload.mother_category_id) delete (payload as any).mother_category_id;
+
         const res = await fetch(`${API_URL}/brands`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newBrand),
+            body: JSON.stringify(payload),
         });
         
         if (res.ok) {
@@ -60,15 +76,31 @@ export default function CreateBrandPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Name (English)" value={newBrand.name} onChange={e => setNewBrand({...newBrand, name: e.target.value})} required className="bg-slate-50/50" />
-            <Input label="Name (Bangla)" value={newBrand.name_bn} onChange={e => setNewBrand({...newBrand, name_bn: e.target.value})} className="bg-slate-50/50" />
+            <Input label="Name (English)" value={newBrand.name} onChange={e => setNewBrand({...newBrand, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
+            <Input label="Name (Bangla)" value={newBrand.name_bn} onChange={e => setNewBrand({...newBrand, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
           </div>
           
+          <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Mother Category</label>
+              <select 
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                  value={newBrand.mother_category_id}
+                  onChange={e => setNewBrand({...newBrand, mother_category_id: e.target.value})}
+              >
+                  <option value="">None</option>
+                  {motherCategories.map(mc => (
+                      <option key={mc.id} value={mc.id}>
+                          {mc.name}
+                      </option>
+                  ))}
+              </select>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Logo URL</label>
             <div className="flex gap-2">
                 <Input 
-                    className="flex-1 bg-slate-50/50 text-sm" 
+                    className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
                     value={newBrand.logo} 
                     onChange={e => setNewBrand({...newBrand, logo: e.target.value})} 
                     placeholder="Image URL..."

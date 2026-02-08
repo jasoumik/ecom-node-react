@@ -15,6 +15,8 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('product_labels').del();
   await knex('products').del();
   await knex('categories').del();
+  await knex('brands').del();
+  await knex('mother_categories').del(); // Added
   await knex('age_groups').del();
   await knex('banners').del();
   await knex('media_files').del();
@@ -22,7 +24,6 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('delivery_charges').del();
   await knex('coupons').del();
   await knex('labels').del();
-  await knex('brands').del();
   await knex('settings').del();
   await knex('countries').del();
 
@@ -33,6 +34,20 @@ export async function seed(knex: Knex): Promise<void> {
   if (!admin || !customer) {
     console.log('Users not found. Please run 01_users seed first.');
     return;
+  }
+
+  // ============================================
+  // INSERT MOTHER CATEGORIES (2)
+  // ============================================
+  const motherCategoriesData = [
+    { name: 'Baby Care', name_bn: 'বেবি কেয়ার', slug: 'baby-care', sort_order: 1 },
+    { name: 'Mom Care', name_bn: 'মায়ের যত্ন', slug: 'mom-care', sort_order: 2 },
+  ];
+
+  const motherCategories: Record<string, any> = {};
+  for (const mc of motherCategoriesData) {
+    const [inserted] = await knex('mother_categories').insert({ ...mc, is_active: true }).returning('*');
+    motherCategories[mc.slug] = inserted;
   }
 
   // ============================================
@@ -99,42 +114,45 @@ export async function seed(knex: Knex): Promise<void> {
   // INSERT BRANDS (25)
   // ============================================
   const brandsData = [
-    // Skincare Brands
-    { name: 'CeraVe', name_bn: 'সেরাভি', logo: 'https://picsum.photos/seed/cerave/200/200' },
-    {
-      name: 'The Ordinary',
-      name_bn: 'দ্য অর্ডিনারি',
-      logo: 'https://picsum.photos/seed/ordinary/200/200',
-    },
-    { name: 'COSRX', name_bn: 'কোসআরএক্স', logo: 'https://picsum.photos/seed/cosrx/200/200' },
-    { name: 'Simple', name_bn: 'সিম্পল', logo: 'https://picsum.photos/seed/simple/200/200' },
-    { name: 'Neutrogena', name_bn: 'নিউট্রোজেনা', logo: 'https://picsum.photos/seed/neutrogena/200/200' },
-    { name: 'Innisfree', name_bn: 'ইনিসফ্রি', logo: 'https://picsum.photos/seed/innisfree/200/200' },
-    { name: 'Laneige', name_bn: 'ল্যানেজ', logo: 'https://picsum.photos/seed/laneige/200/200' },
-    { name: 'Some By Mi', name_bn: 'সাম বাই মি', logo: 'https://picsum.photos/seed/somebymi/200/200' },
-    { name: 'Bioderma', name_bn: 'বায়োডার্মা', logo: 'https://picsum.photos/seed/bioderma/200/200' },
-    { name: 'Beauty of Joseon', name_bn: 'বিউটি অফ জেসন', logo: 'https://picsum.photos/seed/joseon/200/200' },
-    { name: 'La Roche-Posay', name_bn: 'লা রোশ-পোজে', logo: 'https://picsum.photos/seed/laroche/200/200' },
+    // Skincare Brands (Mom Care)
+    { name: 'CeraVe', name_bn: 'সেরাভি', logo: 'https://picsum.photos/seed/cerave/200/200', mother_category: 'mom-care' },
+    { name: 'The Ordinary', name_bn: 'দ্য অর্ডিনারি', logo: 'https://picsum.photos/seed/ordinary/200/200', mother_category: 'mom-care' },
+    { name: 'COSRX', name_bn: 'কোসআরএক্স', logo: 'https://picsum.photos/seed/cosrx/200/200', mother_category: 'mom-care' },
+    { name: 'Simple', name_bn: 'সিম্পল', logo: 'https://picsum.photos/seed/simple/200/200', mother_category: 'mom-care' },
+    { name: 'Neutrogena', name_bn: 'নিউট্রোজেনা', logo: 'https://picsum.photos/seed/neutrogena/200/200', mother_category: 'mom-care' },
+    { name: 'Innisfree', name_bn: 'ইনিসফ্রি', logo: 'https://picsum.photos/seed/innisfree/200/200', mother_category: 'mom-care' },
+    { name: 'Laneige', name_bn: 'ল্যানেজ', logo: 'https://picsum.photos/seed/laneige/200/200', mother_category: 'mom-care' },
+    { name: 'Some By Mi', name_bn: 'সাম বাই মি', logo: 'https://picsum.photos/seed/somebymi/200/200', mother_category: 'mom-care' },
+    { name: 'Bioderma', name_bn: 'বায়োডার্মা', logo: 'https://picsum.photos/seed/bioderma/200/200', mother_category: 'mom-care' },
+    { name: 'Beauty of Joseon', name_bn: 'বিউটি অফ জেসন', logo: 'https://picsum.photos/seed/joseon/200/200', mother_category: 'mom-care' },
+    { name: 'La Roche-Posay', name_bn: 'লা রোশ-পোজে', logo: 'https://picsum.photos/seed/laroche/200/200', mother_category: 'mom-care' },
     
-    // Baby Brands
-    { name: 'Aveeno Baby', name_bn: 'অ্যাভিনো বেবি', logo: 'https://picsum.photos/seed/aveeno/200/200' },
-    { name: 'Cetaphil', name_bn: 'সেটাফিল', logo: 'https://picsum.photos/seed/cetaphil/200/200' },
-    { name: 'Johnson & Johnson', name_bn: 'জনসন অ্যান্ড জনসন', logo: 'https://picsum.photos/seed/jnj/200/200' },
-    { name: 'Pampers', name_bn: 'প্যাম্পার্স', logo: 'https://picsum.photos/seed/pampers/200/200' },
-    { name: 'Huggies', name_bn: 'হাগিস', logo: 'https://picsum.photos/seed/huggies/200/200' },
-    { name: 'Sudocrem', name_bn: 'সুডোক ক্রিম', logo: 'https://picsum.photos/seed/sudocrem/200/200' },
-    { name: 'Mustela', name_bn: 'মাস্টেলা', logo: 'https://picsum.photos/seed/mustela/200/200' },
-    { name: 'Sebamed', name_bn: 'সেবামেড', logo: 'https://picsum.photos/seed/sebamed/200/200' },
-    { name: 'Pigeon', name_bn: 'পিজিয়ন', logo: 'https://picsum.photos/seed/pigeon/200/200' },
-    { name: 'Philips Avent', name_bn: 'ফিলিপস অ্যাভেন্ট', logo: 'https://picsum.photos/seed/avent/200/200' },
-    { name: 'Dr. Browns', name_bn: 'ডক্টর ব্রাউনস', logo: 'https://picsum.photos/seed/drbrowns/200/200' },
-    { name: 'Gerber', name_bn: 'গারবার', logo: 'https://picsum.photos/seed/gerber/200/200' },
-    { name: 'Heinz', name_bn: 'হেইঞ্জ', logo: 'https://picsum.photos/seed/heinz/200/200' },
+    // Baby Brands (Baby Care)
+    { name: 'Aveeno Baby', name_bn: 'অ্যাভিনো বেবি', logo: 'https://picsum.photos/seed/aveeno/200/200', mother_category: 'baby-care' },
+    { name: 'Cetaphil', name_bn: 'সেটাফিল', logo: 'https://picsum.photos/seed/cetaphil/200/200', mother_category: 'baby-care' },
+    { name: 'Johnson & Johnson', name_bn: 'জনসন অ্যান্ড জনসন', logo: 'https://picsum.photos/seed/jnj/200/200', mother_category: 'baby-care' },
+    { name: 'Pampers', name_bn: 'প্যাম্পার্স', logo: 'https://picsum.photos/seed/pampers/200/200', mother_category: 'baby-care' },
+    { name: 'Huggies', name_bn: 'হাগিস', logo: 'https://picsum.photos/seed/huggies/200/200', mother_category: 'baby-care' },
+    { name: 'Sudocrem', name_bn: 'সুডোক ক্রিম', logo: 'https://picsum.photos/seed/sudocrem/200/200', mother_category: 'baby-care' },
+    { name: 'Mustela', name_bn: 'মাস্টেলা', logo: 'https://picsum.photos/seed/mustela/200/200', mother_category: 'baby-care' },
+    { name: 'Sebamed', name_bn: 'সেবামেড', logo: 'https://picsum.photos/seed/sebamed/200/200', mother_category: 'baby-care' },
+    { name: 'Pigeon', name_bn: 'পিজিয়ন', logo: 'https://picsum.photos/seed/pigeon/200/200', mother_category: 'baby-care' },
+    { name: 'Philips Avent', name_bn: 'ফিলিপস অ্যাভেন্ট', logo: 'https://picsum.photos/seed/avent/200/200', mother_category: 'baby-care' },
+    { name: 'Dr. Browns', name_bn: 'ডক্টর ব্রাউনস', logo: 'https://picsum.photos/seed/drbrowns/200/200', mother_category: 'baby-care' },
+    { name: 'Gerber', name_bn: 'গারবার', logo: 'https://picsum.photos/seed/gerber/200/200', mother_category: 'baby-care' },
+    { name: 'Heinz', name_bn: 'হেইঞ্জ', logo: 'https://picsum.photos/seed/heinz/200/200', mother_category: 'baby-care' },
   ];
 
   const brands: Record<string, any> = {};
   for (const brand of brandsData) {
-    const [inserted] = await knex('brands').insert({ ...brand, is_active: true }).returning('*');
+    const motherCat = motherCategories[brand.mother_category];
+    const [inserted] = await knex('brands').insert({ 
+        name: brand.name,
+        name_bn: brand.name_bn,
+        logo: brand.logo,
+        mother_category_id: motherCat ? motherCat.id : null,
+        is_active: true 
+    }).returning('*');
     brands[brand.name.toLowerCase().replace(/[^a-z]/g, '')] = inserted;
   }
 
@@ -144,18 +162,25 @@ export async function seed(knex: Knex): Promise<void> {
 
   // Parent Categories
   const parentCategoriesData = [
-    { name: 'Skincare', name_bn: 'স্কিনকেয়ার', image: 'https://picsum.photos/seed/skincare/800/800' },
-    { name: 'Baby Care', name_bn: 'বেবি কেয়ার', image: 'https://picsum.photos/seed/babycare/800/800' },
-    { name: 'Hair Care', name_bn: 'হেয়ার কেয়ার', image: 'https://picsum.photos/seed/haircare/800/800' },
-    { name: 'Makeup', name_bn: 'মেকআপ', image: 'https://picsum.photos/seed/makeup/800/800' },
-    { name: 'Mom Care', name_bn: 'মায়ের যত্ন', image: 'https://picsum.photos/seed/momcare/800/800' },
-    { name: 'Feeding', name_bn: 'ফিডিং', image: 'https://picsum.photos/seed/feeding/800/800' },
-    { name: 'Diapers', name_bn: 'ডায়াপার', image: 'https://picsum.photos/seed/diapers/800/800' },
+    { name: 'Skincare', name_bn: 'স্কিনকেয়ার', image: 'https://picsum.photos/seed/skincare/800/800', mother_category: 'mom-care' },
+    { name: 'Baby Care', name_bn: 'বেবি কেয়ার', image: 'https://picsum.photos/seed/babycare/800/800', mother_category: 'baby-care' },
+    { name: 'Hair Care', name_bn: 'হেয়ার কেয়ার', image: 'https://picsum.photos/seed/haircare/800/800', mother_category: 'mom-care' },
+    { name: 'Makeup', name_bn: 'মেকআপ', image: 'https://picsum.photos/seed/makeup/800/800', mother_category: 'mom-care' },
+    { name: 'Mom Care', name_bn: 'মায়ের যত্ন', image: 'https://picsum.photos/seed/momcare/800/800', mother_category: 'mom-care' },
+    { name: 'Feeding', name_bn: 'ফিডিং', image: 'https://picsum.photos/seed/feeding/800/800', mother_category: 'baby-care' },
+    { name: 'Diapers', name_bn: 'ডায়াপার', image: 'https://picsum.photos/seed/diapers/800/800', mother_category: 'baby-care' },
   ];
 
   const categories: Record<string, any> = {};
   for (const cat of parentCategoriesData) {
-    const [inserted] = await knex('categories').insert({ ...cat, is_active: true }).returning('*');
+    const motherCat = motherCategories[cat.mother_category];
+    const [inserted] = await knex('categories').insert({ 
+        name: cat.name,
+        name_bn: cat.name_bn,
+        image: cat.image,
+        mother_category_id: motherCat ? motherCat.id : null,
+        is_active: true 
+    }).returning('*');
     categories[cat.name.toLowerCase().replace(/[^a-z]/g, '')] = inserted;
   }
 
