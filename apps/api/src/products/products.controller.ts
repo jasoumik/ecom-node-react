@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { AdjustStockDto } from './dto/adjust-stock.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -37,6 +38,11 @@ export class ProductsController {
       @Query('productId') productId?: string
   ) {
       return this.productsService.getStockMovements(Number(page), Number(limit), productId);
+  }
+
+  @Post('adjust-stock')
+  adjustStock(@Body() adjustStockDto: AdjustStockDto) {
+      return this.productsService.adjustStock(adjustStockDto);
   }
 
   @Get(':id')

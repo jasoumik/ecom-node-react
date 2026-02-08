@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { AdjustStockDto } from './dto/adjust-stock.dto';
 import { SettingsService } from '../settings/settings.service';
 import { RequestsService } from '../requests/requests.service';
 
@@ -433,5 +434,38 @@ export class ProductsService {
               totalPages: Math.ceil(total / limit),
           }
       };
+  }
+
+  async adjustStock(dto: AdjustStockDto): Promise<any> {
+      const { productId, variantId, quantity, type, reason } = dto;
+      
+      return this.knex.transaction(async (trx) => {
+          const product = await trx('products').where({ id: productId }).first();
+          if (!product) throw new NotFoundException('Product not found');
+
+          let quantityChange = quantity;
+          if (['wastage', 'broken', 'offline_sale', 'correction_remove'].includes(type)) {
+              quantityChange = -quantity;
+          }
+
+          if (variantId) {
+              const variant = await trx('product_variants').where({ id: variantId }).first();
+              if (!variant) throw new NotFoundException('Variant not found');
+              
+              await trx('product_variants').where({ id: variantId }).increment('stock', quantityChange);
+          }
+          
+          await trx('products').where({ id: productId }).increment('stock', quantityChange);
+          
+          await trx('stock_movements').insert({
+              product_id: productId,
+              variant_id: variantId,
+              quantity_change: quantityChange,
+              type: type,
+              reason: reason || `Manual Adjustment: ${type}`
+          });
+          
+          return { success: true };
+      });
   }
 }
