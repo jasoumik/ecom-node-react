@@ -3,171 +3,213 @@
 import { useCart } from "@/lib/cart";
 import { Button, Heading, Text } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 
+interface DeliveryCharge {
+  id: string;
+  name: string;
+  amount: string | number;
+}
+
+interface Coupon {
+  code: string;
+  type: "percentage" | "fixed";
+  value: string | number;
+}
+
+interface PaymentNumbers {
+  bkash?: string;
+  nagad?: string;
+}
+
+interface UserAddress {
+  id: string;
+  type: string;
+  address: string;
+}
+
+interface AppUser {
+  id: string;
+  name?: string;
+  phone?: string;
+}
+
+const parseAmount = (value: string | number): number =>
+  typeof value === "number" ? value : parseFloat(value);
+
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totalPrice, clearCart, addItem, totalItems } = useCart();
+  const { items, removeItem, updateQuantity, totalPrice, clearCart, totalItems } = useCart();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
-  const [deliveryCharges, setDeliveryCharges] = useState<any[]>([]);
+  const [deliveryCharges, setDeliveryCharges] = useState<DeliveryCharge[]>([]);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>("");
   const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [transactionId, setTransactionId] = useState("");
-  const [paymentNumbers, setPaymentNumbers] = useState<any>({});
+  const [paymentNumbers, setPaymentNumbers] = useState<PaymentNumbers>({});
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(5000);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([]);
   const [saveAddress, setSaveAddress] = useState(false);
   const { addToast } = useToast();
   const { t } = useLanguage();
 
+  const validateStock = useCallback(async () => {
+    if (items.length === 0) return;
+
+    try {
+      const updatedItems = await Promise.all(
+        items.map(async (item) => {
+          const res = await fetch(`${API_URL}/products/${item.id}`);
+          if (res.ok) {
+            const product = await res.json();
+            let stock = product.stock;
+
+            if (item.variantId) {
+              const variant = product.variants?.find(
+                (v: { id: string; stock: number }) => v.id === item.variantId
+              );
+              if (variant) stock = variant.stock;
+            }
+
+            return { ...item, stock: parseInt(stock, 10) };
+          }
+          return item;
+        })
+      );
+
+      // Clamp quantities that exceed stock and inform the customer.
+      updatedItems.forEach((newItem) => {
+        if (newItem.quantity > newItem.stock) {
+          updateQuantity(newItem.id, newItem.stock, newItem.variantId);
+          addToast(
+            t("quantity_adjusted_to_stock", { name: newItem.name, stock: String(newItem.stock) }),
+            "error"
+          );
+        }
+      });
+    } catch {
+      console.error("Failed to validate stock");
+    }
+  }, [items, updateQuantity, addToast, t]);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-        try {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            setCustomerName(parsedUser.name || "");
-            setCustomerPhone(parsedUser.phone || "");
-            fetchAddresses(parsedUser.id);
-        } catch (e) {}
+      try {
+        const parsedUser: AppUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setCustomerName(parsedUser.name || "");
+        setCustomerPhone(parsedUser.phone || "");
+        fetchAddresses(parsedUser.id);
+      } catch (err) {
+        console.error("Failed to parse stored user", err);
+      }
     }
     fetchDeliveryCharges();
     fetchSettings();
-    validateStock();
-  }, []);
-
-  const validateStock = async () => {
-      if (items.length === 0) return;
-      
-      try {
-          const updatedItems = await Promise.all(items.map(async (item) => {
-              const res = await fetch(`${API_URL}/products/${item.id}`);
-              if (res.ok) {
-                  const product = await res.json();
-                  let stock = product.stock;
-                  
-                  if (item.variantId) {
-                      const variant = product.variants?.find((v: any) => v.id === item.variantId);
-                      if (variant) stock = variant.stock;
-                  }
-                  
-                  return { ...item, stock: parseInt(stock) };
-              }
-              return item;
-          }));
-
-          updatedItems.forEach(newItem => {
-              const oldItem = items.find(i => i.id === newItem.id && i.variantId === newItem.variantId);
-              if (oldItem && oldItem.stock !== newItem.stock) {
-                  addItem(newItem); 
-                  if (newItem.quantity > newItem.stock) {
-                      updateQuantity(newItem.id, newItem.stock, newItem.variantId);
-                      addToast(`Quantity for ${newItem.name} adjusted to available stock`, "error");
-                  }
-              }
-          });
-          
-      } catch (e) {
-          console.error("Failed to validate stock");
-      }
-  };
+    void validateStock();
+  }, [validateStock]);
 
   const fetchAddresses = async (userId: string) => {
-      try {
-          const res = await fetch(`${API_URL}/users/${userId}/addresses`);
-          if (res.ok) {
-              const data = await res.json();
-              setSavedAddresses(Array.isArray(data) ? data : []);
-          }
-      } catch (e) {}
+    try {
+      const res = await fetch(`${API_URL}/users/${userId}/addresses`);
+      if (res.ok) {
+        const data = await res.json();
+        setSavedAddresses(Array.isArray(data) ? (data as UserAddress[]) : []);
+      }
+    } catch {
+      console.error("Failed to fetch addresses");
+    }
   };
 
   const fetchDeliveryCharges = async () => {
-      try {
-          const res = await fetch(`${API_URL}/delivery`);
-          const data = await res.json();
-          setDeliveryCharges(data);
-          if (data.length > 0) setSelectedDeliveryId(data[0].id);
-      } catch (e) {
-          console.error("Failed to fetch delivery charges");
-      }
+    try {
+      const res = await fetch(`${API_URL}/delivery`);
+      const data: DeliveryCharge[] = await res.json();
+      setDeliveryCharges(data);
+      if (data.length > 0) setSelectedDeliveryId(data[0].id);
+    } catch {
+      console.error("Failed to fetch delivery charges");
+    }
   };
 
   const fetchSettings = async () => {
-      try {
-          const res = await fetch(`${API_URL}/settings`);
-          const data = await res.json();
-          const numbers: any = {};
-          data.forEach((s: any) => {
-              if (s.key === 'bkash_number') numbers.bkash = s.value;
-              if (s.key === 'nagad_number') numbers.nagad = s.value;
-              if (s.key === 'free_shipping_threshold') setFreeShippingThreshold(parseFloat(s.value));
-          });
-          setPaymentNumbers(numbers);
-      } catch (e) {}
+    try {
+      const res = await fetch(`${API_URL}/settings`);
+      const data: { key: string; value: string }[] = await res.json();
+      const numbers: PaymentNumbers = {};
+      data.forEach((s) => {
+        if (s.key === "bkash_number") numbers.bkash = s.value;
+        if (s.key === "nagad_number") numbers.nagad = s.value;
+        if (s.key === "free_shipping_threshold")
+          setFreeShippingThreshold(parseFloat(s.value));
+      });
+      setPaymentNumbers(numbers);
+    } catch {
+      console.error("Failed to fetch settings");
+    }
   };
 
   const handleApplyCoupon = async () => {
-      if (!couponCode) return;
-      try {
-          const res = await fetch(`${API_URL}/coupons/validate`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code: couponCode, amount: totalPrice() }),
-          });
-          if (res.ok) {
-              const coupon = await res.json();
-              setAppliedCoupon(coupon);
-              addToast("Coupon applied!", "success");
-          } else {
-              const err = await res.json();
-              addToast(err.message || "Invalid coupon", "error");
-              setAppliedCoupon(null);
-          }
-      } catch (e) {
-          addToast("Error validating coupon", "error");
+    if (!couponCode) return;
+    try {
+      const res = await fetch(`${API_URL}/coupons/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, amount: totalPrice() }),
+      });
+      if (res.ok) {
+        const coupon: Coupon = await res.json();
+        setAppliedCoupon(coupon);
+        addToast(t("coupon_applied"), "success");
+      } else {
+        const err = await res.json();
+        addToast(err.message || t("invalid_coupon"), "error");
+        setAppliedCoupon(null);
       }
+    } catch {
+      addToast(t("error_validating_coupon"), "error");
+    }
   };
 
   const calculateTotal = () => {
-      let total = totalPrice();
-      
-      const isFreeShipping = total >= freeShippingThreshold;
-      
-      const delivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
-      if (delivery && !isFreeShipping) total += parseFloat(delivery.amount);
-      
-      if (appliedCoupon) {
-          let discount = 0;
-          if (appliedCoupon.type === 'percentage') {
-              discount = (totalPrice() * parseFloat(appliedCoupon.value)) / 100;
-          } else {
-              discount = parseFloat(appliedCoupon.value);
-          }
-          total -= discount;
+    let total = totalPrice();
+
+    const isFreeShipping = total >= freeShippingThreshold;
+
+    const delivery = deliveryCharges.find((d) => d.id === selectedDeliveryId);
+    if (delivery && !isFreeShipping) total += parseAmount(delivery.amount);
+
+    if (appliedCoupon) {
+      let discount: number;
+      if (appliedCoupon.type === "percentage") {
+        discount = (totalPrice() * parseAmount(appliedCoupon.value)) / 100;
+      } else {
+        discount = parseAmount(appliedCoupon.value);
       }
-      return Math.max(0, total);
+      total -= discount;
+    }
+    return Math.max(0, total);
   };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
     if (!selectedDeliveryId) {
-        addToast("Please select a delivery area", "error");
+        addToast(t("select_delivery_area"), "error");
         return;
     }
-    if ((paymentMethod === 'bkash' || paymentMethod === 'nagad') && !transactionId) {
-        addToast("Please enter transaction ID", "error");
+    if ((paymentMethod === "bkash" || paymentMethod === "nagad") && !transactionId) {
+        addToast(t("enter_transaction_id"), "error");
         return;
     }
 
@@ -207,24 +249,24 @@ export default function CartPage() {
 
       if (res.ok) {
         const data = await res.json();
-        addToast("Order placed successfully!", "success");
+        addToast(t("order_placed_successfully"), "success");
         clearCart();
         router.push(`/thank-you?orderId=${data.id}`);
       } else {
         const errorData = await res.json();
         console.error("Order error:", errorData);
-        addToast(errorData.message || "Failed to place order.", "error");
+        addToast(errorData.message || t("order_place_failed"), "error");
       }
     } catch (error) {
       console.error(error);
-      addToast("Error placing order. Check your connection.", "error");
+      addToast(t("order_place_error"), "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleAddressSelect = (address: any) => {
-      setCustomerAddress(address.address);
+  const handleAddressSelect = (address: UserAddress) => {
+    setCustomerAddress(address.address);
   };
 
   if (items.length === 0) {
@@ -233,9 +275,9 @@ export default function CartPage() {
         <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-4xl shadow-inner">
             🛒
         </div>
-        <Heading className="mb-2 dark:text-white text-2xl font-bold">{t('your_cart_empty')}</Heading>
-        <Text className="text-slate-500 mb-8 text-center max-w-md">Looks like you haven't added anything to your cart yet.</Text>
-        <Button onClick={() => router.push("/products")} className="rounded-xl px-8 py-3 shadow-lg shadow-sky-500/20">{t('start_shopping')}</Button>
+        <Heading className="mb-2 dark:text-white text-2xl font-bold">{t("your_cart_empty")}</Heading>
+        <Text className="text-slate-500 mb-8 text-center max-w-md">{t("cart_empty_subtitle")}</Text>
+        <Button onClick={() => router.push("/products")} className="rounded-xl px-8 py-3 shadow-lg shadow-sky-500/20">{t("start_shopping")}</Button>
       </div>
     );
   }
@@ -243,17 +285,16 @@ export default function CartPage() {
   const selectedDelivery = deliveryCharges.find(d => d.id === selectedDeliveryId);
   const currentTotal = totalPrice();
   const isFreeShipping = currentTotal >= freeShippingThreshold;
-  const deliveryAmount = isFreeShipping ? 0 : (selectedDelivery ? parseFloat(selectedDelivery.amount) : 0);
   const amountToFreeShipping = Math.max(0, freeShippingThreshold - currentTotal);
   const progressPercent = Math.min(100, (currentTotal / freeShippingThreshold) * 100);
   
   let discountAmount = 0;
   if (appliedCoupon) {
-      if (appliedCoupon.type === 'percentage') {
-          discountAmount = (totalPrice() * parseFloat(appliedCoupon.value)) / 100;
-      } else {
-          discountAmount = parseFloat(appliedCoupon.value);
-      }
+    if (appliedCoupon.type === "percentage") {
+      discountAmount = (totalPrice() * parseAmount(appliedCoupon.value)) / 100;
+    } else {
+      discountAmount = parseAmount(appliedCoupon.value);
+    }
   }
 
   const isAddressAlreadySaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
@@ -283,56 +324,82 @@ export default function CartPage() {
             </div>
 
             <div className="space-y-4">
-                {items.map((item) => {
-                    // Safe quantity check
-                    const qty = Number(item.quantity) || 1;
-                    const stock = item.stock !== undefined ? Number(item.stock) : 999; // Default to 999 if stock unknown
+              {items.map((item) => {
+                const qty = Number(item.quantity) || 1;
+                const stock = item.stock !== undefined ? Number(item.stock) : 999;
 
-                    return (
-                    <div key={`${item.id}-${item.variantId}`} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors">
-                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        </div>
-                        
-                        <div className="flex-1 w-full text-center sm:text-left">
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{item.name}</h3>
-                        <p className="text-sky-500 font-bold text-xl">৳{item.price}</p>
-                        </div>
-
-                        <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                            <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
-                                <button 
-                                    onClick={() => updateQuantity(item.id, Math.max(1, qty - 1), item.variantId)} 
-                                    className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
-                                >
-                                    -
-                                </button>
-                                <span className="font-bold w-6 text-center text-slate-900 dark:text-white">{qty}</span>
-                                <button 
-                                    onClick={() => {
-                                        if (qty < stock) {
-                                            updateQuantity(item.id, qty + 1, item.variantId);
-                                        } else {
-                                            addToast(`Only ${stock} items available`, "error");
-                                        }
-                                    }} 
-                                    className={`w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center shadow-sm transition-all font-bold ${qty >= stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100 dark:hover:bg-slate-600'}`}
-                                    disabled={qty >= stock}
-                                >
-                                    +
-                                </button>
-                            </div>
-                            <button 
-                                onClick={() => removeItem(item.id, item.variantId)} 
-                                className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
-                                title="Remove Item"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
+                return (
+                  <div
+                    key={`${item.id}-${item.variantId}`}
+                    className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-6 group hover:border-sky-100 transition-colors"
+                  >
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 dark:border-slate-800 shrink-0">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
-                    );
-                })}
+
+                    <div className="flex-1 w-full text-center sm:text-left">
+                      <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{item.name}</h3>
+                      <p className="text-sky-500 font-bold text-xl">৳{item.price}</p>
+                      {item.stock !== undefined && (
+                        <p className="mt-1 text-xs text-slate-400">
+                          {t("stock_label")}: {stock}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                      <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700">
+                        <button
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              Math.max(1, qty - 1),
+                              item.variantId
+                            )
+                          }
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 shadow-sm transition-all font-bold"
+                        >
+                          -
+                        </button>
+                        <span className="font-bold w-6 text-center text-slate-900 dark:text-white">
+                          {qty}
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (qty < stock) {
+                              updateQuantity(
+                                item.id,
+                                qty + 1,
+                                item.variantId
+                              );
+                            } else {
+                              addToast(
+                                t("only_x_items_available", { stock: String(stock) }),
+                                "error"
+                              );
+                            }
+                          }}
+                          className={`w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center shadow-sm transition-all font-bold ${
+                            qty >= stock
+                              ? "opacity-50 cursor-not-allowed"
+                              : "hover:bg-slate-100 dark:hover:bg-slate-600"
+                          }`}
+                          disabled={qty >= stock}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                          onClick={() => removeItem(item.id, item.variantId)}
+                          className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
+                          title="Remove Item"
+                      >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -349,7 +416,7 @@ export default function CartPage() {
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
                         <span>{t('delivery')}</span>
                         <span className={`font-medium ${isFreeShipping ? 'text-emerald-600 line-through' : ''}`}>
-                            ৳{selectedDelivery ? parseFloat(selectedDelivery.amount) : 0}
+                            ৳{selectedDelivery ? parseAmount(selectedDelivery.amount) : 0}
                         </span>
                         {isFreeShipping && <span className="text-emerald-600 font-bold">FREE</span>}
                     </div>
