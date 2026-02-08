@@ -213,17 +213,6 @@ export function FeaturedProductsSection({
                         className={isHeartAnimating ? "animate-heart-beat" : ""}
                       />
                     </motion.button>
-
-                    {/* Quick Add Button - Shows on Hover (Desktop) */}
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity hidden lg:block">
-                      <Button
-                        onClick={(e: React.MouseEvent) => handleAddToCart(product, e)}
-                        className="w-full py-2 text-xs font-bold bg-sky-500 text-white hover:bg-sky-600 rounded-lg flex items-center justify-center gap-1.5 shadow-lg"
-                      >
-                        <ShoppingCart size={14} />
-                        {t('add_to_cart')}
-                      </Button>
-                    </div>
                   </div>
 
                   {/* Content */}
@@ -255,14 +244,13 @@ export function FeaturedProductsSection({
                         {product.price}
                       </div>
 
-                      {/* Mobile Add to Cart Button */}
+                      {/* Add to Cart Button - Always Visible */}
                       <motion.div
                         animate={isAnimating ? { scale: [1, 0.95, 1] } : {}}
-                        className="lg:hidden"
                       >
                         <Button
                           onClick={(e: React.MouseEvent) => handleAddToCart(product, e)}
-                          className={`w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 min-h-[44px] transition-colors ${
+                          className={`w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 min-h-[40px] transition-colors ${
                             isAnimating
                               ? 'bg-green-500 text-white'
                               : 'bg-sky-500 text-white hover:bg-sky-600'

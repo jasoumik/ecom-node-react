@@ -51,12 +51,12 @@ function ThankYouContent() {
         
         <div className="flex flex-col gap-3">
             {orderId && (
-                <Link href={`/profile/orders/${orderId}`}>
-                    <Button variant="outline" fullWidth className="rounded-xl border-2">{t('view_order')}</Button>
+                <Link href={`/profile/orders/${orderId}`} className="w-full">
+                    <Button variant="outline" fullWidth className="rounded-xl border-2 py-3 h-auto">{t('view_order')}</Button>
                 </Link>
             )}
-            <Link href="/products">
-                <Button fullWidth className="rounded-xl shadow-lg shadow-sky-500/20">{t('continue_shopping')}</Button>
+            <Link href="/products" className="w-full">
+                <Button fullWidth className="rounded-xl shadow-lg shadow-sky-500/20 py-3 h-auto">{t('continue_shopping')}</Button>
             </Link>
         </div>
       </div>

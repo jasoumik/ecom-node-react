@@ -54,17 +54,17 @@ export default async function LandingPage() {
       {/* Categories Section */}
       <CategoriesSection categories={data.categories} />
 
+      {/* Brands Section */}
+      <BrandsSection />
+
       {/* Shop by Age Timeline */}
-      <ShopByAgeSection />
+      {/*<ShopByAgeSection />*/}
 
       {/* Bundles & Combos Section */}
       <BundlesSection />
 
       {/* Featured Products */}
       <FeaturedProductsSection {...data.featuredProducts} />
-
-      {/* Brands Section */}
-      <BrandsSection />
 
       {/* Why Choose Us / Our Promise */}
       <WhyChooseUsSection {...data.whyChooseUs} />

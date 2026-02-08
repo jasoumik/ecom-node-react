@@ -427,7 +427,7 @@ export default function ProductPage() {
           </div>
 
           {/* Right Column: Product Details */}
-          <div className="md:col-span-6 lg:col-span-6 space-y-6">
+          <div className="md:col-span-6 lg:col-span-6 space-y-6 sticky top-24 h-fit">
             <div>
               <div className="flex justify-between items-start mb-2">
                   <div className="text-xs font-bold text-sky-600 uppercase tracking-wider bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded-md">{getLocalizedField(product, 'category_name', language)}</div>

@@ -12,7 +12,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('users').insert([
     {
       id: '581f872e-4125-4ff4-aed5-a5afd1f4168d', // Keep a stable ID for admin
-      phone: '01700000000',
+      phone: '01616684803',
       email: 'admin@prithibee.com',
       passwordHash,
       name: 'Admin',

@@ -13,10 +13,21 @@ export class ProductsService {
     private readonly requestsService: RequestsService
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10, categoryId?: string, search?: string, brandId?: string, ageId?: string): Promise<any> {
+  async findAll(
+      page: number = 1, 
+      limit: number = 10, 
+      categoryId?: string, 
+      search?: string, 
+      brandId?: string, 
+      ageId?: string,
+      sort?: string,
+      minPrice?: number,
+      maxPrice?: number
+  ): Promise<any> {
     const offset = (page - 1) * limit;
     
     const baseQuery = this.knex('products');
+    
     if (categoryId) {
       baseQuery.where({ category_id: categoryId });
     }
@@ -24,21 +35,45 @@ export class ProductsService {
       baseQuery.where({ brand_id: brandId });
     }
     if (ageId) {
-        // Check if ageId is in the age_groups array (simple-array stores as comma-separated string in some DBs or text array)
-        // For simple-array in TypeORM/Knex with Postgres, it might be stored as 'id1,id2' string or '{id1,id2}' array
-        // Since we defined it as simpleArray in TypeORM entity but knex migration might be text or array
-        // Let's assume it's stored as a string or array that we can query with LIKE or array operators
-        // For broader compatibility with simple-array (often comma separated string):
         baseQuery.where('age_groups', 'like', `%${ageId}%`);
     }
     if (search) {
         baseQuery.where('name', 'ilike', `%${search}%`);
     }
+    
+    // Price Filter
+    if (minPrice !== undefined) {
+        baseQuery.whereRaw('CAST(price AS DECIMAL) >= ?', [minPrice]);
+    }
+    if (maxPrice !== undefined) {
+        baseQuery.whereRaw('CAST(price AS DECIMAL) <= ?', [maxPrice]);
+    }
 
     const [countResult] = await baseQuery.clone().count('* as total');
     const total = parseInt(countResult.total as string, 10);
 
-    const products = await baseQuery.clone().select('*').limit(limit).offset(offset).orderBy('created_at', 'desc');
+    let query = baseQuery.clone().select('*').limit(limit).offset(offset);
+    
+    // Sorting
+    switch (sort) {
+        case 'price_asc':
+            query.orderByRaw('CAST(price AS DECIMAL) ASC');
+            break;
+        case 'price_desc':
+            query.orderByRaw('CAST(price AS DECIMAL) DESC');
+            break;
+        case 'popularity':
+            // For now, fallback to newest as we don't have a popularity metric column
+            // Ideally this would be a join with orders or reviews
+            query.orderBy('created_at', 'desc');
+            break;
+        case 'newest':
+        default:
+            query.orderBy('created_at', 'desc');
+            break;
+    }
+
+    const products = await query;
 
     const productIds = products.map(p => p.id);
 

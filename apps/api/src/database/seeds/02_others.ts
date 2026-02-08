@@ -501,10 +501,12 @@ export async function seed(knex: Knex): Promise<void> {
     { key: 'shop_name_bn', value: 'পৃথিবী', description: 'Name of the shop in Bangla' },
     { key: 'shop_phone', value: '+880 1616-684803', description: 'Primary contact number' },
     { key: 'shop_address', value: 'House 12, Road 5, Dhanmondi, Dhaka-1209', description: 'Physical store address' },
+    { key: 'support_email', value: 'support@prithibee.com', description: 'Support email address' },
     { key: 'facebook_link', value: 'https://www.facebook.com/prithibeeofficial', description: 'Facebook page URL' },
     { key: 'whatsapp_number', value: '+8801616684803', description: 'WhatsApp number for chat button' },
     { key: 'currency', value: 'BDT', description: 'Default currency' },
     { key: 'currency_symbol', value: '৳', description: 'Currency symbol' },
+    { key: 'payment_methods', value: 'bKash,Nagad,Visa,Mastercard,COD', description: 'Available payment methods (comma separated)' },
   ]);
 
   // ============================================

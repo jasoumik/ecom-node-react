@@ -41,7 +41,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${poppins.variable} ${hindSiliguri.variable} font-sans bg-gradient-to-br from-sky-50 via-white to-sky-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen`}>
+      <body suppressHydrationWarning className={`${poppins.variable} ${hindSiliguri.variable} font-sans bg-gradient-to-br from-sky-50 via-white to-sky-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen`}>
         <LayoutContent>{children}</LayoutContent>
       </body>
     </html>

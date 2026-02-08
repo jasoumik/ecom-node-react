@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Phone, Lock, ArrowRight, User, Mail } from "lucide-react";
+import { Phone, Lock, ArrowRight, User, Mail, Home } from "lucide-react";
 import { AuthLayout } from "@/components/ui/AuthLayout";
 
 export default function RegisterPage() {
@@ -191,7 +191,7 @@ export default function RegisterPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-8 text-center"
+        className="mt-8 text-center space-y-3"
       >
         <Text className="text-sm text-slate-500 dark:text-slate-400">
           {t('already_have_account')}{" "}
@@ -202,6 +202,15 @@ export default function RegisterPage() {
             {t('login')}
           </Link>
         </Text>
+
+        {/* Back to Home Link */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+        >
+          <Home size={16} />
+          <span>{t('back_to_home') || 'Back to Home'}</span>
+        </Link>
       </motion.div>
     </AuthLayout>
   );

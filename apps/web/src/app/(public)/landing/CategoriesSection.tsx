@@ -78,7 +78,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
                   className="group/card flex flex-col items-center text-center gap-2 sm:gap-3"
                 >
                   {/* Category Image */}
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 relative bg-white dark:bg-slate-800 border-4 border-white dark:border-slate-700 group-hover/card:border-sky-200 dark:group-hover/card:border-sky-800 group-hover/card:scale-105 active:scale-95">
+                  <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 relative bg-white dark:bg-slate-800 group-hover/card:scale-105 active:scale-95">
                     <ResponsiveImage
                       src={getImageUrl(category.image)}
                       alt={getLocalizedField(category, 'name', language)}

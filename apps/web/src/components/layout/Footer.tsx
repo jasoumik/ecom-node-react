@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { useSettings } from "@/lib/settings-context";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MapPin, Phone, Mail, Facebook, MessageCircle } from "lucide-react";
+import { ChevronDown, MapPin, Phone, Mail } from "lucide-react";
 
 interface AccordionSectionProps {
   title: string;
@@ -59,6 +59,10 @@ export function Footer() {
   const { t, language } = useLanguage();
   const settings = useSettings();
 
+  const paymentMethods = settings.payment_methods 
+    ? settings.payment_methods.split(',').map(m => m.trim()).filter(Boolean)
+    : ["bKash", "Nagad", "Visa", "Mastercard", "COD"];
+
   return (
     <footer className="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 pt-12 pb-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,7 +98,6 @@ export function Footer() {
             className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm touch-target"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.333-4.669 1.212 0 2.493.216 2.493.216v2.733h-1.406c-1.492 0-1.956.926-1.956 1.874v2.25h3.072l-.487 3.47h-2.585v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-
           </a>
           <a
             href={`https://wa.me/${settings.whatsapp_number}`}
@@ -207,11 +210,11 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:support@prithibee.com"
+                  href={`mailto:${settings.support_email}`}
                   className="flex gap-3 items-center hover:text-sky-500 transition-colors"
                 >
                   <Mail size={16} className="flex-shrink-0 text-sky-500" />
-                  <span>support@prithibee.com</span>
+                  <span>{settings.support_email}</span>
                 </a>
               </li>
             </ul>
@@ -224,21 +227,11 @@ export function Footer() {
             {language === "bn" ? "পেমেন্ট পদ্ধতি" : "Payment Methods"}
           </p>
           <div className="flex justify-center gap-3 flex-wrap">
-            <div className="h-8 px-3 bg-slate-100 dark:bg-slate-800 rounded-md flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
-              bKash
-            </div>
-            <div className="h-8 px-3 bg-slate-100 dark:bg-slate-800 rounded-md flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
-              Nagad
-            </div>
-            <div className="h-8 px-3 bg-slate-100 dark:bg-slate-800 rounded-md flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
-              Visa
-            </div>
-            <div className="h-8 px-3 bg-slate-100 dark:bg-slate-800 rounded-md flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
-              Mastercard
-            </div>
-            <div className="h-8 px-3 bg-slate-100 dark:bg-slate-800 rounded-md flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
-              COD
-            </div>
+            {paymentMethods.map((method) => (
+              <div key={method} className="h-8 px-3 bg-slate-100 dark:bg-slate-800 rounded-md flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
+                {method}
+              </div>
+            ))}
           </div>
         </div>
 

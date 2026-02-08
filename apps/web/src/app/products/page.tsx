@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Heading, Text, Button, ResponsiveImage, RatingStars, SkeletonCardGrid } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
@@ -12,13 +12,16 @@ import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import { ProductRequestButton } from "@/components/ui/ProductRequestButton";
+import { Filter, ArrowUpDown, X, ChevronDown } from "lucide-react";
 
 function ProductsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const categoryId = searchParams.get("category");
   const brandId = searchParams.get("brand");
   const ageId = searchParams.get("age");
   const searchQuery = searchParams.get("search");
+  
   const [products, setProducts] = useState<any[]>([]);
   const [category, setCategory] = useState<any>(null);
   const [brand, setBrand] = useState<any>(null);
@@ -28,6 +31,15 @@ function ProductsContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  
+  // Filters
+  const [sortBy, setSortBy] = useState("newest");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [appliedMinPrice, setAppliedMinPrice] = useState<number | undefined>(undefined);
+  const [appliedMaxPrice, setAppliedMaxPrice] = useState<number | undefined>(undefined);
+  const [showFilters, setShowFilters] = useState(false);
+
   const { addItem } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, items: wishlistItems } = useWishlist();
   const { addToast } = useToast();
@@ -44,12 +56,7 @@ function ProductsContent() {
         } catch (e) {}
     }
 
-    // Reset when filters change
-    setProducts([]);
-    setPage(1);
-    setHasMore(true);
-    fetchProducts(1, true);
-    
+    // Reset when main params change
     if (categoryId) {
         fetch(`${API_URL}/categories/${categoryId}`)
             .then(res => res.json())
@@ -93,6 +100,14 @@ function ProductsContent() {
     }
   }, [categoryId, searchQuery, brandId, ageId]);
 
+  // Fetch products when filters change
+  useEffect(() => {
+      setProducts([]);
+      setPage(1);
+      setHasMore(true);
+      fetchProducts(1, true);
+  }, [categoryId, searchQuery, brandId, ageId, sortBy, appliedMinPrice, appliedMaxPrice]);
+
   const fetchProducts = async (pageNum: number, isInitial: boolean = false) => {
     if (isInitial) setLoading(true);
     else setLoadingMore(true);
@@ -103,6 +118,11 @@ function ProductsContent() {
     if (brandId) url += `&brand=${brandId}`;
     if (ageId) url += `&age=${ageId}`;
     if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+    
+    // Add filters
+    if (sortBy) url += `&sort=${sortBy}`;
+    if (appliedMinPrice !== undefined) url += `&minPrice=${appliedMinPrice}`;
+    if (appliedMaxPrice !== undefined) url += `&maxPrice=${appliedMaxPrice}`;
     
     try {
       const res = await fetch(url);
@@ -148,6 +168,21 @@ function ProductsContent() {
       const nextPage = page + 1;
       setPage(nextPage);
       fetchProducts(nextPage);
+  };
+
+  const applyPriceFilter = () => {
+      const min = minPrice ? parseFloat(minPrice) : undefined;
+      const max = maxPrice ? parseFloat(maxPrice) : undefined;
+      setAppliedMinPrice(min);
+      setAppliedMaxPrice(max);
+  };
+
+  const clearFilters = () => {
+      setMinPrice("");
+      setMaxPrice("");
+      setAppliedMinPrice(undefined);
+      setAppliedMaxPrice(undefined);
+      setSortBy("newest");
   };
 
   const handleAddToCart = (product: any) => {
@@ -222,10 +257,6 @@ function ProductsContent() {
         }
     }
   };
-
-  if (loading) {
-    return <FullScreenLoader />;
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 transition-colors duration-300">
@@ -416,7 +447,86 @@ function ProductsContent() {
             </div>
         </div>
 
-        {products.length === 0 ? (
+        {/* Filters & Sorting Bar */}
+        <div className="sticky top-[60px] z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-100 dark:border-slate-800 py-3 mb-6 rounded-xl shadow-sm">
+            <div className="px-4 flex flex-wrap items-center justify-between gap-3">
+                {/* Mobile Filter Toggle */}
+                <button 
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 sm:hidden"
+                >
+                    <Filter size={16} />
+                    Filters
+                    {(appliedMinPrice !== undefined || appliedMaxPrice !== undefined) && (
+                        <span className="w-2 h-2 rounded-full bg-sky-500" />
+                    )}
+                </button>
+
+                {/* Desktop Filters / Mobile Collapsible */}
+                <div className={`w-full sm:w-auto ${showFilters ? 'block' : 'hidden'} sm:block`}>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:inline">{t('price_range')}:</span>
+                            <div className="flex items-center gap-2">
+                                <input 
+                                    type="number" 
+                                    placeholder={t('min_price')} 
+                                    value={minPrice}
+                                    onChange={(e) => setMinPrice(e.target.value)}
+                                    className="w-20 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                />
+                                <span className="text-slate-400">-</span>
+                                <input 
+                                    type="number" 
+                                    placeholder={t('max_price')} 
+                                    value={maxPrice}
+                                    onChange={(e) => setMaxPrice(e.target.value)}
+                                    className="w-20 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                />
+                                <button 
+                                    onClick={applyPriceFilter}
+                                    className="px-3 py-1.5 bg-sky-500 text-white text-sm font-medium rounded-lg hover:bg-sky-600 transition-colors"
+                                >
+                                    {t('apply')}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {(appliedMinPrice !== undefined || appliedMaxPrice !== undefined) && (
+                            <button 
+                                onClick={clearFilters}
+                                className="text-xs text-rose-500 hover:underline flex items-center gap-1"
+                            >
+                                <X size={12} />
+                                {t('clear_filters')}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2 ml-auto">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:inline">{t('sort_by')}:</span>
+                    <div className="relative group">
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="appearance-none pl-3 pr-8 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+                        >
+                            <option value="newest">{t('newest')}</option>
+                            <option value="popularity">{t('popularity')}</option>
+                            <option value="price_asc">{t('price_low_high')}</option>
+                            <option value="price_desc">{t('price_high_low')}</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {loading ? (
+            <SkeletonCardGrid count={12} />
+        ) : products.length === 0 ? (
             <div className="text-center text-slate-500 dark:text-slate-400 py-20 bg-white dark:bg-slate-800 rounded-2xl shadow-sm flex flex-col items-center justify-center">
                 <p className="mb-4">{t('no_products_found')}</p>
                 <ProductRequestButton />

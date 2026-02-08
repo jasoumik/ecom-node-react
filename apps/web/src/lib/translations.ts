@@ -25,6 +25,7 @@ export const translations = {
     view_all: "View All",
     shop_category: "Shop Now",
     our_brands: "Our Brands",
+    top_brands: "Top Brands",
     subcategories: "Subcategories",
     
     // Products
@@ -58,6 +59,15 @@ export const translations = {
     phone_number: "Phone Number",
     email_optional: "Email (Optional)",
     submit_request: "Submit Request",
+    sort_by: "Sort By",
+    newest: "Newest",
+    popularity: "Popularity",
+    price_low_high: "Price: Low to High",
+    price_high_low: "Price: High to Low",
+    price_range: "Price Range",
+    min_price: "Min",
+    max_price: "Max",
+    clear_filters: "Clear Filters",
     
     // Bundles
     bundles_sets: "Bundles & Sets",
@@ -229,6 +239,7 @@ export const translations = {
     invalid_otp: "Invalid OTP",
     register_success: "Account created successfully!",
     register_failed: "Registration failed.",
+    back_to_home: "Back to Home",
     
     // Thank You Page
     thank_you_title: "Thank You for Your Order!",
@@ -278,6 +289,7 @@ export const translations = {
     view_all: "সব দেখুন",
     shop_category: "এখনই কিনুন",
     our_brands: "আমাদের ব্র্যান্ড",
+    top_brands: "শীর্ষ ব্র্যান্ড",
     subcategories: "সাবক্যাটাগরি",
     
     // Products
@@ -311,6 +323,15 @@ export const translations = {
     phone_number: "ফোন নম্বর",
     email_optional: "ইমেল (ঐচ্ছিক)",
     submit_request: "অনুরোধ জমা দিন",
+    sort_by: "সাজান",
+    newest: "নতুন",
+    popularity: "জনপ্রিয়তা",
+    price_low_high: "দাম: কম থেকে বেশি",
+    price_high_low: "দাম: বেশি থেকে কম",
+    price_range: "দামের সীমা",
+    min_price: "সর্বনিম্ন",
+    max_price: "সর্বোচ্চ",
+    clear_filters: "ফিল্টার মুছুন",
 
     // Bundles
     bundles_sets: "বান্ডেল এবং সেট",
@@ -405,7 +426,7 @@ export const translations = {
     shipped: "শিপড",
     delivered: "ডেলিভারড",
     cancelled: "বাতিল",
-    estimated_delivery: "আনুমানিক ডেলিভারি",
+    estimated_delivery: " আনুমানিক ডেলিভারি",
 
     // About
     shop_name: "পৃথিবী",
@@ -482,6 +503,7 @@ export const translations = {
     invalid_otp: "অবৈধ ওটিপি",
     register_success: "অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!",
     register_failed: "নিবন্ধন ব্যর্থ হয়েছে।",
+    back_to_home: "হোমে ফিরে যান",
     
     // Thank You Page
     thank_you_title: "আপনার অর্ডারের জন্য ধন্যবাদ!",

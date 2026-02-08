@@ -43,7 +43,7 @@ export function BrandsSection() {
         <div className="flex justify-between items-end mb-6">
           <div>
             <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl">
-              {t('our_brands')}
+              {t('top_brands')}
             </Heading>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               {language === "bn" ? "বিশ্বস্ত ব্র্যান্ড থেকে পণ্য" : "Products from trusted brands"}
@@ -91,14 +91,14 @@ export function BrandsSection() {
                 href={`/products?brand=${brand.id}`}
                 className="group flex-shrink-0 flex flex-col items-center gap-3 min-w-[100px] sm:min-w-[120px]"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center p-2 overflow-hidden relative group-hover:shadow-lg group-hover:border-sky-200 dark:group-hover:border-sky-700 transition-all duration-300 group-hover:scale-105">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden relative group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                   {brand.logo ? (
                     <ResponsiveImage
                       src={getImageUrl(brand.logo)}
                       alt={getLocalizedField(brand, 'name', language)}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover transition-all duration-300"
                     />
                   ) : (
                     <span className="text-3xl font-bold text-slate-300 group-hover:text-sky-500 transition-colors">
@@ -117,4 +117,3 @@ export function BrandsSection() {
     </Section>
   );
 }
-
