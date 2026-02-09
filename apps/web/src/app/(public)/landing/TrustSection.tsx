@@ -60,7 +60,7 @@ export function TrustSection() {
   const settings = useSettings();
 
   return (
-    <Section className="py-6 sm:py-12 bg-brand-secondary dark:bg-slate-900/50">
+    <Section className="lg:hidden py-6 sm:py-12 bg-brand-secondary dark:bg-slate-900/50">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 sm:py-4">
         {/* Mobile: Only show 2 items - inline compact style */}
         {/*<div className="flex gap-2 lg:hidden">*/}
