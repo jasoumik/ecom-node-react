@@ -25,6 +25,7 @@ import { AgeGroupsModule } from './age-groups/age-groups.module';
 import { LabelsModule } from './labels/labels.module';
 import { BundlesModule } from './bundles/bundles.module';
 import { MotherCategoriesModule } from './mother-categories/mother-categories.module';
+import { EmailModule } from './email/email.module';
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -32,6 +33,7 @@ import { join } from 'path';
 @Module({
   imports: [
     DatabaseModule,
+    EmailModule, // Added EmailModule
     PublicModule,
     UsersModule,
     ProductsModule,

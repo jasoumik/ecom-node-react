@@ -1,63 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { EmailProvider } from '../email/email.provider';
 
 @Injectable()
 export class NotificationService {
-  private transporter;
-
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER || 'ethereal_user', // These need to be valid ethereal creds if not mocked
-        pass: process.env.SMTP_PASS || 'ethereal_pass',
-      },
-    });
-    
-    // Auto-generate test account if no env vars (for true dev experience)
-    if (!process.env.SMTP_HOST) {
-        nodemailer.createTestAccount().then(account => {
-            this.transporter = nodemailer.createTransport({
-                host: account.smtp.host,
-                port: account.smtp.port,
-                secure: account.smtp.secure,
-                auth: {
-                    user: account.user,
-                    pass: account.pass,
-                },
-            });
-            console.log('📧 Ethereal Email Configured');
-        });
-    }
-  }
+  constructor(private readonly emailProvider: EmailProvider) {}
 
   async sendEmail(to: string, subject: string, text: string, html?: string) {
-    try {
-      const info = await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || '"Prithibee" <noreply@prithibee.com>',
-        to,
-        subject,
-        text,
-        html: html || text,
-      });
-      
-      console.log('Email sent: %s', info.messageId);
-      
-      // Log preview URL for Ethereal
-      const previewUrl = nodemailer.getTestMessageUrl(info);
-      if (previewUrl) {
-          console.log('---------------------------------------------------');
-          console.log('📧 Email Preview URL: %s', previewUrl);
-          console.log('---------------------------------------------------');
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error sending email:', error);
-      return false;
-    }
+    return this.emailProvider.sendEmail(to, subject, text, html);
   }
 
   async sendSMS(to: string, message: string) {
