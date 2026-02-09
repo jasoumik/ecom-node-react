@@ -437,15 +437,56 @@ export class ProductsService {
   }
 
   async adjustStock(dto: AdjustStockDto): Promise<any> {
-      const { productId, variantId, quantity, type, reason } = dto;
+      const { productId, variantId, quantity, type, reason, unitPrice, orderId } = dto;
       
       return this.knex.transaction(async (trx) => {
           const product = await trx('products').where({ id: productId }).first();
           if (!product) throw new NotFoundException('Product not found');
 
           let quantityChange = quantity;
-          if (['wastage', 'broken', 'offline_sale', 'correction_remove'].includes(type)) {
+          const isReduction = ['wastage', 'broken', 'offline_sale', 'correction_remove'].includes(type);
+          
+          if (isReduction) {
               quantityChange = -quantity;
+          }
+
+          // Handle Batches (FIFO for reduction, New Batch for addition)
+          if (isReduction) {
+              // FIFO Logic: Find oldest batches with stock
+              const batches = await trx('product_batches')
+                  .where({ product_id: productId })
+                  .where('remaining_quantity', '>', 0)
+                  .orderBy('purchase_date', 'asc');
+              
+              let remainingToDeduct = quantity;
+              
+              for (const batch of batches) {
+                  if (remainingToDeduct <= 0) break;
+                  
+                  const deduct = Math.min(batch.remaining_quantity, remainingToDeduct);
+                  await trx('product_batches')
+                      .where({ id: batch.id })
+                      .decrement('remaining_quantity', deduct);
+                      
+                  remainingToDeduct -= deduct;
+              }
+          } else if (type === 'correction_add' || type === 'return_restock') {
+              // Create a new batch for the added stock if price is provided
+              // Or if it's a return, maybe we should try to find the original batch? 
+              // For simplicity, we create a new "Adjustment" batch or "Return" batch
+              if (unitPrice) {
+                  await trx('product_batches').insert({
+                      product_id: productId,
+                      variant_id: variantId,
+                      batch_number: type === 'return_restock' ? `RET-${Date.now()}` : `ADJ-${Date.now()}`,
+                      purchase_price: unitPrice, // Use provided price as cost
+                      selling_price: product.price, // Keep current selling price
+                      quantity: quantity,
+                      remaining_quantity: quantity,
+                      purchase_date: new Date(),
+                      is_active: true
+                  });
+              }
           }
 
           if (variantId) {
@@ -462,7 +503,8 @@ export class ProductsService {
               variant_id: variantId,
               quantity_change: quantityChange,
               type: type,
-              reason: reason || `Manual Adjustment: ${type}`
+              reason: reason || `Manual Adjustment: ${type}`,
+              order_id: orderId // Link to order if return
           });
           
           return { success: true };

@@ -13,9 +13,17 @@ export class AdjustStockDto {
   quantity: number;
 
   @IsString()
-  type: 'wastage' | 'broken' | 'offline_sale' | 'correction_add' | 'correction_remove';
+  type: 'wastage' | 'broken' | 'offline_sale' | 'correction_add' | 'correction_remove' | 'return_restock';
 
   @IsOptional()
   @IsString()
   reason?: string;
+
+  @IsOptional()
+  @IsNumber()
+  unitPrice?: number; // For adding stock (value of the stock)
+
+  @IsOptional()
+  @IsUUID()
+  orderId?: string; // For returns
 }

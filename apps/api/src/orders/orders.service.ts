@@ -399,10 +399,19 @@ export class OrdersService {
     await this.notificationService.sendWhatsApp(adminPhone, adminMsg);
   }
 
-  async findAll(): Promise<any[]> {
-    const orders = await this.knex('orders')
-      .select('*')
-      .orderBy('created_at', 'desc');
+  async findAll(search?: string): Promise<any[]> {
+    const query = this.knex('orders').select('*').orderBy('created_at', 'desc');
+    
+    if (search) {
+        query.where(function() {
+            this.where('order_number', 'like', `%${search}%`)
+                .orWhere('customer_name', 'ilike', `%${search}%`)
+                .orWhere('customer_phone', 'like', `%${search}%`);
+        });
+    }
+
+    const orders = await query;
+    
     for (const order of orders) {
       order.items = await this.knex('order_items').where({
         order_id: order.id,
