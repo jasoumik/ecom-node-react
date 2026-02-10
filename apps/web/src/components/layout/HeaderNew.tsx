@@ -49,8 +49,8 @@ export function Header() {
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { totalItems } = useCart();
-  const { items: wishlistItems } = useWishlist();
+  const { totalItems, clearCart } = useCart();
+  const { items: wishlistItems, clearWishlist } = useWishlist();
   const [mounted, setMounted] = useState(false);
   const settings = useSettings();
   const { t, language } = useLanguage();
@@ -206,6 +206,8 @@ export function Header() {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
+    clearCart();
+    clearWishlist();
     window.dispatchEvent(new Event("storage"));
     router.push("/login");
   };
@@ -675,10 +677,10 @@ export function Header() {
                   <button className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-target">
                     <User size={22} />
                   </button>
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-                      <p className="font-medium text-slate-900 dark:text-white">{user.name}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+                      <p className="font-medium text-slate-900 dark:text-white truncate">{user.name}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                     </div>
                     <div className="p-2">
                       <Link
@@ -1236,4 +1238,3 @@ export function Header() {
     </>
   );
 }
-

@@ -10,6 +10,8 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('stock_requests').del();
   await knex('order_items').del();
   await knex('orders').del();
+  await knex('cart_items').del(); // Added
+  await knex('carts').del(); // Added
   await knex('product_batches').del();
   await knex('product_variants').del();
   await knex('product_labels').del();

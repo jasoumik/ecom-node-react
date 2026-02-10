@@ -19,12 +19,7 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable('addresses', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
-    table
-      .uuid('user_id')
-      .notNullable()
-      .references('id')
-      .inTable('users')
-      .onDelete('CASCADE');
+    table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
     table.string('type').notNullable(); // Home, Office, etc.
     table.string('address').notNullable();
     table.string('city').nullable();
@@ -236,6 +231,25 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('SET NULL');
     table.integer('quantity').defaultTo(1);
     table.timestamps(true, true);
+  });
+
+  // Carts Table
+  await knex.schema.createTable('carts', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.timestamps(true, true);
+    table.unique(['user_id']); // One cart per user
+  });
+
+  // Cart Items Table
+  await knex.schema.createTable('cart_items', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('cart_id').notNullable().references('id').inTable('carts').onDelete('CASCADE');
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('CASCADE');
+    table.integer('quantity').notNullable().defaultTo(1);
+    table.timestamps(true, true);
+    table.unique(['cart_id', 'product_id', 'variant_id']); // Unique item per cart
   });
 
   await knex.schema.createTable('orders', (table) => {
@@ -466,6 +480,8 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('stock_movements');
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
+  await knex.schema.dropTableIfExists('cart_items'); // Added
+  await knex.schema.dropTableIfExists('carts'); // Added
   await knex.schema.dropTableIfExists('bundle_items');
   await knex.schema.dropTableIfExists('bundles');
   await knex.schema.dropTableIfExists('coupons');

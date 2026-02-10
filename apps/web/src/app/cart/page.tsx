@@ -1,17 +1,20 @@
 "use client";
 
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
 import { Button, Heading, Text, ResponsiveImage } from "@repo/ui";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
-import { Trash2, Heart, Minus, Plus, MapPin, Edit2, Gift, ArrowRight, CheckCircle2, PlusCircle, ShoppingCart } from "lucide-react";
+import { Trash2, Heart, Minus, Plus, MapPin, Edit2, Gift, ArrowRight, CheckCircle2, PlusCircle, ShoppingCart, Tag, Coins, Truck } from "lucide-react";
 import Link from "next/link";
 import { getImageUrl, getLocalizedField } from "@/lib/utils";
 import { Input } from "@/components/ui/Input";
-import {useWishlist} from "@/lib/wishlist";
+import { FullScreenLoader } from "@/components/ui/Loader";
+import { DISTRICTS, DHAKA_METRO_THANAS, DHAKA_SUBURBS } from "@/lib/bd-locations";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface DeliveryCharge {
   id: string;
@@ -55,6 +58,9 @@ export default function CartPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [district, setDistrict] = useState("");
+  const [thana, setThana] = useState("");
+  
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [transactionId, setTransactionId] = useState("");
   const [couponCode, setCouponCode] = useState("");
@@ -74,12 +80,15 @@ export default function CartPage() {
   const [pointsRedemptionRate, setPointsRedemptionRate] = useState(0.1); // Default 1 point = 0.1 BDT
   const [pointsEarningRate, setPointsEarningRate] = useState(1); // Default 1 point per 100 BDT
 
+  const [isClientMounted, setIsClientMounted] = useState(false); // New state for client-side mount
+
   const router = useRouter();
   const { addToast } = useToast();
   const { t, language } = useLanguage();
 
   // Fetch Data
   useEffect(() => {
+    setIsClientMounted(true); // Component has mounted on client
     const fetchData = async () => {
       try {
         // Fetch Settings
@@ -104,8 +113,7 @@ export default function CartPage() {
         const deliveryRes = await fetch(`${API_URL}/delivery`);
         const deliveryData = await deliveryRes.json();
         setDeliveryCharges(deliveryData);
-        if (deliveryData.length > 0) setSelectedDeliveryId(deliveryData[0].id);
-
+        
         // Fetch User Address & Points
         const userStr = localStorage.getItem("user");
         if (userStr) {
@@ -127,6 +135,16 @@ export default function CartPage() {
             setSavedAddresses(addressData);
             const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0];
             setCustomerAddress(defaultAddr.address);
+            if (defaultAddr.city) {
+                // Try to parse city if it contains comma (e.g. "Thana, District")
+                const parts = defaultAddr.city.split(',').map((p: string) => p.trim());
+                if (parts.length > 1) {
+                    setDistrict(parts[1]);
+                    setThana(parts[0]);
+                } else {
+                    setDistrict(defaultAddr.city);
+                }
+            }
           } else {
               setIsAddingNewAddress(true);
           }
@@ -146,6 +164,49 @@ export default function CartPage() {
 
     fetchData();
   }, []);
+
+  // Update Delivery Charge based on District and Thana
+  useEffect(() => {
+    if (deliveryCharges.length === 0) return;
+
+    let targetCharge;
+    
+    if (!district) {
+        setSelectedDeliveryId("");
+        return;
+    }
+
+    if (district === "Dhaka") {
+        if (!thana) {
+            setSelectedDeliveryId(""); // Wait for thana selection
+            return;
+        }
+
+        if (DHAKA_METRO_THANAS.includes(thana)) {
+            // Inside Dhaka
+            targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("inside dhaka"));
+        } else if (DHAKA_SUBURBS.includes(thana)) {
+            // Outside Dhaka Metro
+            targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("outside dhaka metro"));
+        } else {
+            // Fallback for unknown thana in Dhaka
+            targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("inside dhaka"));
+        }
+    } else {
+        // Outside Dhaka (General)
+        targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("outside dhaka") && !d.name.toLowerCase().includes("metro"));
+    }
+
+    // Fallback logic if exact match fails
+    if (!targetCharge) {
+        if (district === "Dhaka") targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("dhaka"));
+        else targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("outside"));
+    }
+
+    if (targetCharge) {
+        setSelectedDeliveryId(targetCharge.id);
+    }
+  }, [district, thana, deliveryCharges]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode) return;
@@ -175,6 +236,15 @@ export default function CartPage() {
         addToast("Please fill in all shipping details", "error");
         return;
     }
+    if (!district) {
+        addToast("Please select your district", "error");
+        return;
+    }
+    if (district === "Dhaka" && !thana) {
+        addToast("Please select your area/thana", "error");
+        return;
+    }
+
     if (!selectedDeliveryId) {
         addToast(t("select_delivery_area"), "error");
         return;
@@ -192,20 +262,24 @@ export default function CartPage() {
 
     setIsSubmitting(true);
     try {
+      // Combine address with district/thana for storage
+      const locationString = district === "Dhaka" ? `${thana}, ${district}` : district;
+      const fullAddress = `${customerAddress}, ${locationString}`;
+
       // Save address if requested AND not already saved
       const isAddressSaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
       if (user && saveAddress && customerAddress && !isAddressSaved) {
           await fetch(`${API_URL}/users/${user.id}/addresses`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ address: customerAddress, type: 'Home', is_default: false }),
+              body: JSON.stringify({ address: customerAddress, city: locationString, type: 'Home', is_default: false }),
           });
       }
 
       const orderData = {
         customerName,
         customerPhone,
-        customerAddress,
+        customerAddress: fullAddress,
         userId: user?.id,
         deliveryChargeId: selectedDeliveryId,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
@@ -244,7 +318,19 @@ export default function CartPage() {
   };
 
   const handleAddressSelect = (address: UserAddress) => {
+    setCustomerName(user?.name || "");
+    setCustomerPhone(user?.phone || "");
     setCustomerAddress(address.address);
+    if (address.city) {
+        const parts = address.city.split(',').map(p => p.trim());
+        if (parts.length > 1) {
+            setDistrict(parts[1]);
+            setThana(parts[0]);
+        } else {
+            setDistrict(address.city);
+            setThana("");
+        }
+    }
     setIsAddingNewAddress(false);
   };
 
@@ -310,6 +396,11 @@ export default function CartPage() {
   
   const grandTotal = Math.max(0, currentTotal + shippingCost - totalDiscount);
   const earnedPoints = Math.floor((grandTotal / 100) * pointsEarningRate);
+
+  if (!isClientMounted || (isClientMounted && items.length === 0 && totalItems() > 0)) {
+    // Show loader if not mounted yet, or if items are empty but totalItems (from zustand) is not 0 (still loading from persist)
+    return <FullScreenLoader />;
+  }
 
   if (items.length === 0) {
     return (
@@ -385,9 +476,6 @@ export default function CartPage() {
                                 <Link href={`/products/${item.id}`} className="text-sm font-medium text-slate-800 dark:text-white hover:text-sky-600 line-clamp-2 mb-1">
                                     {item.name}
                                 </Link>
-                                <p className="text-xs text-slate-500 mb-3">
-                                    Prithibee Collection
-                                </p>
 
                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                     {/* Actions */}
@@ -487,6 +575,7 @@ export default function CartPage() {
                                         )}
                                     </div>
                                     <div className="text-xs text-slate-500 truncate mt-1 pl-8">{addr.address}</div>
+                                    {addr.city && <div className="text-xs text-slate-400 truncate mt-0.5 pl-8">{addr.city}</div>}
                                 </button>
                             ))}
                         </div>
@@ -514,6 +603,33 @@ export default function CartPage() {
                             />
                         </div>
 
+                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                            <div className="w-full">
+                                <SearchableSelect 
+                                    label="District"
+                                    placeholder="Select District"
+                                    options={DISTRICTS}
+                                    value={district}
+                                    onChange={(val) => {
+                                        setDistrict(val);
+                                        setThana(""); // Reset thana when district changes
+                                    }}
+                                />
+                            </div>
+                            
+                            {district === "Dhaka" && (
+                                <div className="w-full animate-in fade-in slide-in-from-left-2">
+                                    <SearchableSelect 
+                                        label="Area / Thana"
+                                        placeholder="Select Thana"
+                                        options={[...DHAKA_METRO_THANAS, ...DHAKA_SUBURBS].sort()}
+                                        value={thana}
+                                        onChange={setThana}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
                         <div className="w-full mb-4">
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('address')}</label>
                             <textarea 
@@ -522,7 +638,7 @@ export default function CartPage() {
                                 onChange={(e) => setCustomerAddress(e.target.value)} 
                                 required 
                                 rows={2}
-                                placeholder="House, Road, Area, City"
+                                placeholder="House, Road, Area"
                             />
                         </div>
                         
@@ -543,26 +659,23 @@ export default function CartPage() {
                 )}
 
                 <div className="mb-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('delivery_area')}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {deliveryCharges.map(charge => (
-                            <label key={charge.id} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${selectedDeliveryId === charge.id ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                                <div className="flex items-center gap-3">
-                                    <input 
-                                        type="radio" 
-                                        name="delivery" 
-                                        value={charge.id}
-                                        checked={selectedDeliveryId === charge.id}
-                                        onChange={() => setSelectedDeliveryId(charge.id)}
-                                        className="w-4 h-4 text-sky-500 focus:ring-sky-500"
-                                    />
-                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{charge.name}</span>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
-                                </div>
-                            </label>
-                        ))}
+                    <div className="flex items-center justify-between p-4 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-sky-500 shadow-sm">
+                                <Truck size={20} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Delivery Charge</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                    {selectedDelivery ? selectedDelivery.name : "Select address to calculate"}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-lg font-bold text-slate-900 dark:text-white">
+                                {isFreeShipping ? <span className="text-emerald-600">FREE</span> : `৳${selectedDelivery ? selectedDelivery.amount : 0}`}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -655,15 +768,27 @@ export default function CartPage() {
                 {/* Coupon Input */}
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-sm shadow-sm border border-slate-200 dark:border-slate-800">
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">{t('coupon_code')}</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <input 
-                            className="flex-1 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                            className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm w-full"
                             placeholder="Enter code"
                             value={couponCode}
                             onChange={(e) => setCouponCode(e.target.value)}
                         />
-                        <Button variant="secondary" onClick={handleApplyCoupon} className="rounded-lg text-xs h-auto">{t('apply')}</Button>
+                        <Button 
+                            variant="secondary" 
+                            onClick={handleApplyCoupon} 
+                            className="rounded-lg text-sm font-bold px-6 py-2.5 h-auto w-full sm:w-auto bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
+                        >
+                            {t('apply')}
+                        </Button>
                     </div>
+                    {appliedCoupon && (
+                        <div className="flex items-center gap-2 text-sm text-green-600 mt-3 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-100 dark:border-green-900">
+                            <Tag size={16} />
+                            <span className="font-medium">Coupon "{appliedCoupon.code}" applied!</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Earn Points Card */}
@@ -767,19 +892,23 @@ export default function CartPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {relatedProducts.map((product) => (
                     <div key={product.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-md p-3 hover:shadow-md transition-shadow group">
-                        <div className="aspect-[2/3] bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-3 relative">
-                            <img 
-                                src={getImageUrl(product.images?.[0])} 
-                                alt={getLocalizedField(product, 'name', language)}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                        </div>
-                        <h4 className="text-xs font-bold text-slate-800 dark:text-white line-clamp-2 mb-1 h-8">
-                            {getLocalizedField(product, 'name', language)}
-                        </h4>
-                        <p className="text-xs text-slate-500 mb-2 truncate">
-                            {product.author || "Prithibee"}
-                        </p>
+                        <Link href={`/products/${product.id}`}>
+                            <div className="aspect-[2/3] bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-3 relative">
+                                <img 
+                                    src={getImageUrl(product.images?.[0])} 
+                                    alt={getLocalizedField(product, 'name', language)}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                            </div>
+                            <h4 className="text-xs font-bold text-slate-800 dark:text-white line-clamp-2 mb-1 h-8">
+                                {getLocalizedField(product, 'name', language)}
+                            </h4>
+                        </Link>
+                        {product.author && (
+                            <p className="text-xs text-slate-500 mb-2 truncate">
+                                {product.author}
+                            </p>
+                        )}
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-bold text-sky-600">৳{product.price}</span>
                             <span className="text-xs text-slate-400 line-through">৳{Math.round(product.price * 1.2)}</span>

@@ -5,6 +5,8 @@ import { Heading, Button } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { DISTRICTS, DHAKA_METRO_THANAS, DHAKA_SUBURBS } from "@/lib/bd-locations";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -12,6 +14,9 @@ export default function AddressesPage() {
   const [newAddress, setNewAddress] = useState({ type: "Home", address: "", city: "", zip: "", is_default: false });
   const { addToast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
+  
+  const [district, setDistrict] = useState("");
+  const [thana, setThana] = useState("");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -20,6 +25,15 @@ export default function AddressesPage() {
         fetchAddresses(user.id);
     }
   }, []);
+
+  // Update city when district/thana changes
+  useEffect(() => {
+      if (district === "Dhaka") {
+          setNewAddress(prev => ({ ...prev, city: thana ? `${thana}, ${district}` : district }));
+      } else {
+          setNewAddress(prev => ({ ...prev, city: district }));
+      }
+  }, [district, thana]);
 
   const fetchAddresses = async (uid: string) => {
     const res = await fetch(`${API_URL}/users/${uid}/addresses`);
@@ -30,6 +44,16 @@ export default function AddressesPage() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
+    
+    if (!district) {
+        addToast("Please select a district", "error");
+        return;
+    }
+    if (district === "Dhaka" && !thana) {
+        addToast("Please select an area/thana", "error");
+        return;
+    }
+
     try {
       const res = await fetch(`${API_URL}/users/${userId}/addresses`, {
         method: "POST",
@@ -40,6 +64,8 @@ export default function AddressesPage() {
         addToast("Address added", "success");
         setIsAdding(false);
         setNewAddress({ type: "Home", address: "", city: "", zip: "", is_default: false });
+        setDistrict("");
+        setThana("");
         fetchAddresses(userId);
       } else {
         addToast("Failed to add address", "error");
@@ -78,9 +104,35 @@ export default function AddressesPage() {
             <form onSubmit={handleAdd} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                     <Input label="Label (e.g. Home, Office)" value={newAddress.type} onChange={e => setNewAddress({...newAddress, type: e.target.value})} required className="bg-white" />
-                    <Input label="City" value={newAddress.city} onChange={e => setNewAddress({...newAddress, city: e.target.value})} required className="bg-white" />
+                    <SearchableSelect 
+                        label="District"
+                        placeholder="Select District"
+                        options={DISTRICTS}
+                        value={district}
+                        onChange={(val) => {
+                            setDistrict(val);
+                            setThana("");
+                        }}
+                        className="bg-white"
+                    />
                 </div>
+                
+                {district === "Dhaka" && (
+                    <div className="grid md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2">
+                        <SearchableSelect 
+                            label="Area / Thana"
+                            placeholder="Select Thana"
+                            options={[...DHAKA_METRO_THANAS, ...DHAKA_SUBURBS].sort()}
+                            value={thana}
+                            onChange={setThana}
+                            className="bg-white"
+                        />
+                        <div className="hidden md:block"></div>
+                    </div>
+                )}
+
                 <Input label="Street Address" value={newAddress.address} onChange={e => setNewAddress({...newAddress, address: e.target.value})} required className="bg-white" />
+                
                 <div className="grid md:grid-cols-2 gap-6">
                     <Input label="Zip Code" value={newAddress.zip} onChange={e => setNewAddress({...newAddress, zip: e.target.value})} required className="bg-white" />
                     <div className="flex items-center pt-8">
