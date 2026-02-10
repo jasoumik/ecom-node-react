@@ -194,6 +194,12 @@ export default function OrderInvoicePage() {
                     <span>-৳{order.discount}</span>
                     </div>
                 )}
+                {parseFloat(order.points_discount) > 0 && (
+                    <div className="flex justify-between text-purple-600 print:text-slate-700 text-sm">
+                    <span>Points Redeemed ({order.points_redeemed})</span>
+                    <span>-৳{order.points_discount}</span>
+                    </div>
+                )}
                 <div className="flex justify-between text-xl font-bold text-slate-900 dark:text-white border-t-2 border-slate-200 dark:border-slate-600 pt-3 mt-3 print:border-slate-200 print:text-black">
                   <span>{t('total')}</span>
                   <span>৳{order.total_amount}</span>

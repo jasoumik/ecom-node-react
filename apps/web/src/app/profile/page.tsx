@@ -4,11 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import { Button, Heading } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
-import { User, Phone, Mail, Camera } from "lucide-react";
+import { User, Phone, Mail, Camera, Coins, Gift } from "lucide-react";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [points, setPoints] = useState(0);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,6 +31,17 @@ export default function ProfilePage() {
                 phone: parsed.phone || "",
                 avatar: parsed.avatar || ""
             });
+
+            // Fetch fresh user data including points
+            fetch(`${API_URL}/users/${parsed.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.points !== undefined) {
+                        setPoints(data.points);
+                    }
+                })
+                .catch(console.error);
+
         } catch (e) {
             // Handle error
         }
@@ -99,6 +111,21 @@ export default function ProfilePage() {
         <div className="mb-8">
             <Heading size="lg" className="font-sans text-slate-900 dark:text-white mb-2">Personal Information</Heading>
             <p className="text-slate-500 dark:text-slate-400 text-sm">Manage your personal details and account settings.</p>
+        </div>
+
+        {/* Points Card */}
+        <div className="mb-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Coins size={120} />
+            </div>
+            <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                    <Gift size={20} />
+                    <span className="font-bold text-sm uppercase tracking-wider">Loyalty Points</span>
+                </div>
+                <div className="text-4xl font-bold mb-1">{points}</div>
+                <p className="text-amber-100 text-sm">Earn points on every purchase and redeem them for discounts.</p>
+            </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">

@@ -179,9 +179,6 @@ export class OrdersService {
           const remainingTotal = subtotal + deliveryAmount - discountAmount;
           if (pointsDiscount > remainingTotal) {
               pointsDiscount = remainingTotal;
-              // Adjust redeemed points if discount was capped? 
-              // For simplicity, we consume all requested points but cap discount.
-              // Or better: recalculate points needed.
               pointsRedeemed = Math.ceil(pointsDiscount / redemptionRate);
           }
       }
@@ -270,7 +267,7 @@ export class OrdersService {
         }
 
         // Send Notifications (Async, don't block)
-        this.sendOrderNotifications(order);
+        this.sendOrderNotifications(order).catch(err => console.error("Notification failed", err));
 
         return { ...order, items: itemsToInsert };
       });
@@ -546,16 +543,20 @@ export class OrdersService {
         updated_by: userId || null,
       });
 
-      // Award points if delivered
-      if (status === 'delivered' && order.points_earned > 0 && order.user_id) {
+      // Award points if delivered AND not previously delivered
+      if (status === 'delivered' && currentStatus !== 'delivered' && order.points_earned > 0 && order.user_id) {
+          console.log(`Awarding ${order.points_earned} points to user ${order.user_id} for order ${order.id}`);
           await trx('users').where({ id: order.user_id }).increment('points', order.points_earned);
-          
-          // Log point earning? Maybe in a points_history table if we had one.
       }
 
       // Notify customer on status change
-      const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
-      await this.notificationService.sendSMS(order.customer_phone, msg);
+      try {
+          const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
+          await this.notificationService.sendSMS(order.customer_phone, msg);
+      } catch (e) {
+          console.error("Failed to send status update notification", e);
+          // Don't fail the transaction just because SMS failed
+      }
 
       return updatedOrder;
     });

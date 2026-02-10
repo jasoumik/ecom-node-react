@@ -22,6 +22,11 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
   @Put(':id')
   updateProfile(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
     return this.usersService.update(id, updateProfileDto);
