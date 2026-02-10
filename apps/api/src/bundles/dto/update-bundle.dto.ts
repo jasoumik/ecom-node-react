@@ -3,6 +3,7 @@ import { CreateBundleItemDto } from './create-bundle.dto';
 export class UpdateBundleDto {
   title?: string;
   title_bn?: string;
+  slug?: string; // Added Slug
   description?: string;
   description_bn?: string;
   image?: string;

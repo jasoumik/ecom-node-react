@@ -1,5 +1,15 @@
 import { Knex } from 'knex';
 
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')     // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-');  // Replace multiple - with single -
+}
+
 export async function seed(knex: Knex): Promise<void> {
   // Deletes ALL existing entries except users
   await knex('coupon_usages').del();
@@ -10,6 +20,8 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('stock_requests').del();
   await knex('order_items').del();
   await knex('orders').del();
+  await knex('cart_items').del(); // Added
+  await knex('carts').del(); // Added
   await knex('product_batches').del();
   await knex('product_variants').del();
   await knex('product_labels').del();
@@ -64,7 +76,12 @@ export async function seed(knex: Knex): Promise<void> {
 
   const ageGroups: Record<string, any> = {};
   for (const ag of ageGroupsData) {
-    const [inserted] = await knex('age_groups').insert({ ...ag, is_active: true, tenant_id: 'default' }).returning('*');
+    const [inserted] = await knex('age_groups').insert({ 
+        ...ag, 
+        slug: slugify(ag.label), // Added Slug
+        is_active: true, 
+        tenant_id: 'default' 
+    }).returning('*');
     ageGroups[ag.label.toLowerCase()] = inserted;
   }
 
@@ -149,6 +166,7 @@ export async function seed(knex: Knex): Promise<void> {
     const [inserted] = await knex('brands').insert({ 
         name: brand.name,
         name_bn: brand.name_bn,
+        slug: slugify(brand.name), // Added Slug
         logo: brand.logo,
         mother_category_id: motherCat ? motherCat.id : null,
         is_active: true 
@@ -177,6 +195,7 @@ export async function seed(knex: Knex): Promise<void> {
     const [inserted] = await knex('categories').insert({ 
         name: cat.name,
         name_bn: cat.name_bn,
+        slug: slugify(cat.name), // Added Slug
         image: cat.image,
         mother_category_id: motherCat ? motherCat.id : null,
         is_active: true 
@@ -217,6 +236,7 @@ export async function seed(knex: Knex): Promise<void> {
       const [inserted] = await knex('categories').insert({
         name: subCat.name,
         name_bn: subCat.name_bn,
+        slug: slugify(subCat.name), // Added Slug
         parent_id: parent.id,
         image: `https://picsum.photos/seed/${subCat.name.toLowerCase().replace(/\s/g, '')}/800/800`,
         is_active: true
@@ -269,6 +289,7 @@ export async function seed(knex: Knex): Promise<void> {
     const [inserted] = await knex('products').insert({
       name: prod.name,
       name_bn: prod.name_bn,
+      slug: slugify(prod.name), // Added Slug
       description: prod.description,
       description_bn: prod.description + ' (বাংলা)',
       price: prod.price,
@@ -513,6 +534,8 @@ export async function seed(knex: Knex): Promise<void> {
     { key: 'currency', value: 'BDT', description: 'Default currency' },
     { key: 'currency_symbol', value: '৳', description: 'Currency symbol' },
     { key: 'payment_methods', value: 'bKash,Nagad,Visa,Mastercard,COD', description: 'Available payment methods (comma separated)' },
+    { key: 'points_earning_rate', value: '1', description: 'Points earned per 100 currency units' }, // 1 point per 100 BDT
+    { key: 'points_redemption_rate', value: '0.1', description: 'Currency value per 1 point' }, // 1 point = 0.1 BDT (10 points = 1 BDT)
   ]);
 
   // ============================================

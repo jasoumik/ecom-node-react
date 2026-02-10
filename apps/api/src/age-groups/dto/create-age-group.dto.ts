@@ -8,6 +8,10 @@ export class CreateAgeGroupDto {
   @IsString()
   label_bn?: string;
 
+  @IsOptional()
+  @IsString()
+  slug?: string; // Added Slug
+
   @IsString()
   icon: string;
 
@@ -30,4 +34,3 @@ export class CreateAgeGroupDto {
   @IsBoolean()
   is_active?: boolean;
 }
-

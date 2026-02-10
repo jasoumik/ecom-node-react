@@ -10,10 +10,13 @@ import { Input } from "@/components/ui/Input";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import { useSettings } from "@/lib/settings-context";
+import { DISTRICTS, DHAKA_METRO_THANAS, DHAKA_SUBURBS } from "@/lib/bd-locations";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { CheckCircle2, Truck } from "lucide-react";
 
 export default function BuyNowPage() {
   const params = useParams();
-  const id = params.id as string;
+  const slugOrId = params.id as string;
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -22,11 +25,15 @@ export default function BuyNowPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [district, setDistrict] = useState("");
+  const [thana, setThana] = useState("");
+  
   const [deliveryCharges, setDeliveryCharges] = useState<any[]>([]);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [transactionId, setTransactionId] = useState("");
   const [paymentNumbers, setPaymentNumbers] = useState<any>({});
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<string[]>(["cod", "bkash", "nagad"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -64,7 +71,7 @@ export default function BuyNowPage() {
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${API_URL}/products/${id}`);
+        const res = await fetch(`${API_URL}/products/${slugOrId}`);
         if (res.ok) {
           const data = await res.json();
           setProduct(data);
@@ -86,7 +93,7 @@ export default function BuyNowPage() {
     fetchProduct();
     fetchDeliveryCharges();
     fetchSettings();
-  }, [id]);
+  }, [slugOrId]);
 
   const fetchAddresses = async (userId: string) => {
       try {
@@ -94,6 +101,9 @@ export default function BuyNowPage() {
           if (res.ok) {
               const data = await res.json();
               setSavedAddresses(Array.isArray(data) ? data : []);
+              // Auto-select default address
+              const defaultAddr = data.find((a: any) => a.is_default) || data[0];
+              if (defaultAddr) handleAddressSelect(defaultAddr);
           }
       } catch (e) {}
   };
@@ -103,7 +113,6 @@ export default function BuyNowPage() {
           const res = await fetch(`${API_URL}/delivery`);
           const data = await res.json();
           setDeliveryCharges(data);
-          if (data.length > 0) setSelectedDeliveryId(data[0].id);
       } catch (e) {}
   };
 
@@ -115,10 +124,52 @@ export default function BuyNowPage() {
           data.forEach((s: any) => {
               if (s.key === 'bkash_number') numbers.bkash = s.value;
               if (s.key === 'nagad_number') numbers.nagad = s.value;
+              if (s.key === 'payment_methods') {
+                  setAvailablePaymentMethods(s.value.split(',').map((m: string) => m.trim().toLowerCase()));
+              }
           });
           setPaymentNumbers(numbers);
       } catch (e) {}
   };
+
+  // Update Delivery Charge based on District and Thana
+  useEffect(() => {
+    if (deliveryCharges.length === 0) return;
+
+    let targetCharge;
+    
+    if (!district) {
+        setSelectedDeliveryId("");
+        return;
+    }
+
+    if (district === "Dhaka") {
+        if (!thana) {
+            setSelectedDeliveryId(""); // Wait for thana selection
+            return;
+        }
+
+        if (DHAKA_METRO_THANAS.includes(thana)) {
+            targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("inside dhaka"));
+        } else if (DHAKA_SUBURBS.includes(thana)) {
+            targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("outside dhaka metro"));
+        } else {
+            targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("inside dhaka"));
+        }
+    } else {
+        targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("outside dhaka") && !d.name.toLowerCase().includes("metro"));
+    }
+
+    // Fallback logic
+    if (!targetCharge) {
+        if (district === "Dhaka") targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("dhaka"));
+        else targetCharge = deliveryCharges.find(d => d.name.toLowerCase().includes("outside"));
+    }
+
+    if (targetCharge) {
+        setSelectedDeliveryId(targetCharge.id);
+    }
+  }, [district, thana, deliveryCharges]);
 
   useEffect(() => {
       if (!product || !product.variants) return;
@@ -147,6 +198,19 @@ export default function BuyNowPage() {
         return;
     }
 
+    if (!district) {
+        addToast("Please select your district", "error");
+        return;
+    }
+    if (district === "Dhaka" && !thana) {
+        addToast("Please select your area/thana", "error");
+        return;
+    }
+    if (!selectedDeliveryId) {
+        addToast("Please select a valid delivery area", "error");
+        return;
+    }
+
     if ((paymentMethod === 'bkash' || paymentMethod === 'nagad') && !transactionId) {
         addToast("Please enter transaction ID", "error");
         return;
@@ -154,20 +218,23 @@ export default function BuyNowPage() {
 
     setIsSubmitting(true);
     try {
+      const locationString = district === "Dhaka" ? `${thana}, ${district}` : district;
+      const fullAddress = `${customerAddress}, ${locationString}`;
+
       // Save address if requested AND not already saved
       const isAddressSaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
       if (user && saveAddress && customerAddress && !isAddressSaved) {
           await fetch(`${API_URL}/users/${user.id}/addresses`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ address: customerAddress, type: 'Home', is_default: false }),
+              body: JSON.stringify({ address: customerAddress, city: locationString, type: 'Home', is_default: false }),
           });
       }
 
       const orderData = {
         customerName,
         customerPhone,
-        customerAddress,
+        customerAddress: fullAddress,
         deliveryChargeId: selectedDeliveryId,
         paymentMethod,
         transactionId: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? transactionId : undefined,
@@ -201,7 +268,19 @@ export default function BuyNowPage() {
   };
 
   const handleAddressSelect = (address: any) => {
+      setCustomerName(user?.name || "");
+      setCustomerPhone(user?.phone || "");
       setCustomerAddress(address.address);
+      if (address.city) {
+          const parts = address.city.split(',').map((p: string) => p.trim());
+          if (parts.length > 1) {
+              setDistrict(parts[1]);
+              setThana(parts[0]);
+          } else {
+              setDistrict(address.city);
+              setThana("");
+          }
+      }
   };
 
   if (loading) return <FullScreenLoader />;
@@ -236,8 +315,6 @@ export default function BuyNowPage() {
   if (mediaList.length === 0) mediaList = ["https://picsum.photos/seed/default/800/800"];
 
   const currentImage = mediaList[selectedImageIndex] || mediaList[0];
-
-  const isAddressAlreadySaved = savedAddresses.some(addr => addr.address.toLowerCase() === customerAddress.toLowerCase());
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans">
@@ -463,6 +540,34 @@ export default function BuyNowPage() {
                     placeholder={t('enter_mobile_number')}
                     className="bg-slate-50/50"
                 />
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="w-full">
+                        <SearchableSelect 
+                            label="District"
+                            placeholder="Select District"
+                            options={DISTRICTS}
+                            value={district}
+                            onChange={(val) => {
+                                setDistrict(val);
+                                setThana("");
+                            }}
+                        />
+                    </div>
+                    
+                    {district === "Dhaka" && (
+                        <div className="w-full animate-in fade-in slide-in-from-left-2">
+                            <SearchableSelect 
+                                label="Area / Thana"
+                                placeholder="Select Thana"
+                                options={[...DHAKA_METRO_THANAS, ...DHAKA_SUBURBS].sort()}
+                                value={thana}
+                                onChange={setThana}
+                            />
+                        </div>
+                    )}
+                </div>
+
                 <div>
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('address')}</label>
                     <textarea 
@@ -474,56 +579,66 @@ export default function BuyNowPage() {
                         placeholder={t('enter_full_address')}
                     />
                 </div>
+                
+                {user && (
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className="relative flex items-center">
+                            <input 
+                                type="checkbox" 
+                                checked={saveAddress} 
+                                onChange={e => setSaveAddress(e.target.checked)}
+                                className="peer w-5 h-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500 transition-all cursor-pointer"
+                            />
+                        </div>
+                        <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-sky-600 transition-colors">Save this address for future</span>
+                    </label>
+                )}
 
                 <div className="space-y-3">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">{t('delivery_area')}</label>
-                    <div className="grid grid-cols-1 gap-2">
-                        {deliveryCharges.map(charge => (
-                            <label key={charge.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedDeliveryId === charge.id ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
-                                <div className="flex items-center gap-3">
-                                    <input 
-                                        type="radio" 
-                                        name="delivery" 
-                                        value={charge.id}
-                                        checked={selectedDeliveryId === charge.id}
-                                        onChange={() => setSelectedDeliveryId(charge.id)}
-                                        className="w-4 h-4 text-sky-500 focus:ring-sky-500"
-                                    />
-                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{getLocalizedField(charge, 'name', language)}</span>
-                                </div>
-                                <div className="text-right">
-                                    {isFreeShipping ? (
-                                        <>
-                                            <span className="text-xs text-slate-400 line-through mr-2">৳{charge.amount}</span>
-                                            <span className="text-sm font-bold text-emerald-600">FREE</span>
-                                        </>
-                                    ) : (
-                                        <span className="text-sm font-bold text-slate-900 dark:text-white">৳{charge.amount}</span>
-                                    )}
-                                </div>
-                            </label>
-                        ))}
+                    <div className="p-4 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-sky-500 shadow-sm">
+                                <Truck size={20} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Delivery Charge</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                    {selectedDelivery ? selectedDelivery.name : "Select address to calculate"}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-lg font-bold text-slate-900 dark:text-white">
+                                {isFreeShipping ? <span className="text-emerald-600">FREE</span> : `৳${selectedDelivery ? selectedDelivery.amount : 0}`}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
                 <div className="space-y-3">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">{t('payment_method')}</label>
                     <div className="grid grid-cols-3 gap-2">
-                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                            <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
-                            <span className="text-2xl mb-1">💵</span>
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight">{t('cod')}</span>
-                        </label>
-                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                            <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="hidden" />
-                            <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-8 w-auto mb-1 object-contain" />
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Bkash</span>
-                        </label>
-                        <label className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                            <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => setPaymentMethod('nagad')} className="hidden" />
-                            <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-8 w-auto mb-1 object-contain" />
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Nagad</span>
-                        </label>
+                        {availablePaymentMethods.map(method => {
+                            const methodKey = method.toLowerCase();
+                            return (
+                                <label key={methodKey} className={`flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === methodKey ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                                    <input type="radio" name="payment" value={methodKey} checked={paymentMethod === methodKey} onChange={() => setPaymentMethod(methodKey)} className="hidden" />
+                                    {methodKey === 'bkash' ? (
+                                        <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-8 w-auto mb-1 object-contain" />
+                                    ) : methodKey === 'nagad' ? (
+                                        <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-8 w-auto mb-1 object-contain" />
+                                    ) : methodKey === 'visa' ? (
+                                        <span className="text-xl mb-1 font-bold text-blue-700">VISA</span>
+                                    ) : methodKey === 'mastercard' ? (
+                                        <span className="text-xl mb-1 font-bold text-red-600">MC</span>
+                                    ) : (
+                                        <span className="text-2xl mb-1">💵</span>
+                                    )}
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight capitalize">{method}</span>
+                                </label>
+                            );
+                        })}
                     </div>
                     
                     {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (

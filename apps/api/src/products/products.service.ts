@@ -5,6 +5,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
 import { SettingsService } from '../settings/settings.service';
 import { RequestsService } from '../requests/requests.service';
+import { slugify } from '../utils/slugify';
 
 @Injectable()
 export class ProductsService {
@@ -30,18 +31,40 @@ export class ProductsService {
     const baseQuery = this.knex('products');
     
     if (categoryId) {
+      let catId = categoryId;
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
+      if (!isUuid) {
+          const category = await this.knex('categories').where({ slug: categoryId }).select('id').first();
+          if (category) catId = category.id;
+      }
+
       // Find subcategories
-      const subCategories = await this.knex('categories').where({ parent_id: categoryId }).select('id');
-      const categoryIds = [categoryId, ...subCategories.map(c => c.id)];
+      const subCategories = await this.knex('categories').where({ parent_id: catId }).select('id');
+      const categoryIds = [catId, ...subCategories.map(c => c.id)];
       
       baseQuery.whereIn('category_id', categoryIds);
     }
+
     if (brandId) {
-      baseQuery.where({ brand_id: brandId });
+      let bId = brandId;
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(brandId);
+      if (!isUuid) {
+          const brand = await this.knex('brands').where({ slug: brandId }).select('id').first();
+          if (brand) bId = brand.id;
+      }
+      baseQuery.where({ brand_id: bId });
     }
+
     if (ageId) {
-        baseQuery.where('age_groups', 'like', `%${ageId}%`);
+        let aId = ageId;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ageId);
+        if (!isUuid) {
+            const ageGroup = await this.knex('age_groups').where({ slug: ageId }).select('id').first();
+            if (ageGroup) aId = ageGroup.id;
+        }
+        baseQuery.where('age_groups', 'like', `%${aId}%`);
     }
+
     if (search) {
         baseQuery.where('name', 'ilike', `%${search}%`);
     }
@@ -143,8 +166,10 @@ export class ProductsService {
     return this.knex('products').where({ category_id: categoryId }).select('*');
   }
 
-  async findOne(id: string): Promise<any> {
-    const product = await this.knex('products')
+  async findOne(idOrSlug: string): Promise<any> {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+
+    const query = this.knex('products')
         .leftJoin('countries', 'products.country_id', 'countries.id')
         .leftJoin('categories', 'products.category_id', 'categories.id')
         .select(
@@ -154,23 +179,29 @@ export class ProductsService {
             'countries.flag as country_flag',
             'categories.name as category_name',
             'categories.name_bn as category_name_bn'
-        )
-        .where('products.id', id)
-        .first();
+        );
+
+    if (isUuid) {
+        query.where('products.id', idOrSlug);
+    } else {
+        query.where('products.slug', idOrSlug);
+    }
+
+    const product = await query.first();
 
     if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+      throw new NotFoundException(`Product not found`);
     }
     
     const inventoryMethod = await this.settingsService.getValue('inventory_method') || 'FIFO';
     const orderBy = inventoryMethod === 'LIFO' ? 'desc' : 'asc';
 
     const batches = await this.knex('product_batches')
-        .where({ product_id: id })
+        .where({ product_id: product.id })
         .where('remaining_quantity', '>', 0)
         .orderBy('purchase_date', orderBy);
 
-    const variants = await this.knex('product_variants').where({ product_id: id });
+    const variants = await this.knex('product_variants').where({ product_id: product.id });
         
     return { ...product, batches, variants, inventoryMethod };
   }
@@ -178,9 +209,23 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto): Promise<any> {
     const { images, variants, age_groups, ...productData } = createProductDto;
     
+    let slug = createProductDto.slug;
+    if (!slug) {
+        slug = slugify(createProductDto.name);
+    }
+    
+    // Ensure unique slug
+    let counter = 1;
+    let originalSlug = slug;
+    while (await this.knex('products').where({ slug }).first()) {
+        slug = `${originalSlug}-${counter}`;
+        counter++;
+    }
+
     return this.knex.transaction(async (trx) => {
         const [product] = await trx('products').insert({
             ...productData,
+            slug,
             images: JSON.stringify(images),
             age_groups: age_groups ? age_groups.join(',') : null, // Store as comma-separated string
             has_variants: variants && variants.length > 0
@@ -267,6 +312,17 @@ export class ProductsService {
     
     if (variants) {
         dataToUpdate.has_variants = variants.length > 0;
+    }
+
+    if (dataToUpdate.slug) {
+        let slug = dataToUpdate.slug;
+        let counter = 1;
+        let originalSlug = slug;
+        while (await this.knex('products').where({ slug }).whereNot({ id }).first()) {
+            slug = `${originalSlug}-${counter}`;
+            counter++;
+        }
+        dataToUpdate.slug = slug;
     }
     
     return this.knex.transaction(async (trx) => {

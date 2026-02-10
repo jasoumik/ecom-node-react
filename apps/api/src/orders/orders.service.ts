@@ -26,6 +26,9 @@ export class OrdersService {
       couponCode,
       paymentMethod,
       transactionId,
+      isGift,
+      giftMessage,
+      redeemPoints,
       ...orderData
     } = createOrderDto;
 
@@ -39,17 +42,25 @@ export class OrdersService {
 
     try {
       let validUserId = null;
+      let userPoints = 0;
+
       if (orderData.userId) {
         const user = await this.knex('users')
           .where({ id: orderData.userId })
           .first();
-        if (user) validUserId = user.id;
+        if (user) {
+            validUserId = user.id;
+            userPoints = user.points || 0;
+        }
       } else {
         // Check if user exists with this phone (for guest checkout with existing account)
         const user = await this.knex('users')
           .where({ phone: orderData.customerPhone })
           .first();
-        if (user) validUserId = user.id;
+        if (user) {
+            validUserId = user.id;
+            userPoints = user.points || 0;
+        }
       }
 
       for (const item of items) {
@@ -146,12 +157,44 @@ export class OrdersService {
         discountAmount += deliveryAmount;
       }
 
-      // Ensure discount doesn't exceed total (subtotal + delivery)
-      if (discountAmount > subtotal + deliveryAmount) {
-        discountAmount = subtotal + deliveryAmount;
+      // Point Redemption Logic
+      let pointsDiscount = 0;
+      let pointsRedeemed = 0;
+
+      if (redeemPoints && redeemPoints > 0) {
+          if (!validUserId) {
+              throw new BadRequestException('Must be logged in to redeem points');
+          }
+          if (redeemPoints > userPoints) {
+              throw new BadRequestException('Insufficient points');
+          }
+
+          const redemptionRateStr = await this.settingsService.getValue('points_redemption_rate') || '0.1';
+          const redemptionRate = parseFloat(redemptionRateStr);
+          
+          pointsDiscount = redeemPoints * redemptionRate;
+          pointsRedeemed = redeemPoints;
+          
+          // Ensure points discount doesn't exceed remaining total
+          const remainingTotal = subtotal + deliveryAmount - discountAmount;
+          if (pointsDiscount > remainingTotal) {
+              pointsDiscount = remainingTotal;
+              pointsRedeemed = Math.ceil(pointsDiscount / redemptionRate);
+          }
       }
 
-      const totalAmount = subtotal + deliveryAmount - discountAmount;
+      // Ensure total discount doesn't exceed total
+      let totalDiscount = discountAmount + pointsDiscount;
+      if (totalDiscount > subtotal + deliveryAmount) {
+          totalDiscount = subtotal + deliveryAmount;
+      }
+
+      const totalAmount = subtotal + deliveryAmount - totalDiscount;
+
+      // Calculate Points to Earn
+      const earningRateStr = await this.settingsService.getValue('points_earning_rate') || '1';
+      const earningRate = parseFloat(earningRateStr);
+      const pointsEarned = Math.floor((totalAmount / 100) * earningRate);
 
       return await this.knex.transaction(async (trx) => {
         const orderInsertData = {
@@ -161,7 +204,7 @@ export class OrdersService {
           customer_address: orderData.customerAddress,
           subtotal: subtotal,
           delivery_charge: deliveryAmount,
-          discount: discountAmount,
+          discount: discountAmount, // Coupon + Free Shipping discount
           total_amount: totalAmount,
           coupon_id: couponId,
           payment_method: paymentMethod || 'cod',
@@ -169,6 +212,11 @@ export class OrdersService {
           status: 'pending',
           order_source: 'Website',
           payment_status: 'Pending',
+          is_gift: isGift || false,
+          gift_message: giftMessage || null,
+          points_redeemed: pointsRedeemed,
+          points_discount: pointsDiscount,
+          points_earned: pointsEarned
         };
 
         const [order] = await trx('orders')
@@ -181,6 +229,11 @@ export class OrdersService {
         }));
 
         await trx('order_items').insert(itemsToInsert);
+
+        // Deduct Redeemed Points
+        if (pointsRedeemed > 0 && validUserId) {
+            await trx('users').where({ id: validUserId }).decrement('points', pointsRedeemed);
+        }
 
         // Initial History Log
         await trx('order_history').insert({
@@ -214,7 +267,7 @@ export class OrdersService {
         }
 
         // Send Notifications (Async, don't block)
-        this.sendOrderNotifications(order);
+        this.sendOrderNotifications(order).catch(err => console.error("Notification failed", err));
 
         return { ...order, items: itemsToInsert };
       });
@@ -490,9 +543,20 @@ export class OrdersService {
         updated_by: userId || null,
       });
 
+      // Award points if delivered AND not previously delivered
+      if (status === 'delivered' && currentStatus !== 'delivered' && order.points_earned > 0 && order.user_id) {
+          console.log(`Awarding ${order.points_earned} points to user ${order.user_id} for order ${order.id}`);
+          await trx('users').where({ id: order.user_id }).increment('points', order.points_earned);
+      }
+
       // Notify customer on status change
-      const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
-      await this.notificationService.sendSMS(order.customer_phone, msg);
+      try {
+          const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
+          await this.notificationService.sendSMS(order.customer_phone, msg);
+      } catch (e) {
+          console.error("Failed to send status update notification", e);
+          // Don't fail the transaction just because SMS failed
+      }
 
       return updatedOrder;
     });
@@ -533,6 +597,11 @@ export class OrdersService {
           reason: `Order #${order.order_number} Cancelled`,
           order_id: order.id,
         });
+      }
+
+      // Refund points if any were redeemed
+      if (order.points_redeemed > 0 && order.user_id) {
+          await trx('users').where({ id: order.user_id }).increment('points', order.points_redeemed);
       }
 
       await trx('orders').where({ id }).update({ status: 'cancelled' });

@@ -41,6 +41,7 @@ export function BundlesSection() {
 
     addItem({
       id: bundle.id,
+      slug: bundle.slug, // Pass slug
       name: getLocalizedField(bundle, 'title', language),
       price: parseFloat(bundle.price),
       image: imageUrl,
@@ -106,7 +107,7 @@ export function BundlesSection() {
                 transition={{ delay: index * 0.1 }}
                 className="group bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 dark:border-slate-700 flex flex-col"
               >
-                <Link href={`/bundles/${bundle.id}`} className="block h-full flex flex-col">
+                <Link href={`/bundles/${bundle.slug || bundle.id}`} className="block h-full flex flex-col">
                     <div className="relative aspect-[4/3] overflow-hidden">
                     <ResponsiveImage 
                         src={imageUrl} 

@@ -12,6 +12,7 @@ interface AgeGroup {
   id: string;
   label: string;
   label_bn?: string;
+  slug?: string;
   icon: string;
   age_range: string;
   description?: string;
@@ -55,16 +56,16 @@ export function ShopByAgeSection({ onAgeSelect }: ShopByAgeSectionProps) {
     fetchAgeGroups();
   }, []);
 
-  const handleAgeSelect = useCallback((ageId: string) => {
-    setSelectedAge(ageId);
+  const handleAgeSelect = useCallback((ageIdOrSlug: string) => {
+    setSelectedAge(ageIdOrSlug);
 
     // Update URL with age filter
     const params = new URLSearchParams(searchParams.toString());
-    params.set("age", ageId);
+    params.set("age", ageIdOrSlug);
     router.push(`/products?${params.toString()}`, { scroll: false });
 
     // Callback for parent component
-    onAgeSelect?.(ageId);
+    onAgeSelect?.(ageIdOrSlug);
   }, [router, searchParams, onAgeSelect]);
 
   if (isLoading) {
@@ -113,12 +114,12 @@ export function ShopByAgeSection({ onAgeSelect }: ShopByAgeSectionProps) {
           <div className="absolute top-12 left-[10%] right-[10%] h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
 
           {ageGroups.map((stage) => {
-            const isSelected = selectedAge === stage.id;
+            const isSelected = selectedAge === (stage.slug || stage.id);
 
             return (
               <motion.button
                 key={stage.id}
-                onClick={() => handleAgeSelect(stage.id)}
+                onClick={() => handleAgeSelect(stage.slug || stage.id)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all duration-300 min-w-[140px] ${
@@ -166,12 +167,12 @@ export function ShopByAgeSection({ onAgeSelect }: ShopByAgeSectionProps) {
             className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 -mx-4 px-4"
           >
             {ageGroups.map((stage) => {
-              const isSelected = selectedAge === stage.id;
+              const isSelected = selectedAge === (stage.slug || stage.id);
 
               return (
                 <motion.button
                   key={stage.id}
-                  onClick={() => handleAgeSelect(stage.id)}
+                  onClick={() => handleAgeSelect(stage.slug || stage.id)}
                   whileTap={{ scale: 0.95 }}
                   className={`flex-shrink-0 snap-center flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-300 min-w-[100px] ${
                     isSelected
@@ -208,7 +209,7 @@ export function ShopByAgeSection({ onAgeSelect }: ShopByAgeSectionProps) {
               <div
                 key={stage.id}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  selectedAge === stage.id
+                  selectedAge === (stage.slug || stage.id)
                     ? "w-4 bg-sky-500"
                     : "w-1.5 bg-slate-300 dark:bg-slate-600"
                 }`}
@@ -220,4 +221,3 @@ export function ShopByAgeSection({ onAgeSelect }: ShopByAgeSectionProps) {
     </Section>
   );
 }
-

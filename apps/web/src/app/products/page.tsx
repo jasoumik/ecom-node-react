@@ -198,12 +198,13 @@ function ProductsContent() {
 
     // If product has variants, redirect to product page instead of adding to cart directly
     if (product.hasMultiplePrices || product.has_variants) {
-        window.location.href = `/products/${product.id}`;
+        window.location.href = `/products/${product.slug || product.id}`;
         return;
     }
 
     addItem({
       id: product.id,
+      slug: product.slug, // Pass slug
       name: getLocalizedField(product, 'name', language),
       price: parseFloat(product.price),
       image: imageUrl,
@@ -241,6 +242,7 @@ function ProductsContent() {
     } else {
         addToWishlist({
             id: product.id,
+            slug: product.slug, // Pass slug
             name: getLocalizedField(product, 'name', language),
             price: parseFloat(product.price),
             image: imageUrl
@@ -310,7 +312,7 @@ function ProductsContent() {
                             {category.children.map((sub: any) => (
                                 <Link 
                                     key={sub.id} 
-                                    href={`/products?category=${sub.id}`}
+                                    href={`/products?category=${sub.slug || sub.id}`}
                                     className="flex flex-col items-center gap-3 min-w-[100px] group"
                                 >
                                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 overflow-hidden group-hover:border-sky-500 group-hover:shadow-md transition-all duration-300">
@@ -383,7 +385,7 @@ function ProductsContent() {
                             {categories.map((cat: any) => (
                                 <Link 
                                     key={cat.id} 
-                                    href={`/products?category=${cat.id}&age=${ageId}`}
+                                    href={`/products?category=${cat.slug || cat.id}&age=${ageId}`}
                                     className="flex flex-col items-center gap-3 w-[100px] group"
                                 >
                                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 overflow-hidden group-hover:border-sky-500 group-hover:shadow-md transition-all duration-300">
@@ -413,7 +415,7 @@ function ProductsContent() {
                       {categories.map((cat: any) => (
                           <Link
                               key={cat.id}
-                              href={`/products?category=${cat.id}`}
+                              href={`/products?category=${cat.slug || cat.id}`}
                               className="flex flex-col items-center gap-3 w-[100px] group"
                           >
                               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 overflow-hidden group-hover:border-sky-500 group-hover:shadow-md transition-all duration-300">
@@ -552,7 +554,7 @@ function ProductsContent() {
                     <div key={product.id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300 relative flex flex-col">
                         {/* Image Container */}
                         <div className="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden">
-                            <Link href={`/products/${product.id}`} className="block w-full h-full">
+                            <Link href={`/products/${product.slug || product.id}`} className="block w-full h-full">
                                 <ResponsiveImage
                                     src={imageUrl}
                                     alt={getLocalizedField(product, 'name', language)}
@@ -585,7 +587,7 @@ function ProductsContent() {
                                     <span className="text-[10px] text-slate-400">({product.reviewCount || 0})</span>
                                 </div>
                                 <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-snug min-h-[2.5em]">
-                                    <Link href={`/products/${product.id}`} className="hover:text-sky-600 transition-colors">
+                                    <Link href={`/products/${product.slug || product.id}`} className="hover:text-sky-600 transition-colors">
                                         {getLocalizedField(product, 'name', language)}
                                     </Link>
                                 </h3>

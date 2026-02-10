@@ -13,6 +13,7 @@ interface Brand {
   id: string;
   name: string;
   name_bn?: string;
+  slug?: string;
   logo?: string;
   website?: string;
   mother_category_id?: string;
@@ -170,7 +171,7 @@ export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
                 {duplicatedBrands.map((brand, index) => (
                   <Link
                     key={`${brand.id}-${index}`}
-                    href={`/products?brand=${brand.id}`}
+                    href={`/products?brand=${brand.slug || brand.id}`}
                     className="group flex-shrink-0 flex flex-col items-center gap-3 min-w-[100px] sm:min-w-[120px]"
                   >
                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden relative group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">

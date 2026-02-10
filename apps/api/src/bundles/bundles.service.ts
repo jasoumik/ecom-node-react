@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { CreateBundleDto } from './dto/create-bundle.dto';
 import { UpdateBundleDto } from './dto/update-bundle.dto';
+import { slugify } from '../utils/slugify';
 
 @Injectable()
 export class BundlesService {
@@ -43,16 +44,25 @@ export class BundlesService {
     }));
   }
 
-  async findOne(id: string) {
-    const bundle = await this.knex('bundles').where({ id }).first();
+  async findOne(idOrSlug: string) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+    
+    const query = this.knex('bundles');
+    if (isUuid) {
+        query.where('id', idOrSlug);
+    } else {
+        query.where('slug', idOrSlug);
+    }
+    
+    const bundle = await query.first();
     if (!bundle) {
-      throw new NotFoundException(`Bundle with ID ${id} not found`);
+      throw new NotFoundException(`Bundle not found`);
     }
     
     const items = await this.knex('bundle_items')
         .join('products', 'bundle_items.product_id', 'products.id')
         .leftJoin('product_variants', 'bundle_items.variant_id', 'product_variants.id')
-        .where({ bundle_id: id })
+        .where({ bundle_id: bundle.id })
         .select(
             'bundle_items.*',
             'products.name as product_name',
@@ -70,8 +80,23 @@ export class BundlesService {
   async create(createBundleDto: CreateBundleDto) {
     const { items, ...bundleData } = createBundleDto;
     
+    let slug = createBundleDto.slug;
+    if (!slug) {
+        slug = slugify(createBundleDto.title);
+    }
+    
+    let counter = 1;
+    let originalSlug = slug;
+    while (await this.knex('bundles').where({ slug }).first()) {
+        slug = `${originalSlug}-${counter}`;
+        counter++;
+    }
+
     return this.knex.transaction(async (trx) => {
-        const [bundle] = await trx('bundles').insert(bundleData).returning('*');
+        const [bundle] = await trx('bundles').insert({
+            ...bundleData,
+            slug
+        }).returning('*');
         
         if (items && items.length > 0) {
             const itemsToInsert = items.map(item => ({
@@ -89,11 +114,23 @@ export class BundlesService {
 
   async update(id: string, updateBundleDto: UpdateBundleDto) {
     const { items, ...bundleData } = updateBundleDto;
+    const dataToUpdate: any = { ...bundleData };
+    
+    if (dataToUpdate.slug) {
+        let slug = dataToUpdate.slug;
+        let counter = 1;
+        let originalSlug = slug;
+        while (await this.knex('bundles').where({ slug }).whereNot({ id }).first()) {
+            slug = `${originalSlug}-${counter}`;
+            counter++;
+        }
+        dataToUpdate.slug = slug;
+    }
     
     return this.knex.transaction(async (trx) => {
         const [bundle] = await trx('bundles')
             .where({ id })
-            .update(bundleData)
+            .update(dataToUpdate)
             .returning('*');
             
         if (!bundle) {

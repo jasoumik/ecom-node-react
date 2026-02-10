@@ -12,6 +12,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name').notNullable();
     table.string('role').defaultTo('customer');
     table.string('avatar').nullable(); // Profile picture
+    table.integer('points').defaultTo(0); // Added Points
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
@@ -33,6 +34,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('label').notNullable();
     table.string('label_bn').nullable();
+    table.string('slug').unique().notNullable(); // Added Slug
     table.string('icon').notNullable();
     table.string('age_range').notNullable();
     table.string('description').nullable();
@@ -59,6 +61,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.string('name_bn').nullable(); // Added Bangla Name
+    table.string('slug').unique().notNullable(); // Added Slug
     table.text('description').nullable();
     table.text('description_bn').nullable(); // Added Bangla Description
     table.string('image').nullable();
@@ -75,6 +78,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.string('name_bn').nullable(); // Added Bangla Name
+    table.string('slug').unique().notNullable(); // Added Slug
     table.string('logo').nullable();
     table.text('description').nullable();
     table.uuid('mother_category_id').nullable().references('id').inTable('mother_categories').onDelete('SET NULL');
@@ -97,6 +101,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.string('name_bn').nullable(); // Added Bangla Name
+    table.string('slug').unique().notNullable(); // Added Slug
     table.text('description').notNullable();
     table.text('description_bn').nullable(); // Added Bangla Description
     table.decimal('price', 10, 2).notNullable(); // Current selling price
@@ -212,6 +217,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('title').notNullable();
     table.string('title_bn').nullable();
+    table.string('slug').unique().notNullable(); // Added Slug
     table.text('description').nullable();
     table.text('description_bn').nullable();
     table.string('image').nullable();
@@ -232,6 +238,25 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamps(true, true);
   });
 
+  // Carts Table
+  await knex.schema.createTable('carts', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.timestamps(true, true);
+    table.unique(['user_id']); // One cart per user
+  });
+
+  // Cart Items Table
+  await knex.schema.createTable('cart_items', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('cart_id').notNullable().references('id').inTable('carts').onDelete('CASCADE');
+    table.uuid('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
+    table.uuid('variant_id').nullable().references('id').inTable('product_variants').onDelete('CASCADE');
+    table.integer('quantity').notNullable().defaultTo(1);
+    table.timestamps(true, true);
+    table.unique(['cart_id', 'product_id', 'variant_id']); // Unique item per cart
+  });
+
   await knex.schema.createTable('orders', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.increments('order_number').unique().notNullable(); // Auto-incrementing numeric ID for display
@@ -249,6 +274,11 @@ export async function up(knex: Knex): Promise<void> {
     table.string('transaction_id').nullable(); // For bkash/nagad
     table.string('order_source').defaultTo('Website'); // Facebook, Phone, WhatsApp, Website
     table.string('payment_status').defaultTo('Pending'); // Pending, Paid
+    table.boolean('is_gift').defaultTo(false); // Added Gift Flag
+    table.text('gift_message').nullable(); // Added Gift Message
+    table.integer('points_earned').defaultTo(0); // Added Points Earned
+    table.integer('points_redeemed').defaultTo(0); // Added Points Redeemed
+    table.decimal('points_discount', 10, 2).defaultTo(0); // Added Points Discount Amount
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
@@ -455,6 +485,8 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('stock_movements');
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
+  await knex.schema.dropTableIfExists('cart_items'); // Added
+  await knex.schema.dropTableIfExists('carts'); // Added
   await knex.schema.dropTableIfExists('bundle_items');
   await knex.schema.dropTableIfExists('bundles');
   await knex.schema.dropTableIfExists('coupons');

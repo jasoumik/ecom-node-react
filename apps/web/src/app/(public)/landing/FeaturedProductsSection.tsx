@@ -54,6 +54,7 @@ export function FeaturedProductsSection({
     
     addItem({
       id: product.id,
+      slug: product.slug, // Pass slug
       name: getLocalizedField(product, 'name', language),
       price: isNaN(priceValue) ? 0 : priceValue,
       image: product.image.src,
@@ -94,6 +95,7 @@ export function FeaturedProductsSection({
     } else {
       addToWishlist({
         id: product.id,
+        slug: product.slug, // Pass slug
         name: getLocalizedField(product, 'name', language),
         price: isNaN(priceValue) ? 0 : priceValue,
         image: product.image.src
