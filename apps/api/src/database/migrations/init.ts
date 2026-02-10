@@ -12,13 +12,19 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name').notNullable();
     table.string('role').defaultTo('customer');
     table.string('avatar').nullable(); // Profile picture
+    table.integer('points').defaultTo(0); // Added Points
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });
 
   await knex.schema.createTable('addresses', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
-    table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table
+      .uuid('user_id')
+      .notNullable()
+      .references('id')
+      .inTable('users')
+      .onDelete('CASCADE');
     table.string('type').notNullable(); // Home, Office, etc.
     table.string('address').notNullable();
     table.string('city').nullable();
@@ -249,6 +255,11 @@ export async function up(knex: Knex): Promise<void> {
     table.string('transaction_id').nullable(); // For bkash/nagad
     table.string('order_source').defaultTo('Website'); // Facebook, Phone, WhatsApp, Website
     table.string('payment_status').defaultTo('Pending'); // Pending, Paid
+    table.boolean('is_gift').defaultTo(false); // Added Gift Flag
+    table.text('gift_message').nullable(); // Added Gift Message
+    table.integer('points_earned').defaultTo(0); // Added Points Earned
+    table.integer('points_redeemed').defaultTo(0); // Added Points Redeemed
+    table.decimal('points_discount', 10, 2).defaultTo(0); // Added Points Discount Amount
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
   });

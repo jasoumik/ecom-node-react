@@ -513,6 +513,8 @@ export async function seed(knex: Knex): Promise<void> {
     { key: 'currency', value: 'BDT', description: 'Default currency' },
     { key: 'currency_symbol', value: '৳', description: 'Currency symbol' },
     { key: 'payment_methods', value: 'bKash,Nagad,Visa,Mastercard,COD', description: 'Available payment methods (comma separated)' },
+    { key: 'points_earning_rate', value: '1', description: 'Points earned per 100 currency units' }, // 1 point per 100 BDT
+    { key: 'points_redemption_rate', value: '0.1', description: 'Currency value per 1 point' }, // 1 point = 0.1 BDT (10 points = 1 BDT)
   ]);
 
   // ============================================
