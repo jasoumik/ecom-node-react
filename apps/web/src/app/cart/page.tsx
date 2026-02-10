@@ -63,6 +63,7 @@ export default function CartPage() {
   
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [transactionId, setTransactionId] = useState("");
+  const [paymentPhone, setPaymentPhone] = useState(""); // Added payment phone
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [paymentNumbers, setPaymentNumbers] = useState<PaymentNumbers>({});
@@ -249,9 +250,15 @@ export default function CartPage() {
         addToast(t("select_delivery_area"), "error");
         return;
     }
-    if ((paymentMethod === "bkash" || paymentMethod === "nagad") && !transactionId) {
-        addToast(t("enter_transaction_id"), "error");
-        return;
+    if ((paymentMethod === "bkash" || paymentMethod === "nagad")) {
+        if (!transactionId) {
+            addToast(t("enter_transaction_id"), "error");
+            return;
+        }
+        if (!paymentPhone) {
+            addToast("Please enter the phone number you sent money from", "error");
+            return;
+        }
     }
 
     const pointsToRedeem = parseInt(redeemPoints) || 0;
@@ -285,6 +292,7 @@ export default function CartPage() {
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         paymentMethod,
         transactionId: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? transactionId : undefined,
+        paymentPhone: (paymentMethod === 'bkash' || paymentMethod === 'nagad') ? paymentPhone : undefined, // Added
         isGift,
         giftMessage: isGift ? giftMessage : undefined,
         redeemPoints: pointsToRedeem > 0 ? pointsToRedeem : undefined,
@@ -707,17 +715,36 @@ export default function CartPage() {
 
                 {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
                     <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 animate-in fade-in mt-4">
-                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
-                            Send money to <span className="font-bold text-slate-900 dark:text-white">{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span>
-                        </p>
-                        <Input 
-                            label="Transaction ID" 
-                            value={transactionId} 
-                            onChange={(e) => setTransactionId(e.target.value)} 
-                            placeholder="e.g. 8X92..." 
-                            required 
-                            className="bg-white"
-                        />
+                        <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+                            <p className="mb-2 font-bold text-slate-900 dark:text-white">How to pay with {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'}:</p>
+                            <ol className="list-decimal list-inside space-y-1 text-xs">
+                                <li>Go to your {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'} App or dial *247# / *167#</li>
+                                <li>Choose "Send Money" / "Payment"</li>
+                                <li>Enter Number: <span className="font-bold text-slate-900 dark:text-white select-all">{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span></li>
+                                <li>Enter Amount: <span className="font-bold text-slate-900 dark:text-white">৳{grandTotal}</span></li>
+                                <li>Enter Reference: <span className="font-bold text-slate-900 dark:text-white">1</span></li>
+                                <li>Enter your PIN to confirm</li>
+                            </ol>
+                        </div>
+                        
+                        <div className="grid gap-4">
+                            <Input 
+                                label="Your Phone Number (Sender)" 
+                                value={paymentPhone} 
+                                onChange={(e) => setPaymentPhone(e.target.value)} 
+                                placeholder="017..." 
+                                required 
+                                className="bg-white"
+                            />
+                            <Input 
+                                label="Transaction ID" 
+                                value={transactionId} 
+                                onChange={(e) => setTransactionId(e.target.value)} 
+                                placeholder="e.g. 8X92..." 
+                                required 
+                                className="bg-white"
+                            />
+                        </div>
                     </div>
                 )}
             </div>

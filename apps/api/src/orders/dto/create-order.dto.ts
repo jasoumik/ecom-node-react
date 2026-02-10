@@ -47,6 +47,10 @@ export class CreateOrderDto {
   transactionId?: string;
 
   @IsOptional()
+  @IsString()
+  paymentPhone?: string; // Added payment phone
+
+  @IsOptional()
   @IsBoolean()
   isGift?: boolean;
 

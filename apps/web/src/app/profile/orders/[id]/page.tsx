@@ -178,7 +178,7 @@ export default function OrderInvoicePage() {
             </div>
 
             {/* Totals */}
-            <div className="flex justify-end">
+            <div className="flex justify-end mb-8">
               <div className="w-full sm:w-72 space-y-3 bg-slate-50 dark:bg-slate-700/30 p-6 rounded-2xl print:bg-transparent print:p-0">
                 <div className="flex justify-between text-slate-600 dark:text-slate-400 print:text-slate-700 text-sm">
                   <span>{t('subtotal')}</span>
@@ -204,8 +204,57 @@ export default function OrderInvoicePage() {
                   <span>{t('total')}</span>
                   <span>৳{order.total_amount}</span>
                 </div>
+                
+                {/* Paid / Due Summary */}
+                <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-2 print:border-slate-200">
+                    <div className="flex justify-between text-sm font-medium text-emerald-600 print:text-black">
+                        <span>Paid</span>
+                        <span>৳{order.paid_amount || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium text-red-500 print:text-black">
+                        <span>Due</span>
+                        <span>৳{Math.max(0, parseFloat(order.total_amount) - (parseFloat(order.paid_amount) || 0))}</span>
+                    </div>
+                </div>
               </div>
             </div>
+
+            {/* Payment History */}
+            {order.payments && order.payments.length > 0 && (
+                <div className="mb-8 print:mb-8">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 print:text-black">Payment History</h3>
+                    <div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-700 print:border-slate-200">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-50 dark:bg-slate-700/50 print:bg-slate-100">
+                                <tr>
+                                    <th className="py-3 px-4 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Date</th>
+                                    <th className="py-3 px-4 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Method</th>
+                                    <th className="py-3 px-4 font-bold text-slate-600 dark:text-slate-300 print:text-slate-700">Transaction ID</th>
+                                    <th className="py-3 px-4 font-bold text-right text-slate-600 dark:text-slate-300 print:text-slate-700">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 print:divide-slate-200">
+                                {order.payments.map((payment: any) => (
+                                    <tr key={payment.id}>
+                                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400 print:text-black">
+                                            {new Date(payment.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="py-3 px-4 text-slate-900 dark:text-white print:text-black capitalize">
+                                            {payment.method}
+                                        </td>
+                                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400 print:text-black font-mono text-xs">
+                                            {payment.transaction_id || '-'}
+                                        </td>
+                                        <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white print:text-black">
+                                            ৳{payment.amount}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-700 text-center text-slate-500 text-xs print:border-slate-200 print:text-slate-600">

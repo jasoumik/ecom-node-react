@@ -10,5 +10,7 @@ export class CreateManualOrderDto {
   deliveryCharge: number;
   paymentMethod: string;
   paymentStatus: string;
+  paidAmount?: number; // Added for partial payment
+  transactionId?: string; // Added for payment tracking
   status: string;
 }

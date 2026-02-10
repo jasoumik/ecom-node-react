@@ -26,6 +26,7 @@ export class OrdersService {
       couponCode,
       paymentMethod,
       transactionId,
+      paymentPhone, // Added
       isGift,
       giftMessage,
       redeemPoints,
@@ -209,6 +210,7 @@ export class OrdersService {
           coupon_id: couponId,
           payment_method: paymentMethod || 'cod',
           transaction_id: transactionId || null,
+          payment_phone: paymentPhone || null, // Added
           status: 'pending',
           order_source: 'Website',
           payment_status: 'Pending',
@@ -285,7 +287,7 @@ export class OrdersService {
   }
 
   async createManual(createManualOrderDto: CreateManualOrderDto): Promise<any> {
-    const { items, ...orderData } = createManualOrderDto;
+    const { items, paidAmount, transactionId, ...orderData } = createManualOrderDto;
 
     let subtotal = 0;
     const orderItemsData: any[] = [];
@@ -348,6 +350,18 @@ export class OrdersService {
       const totalAmount =
         subtotal + (orderData.deliveryCharge || 0) - (orderData.discount || 0);
 
+      // Determine Payment Status
+      let paymentStatus = orderData.paymentStatus;
+      const amountPaid = paidAmount || 0;
+      
+      if (amountPaid >= totalAmount) {
+          paymentStatus = 'Paid';
+      } else if (amountPaid > 0) {
+          paymentStatus = 'Partial';
+      } else {
+          paymentStatus = 'Pending';
+      }
+
       return await this.knex.transaction(async (trx) => {
         const orderInsertData = {
           user_id: validUserId,
@@ -361,7 +375,9 @@ export class OrdersService {
           payment_method: orderData.paymentMethod,
           status: orderData.status,
           order_source: orderData.orderSource,
-          payment_status: orderData.paymentStatus,
+          payment_status: paymentStatus,
+          paid_amount: amountPaid,
+          transaction_id: transactionId || null
         };
 
         const [order] = await trx('orders')
@@ -374,6 +390,17 @@ export class OrdersService {
         }));
 
         await trx('order_items').insert(itemsToInsert);
+
+        // Record Payment if any
+        if (amountPaid > 0) {
+            await trx('payments').insert({
+                order_id: order.id,
+                amount: amountPaid,
+                method: orderData.paymentMethod,
+                transaction_id: transactionId || null,
+                note: 'Initial payment on manual order creation'
+            });
+        }
 
         // Initial History Log
         await trx('order_history').insert({
@@ -418,6 +445,42 @@ export class OrdersService {
         `Failed to create manual order: ${error.message}`,
       );
     }
+  }
+
+  async addPayment(orderId: string, amount: number, method: string, transactionId?: string, note?: string): Promise<any> {
+      const order = await this.knex('orders').where({ id: orderId }).first();
+      if (!order) {
+          throw new NotFoundException('Order not found');
+      }
+
+      const newPaidAmount = parseFloat(order.paid_amount || 0) + amount;
+      let newStatus = order.payment_status;
+      
+      if (newPaidAmount >= parseFloat(order.total_amount)) {
+          newStatus = 'Paid';
+      } else if (newPaidAmount > 0) {
+          newStatus = 'Partial';
+      }
+
+      return await this.knex.transaction(async (trx) => {
+          await trx('payments').insert({
+              order_id: orderId,
+              amount,
+              method,
+              transaction_id: transactionId,
+              note
+          });
+
+          const [updatedOrder] = await trx('orders')
+              .where({ id: orderId })
+              .update({
+                  paid_amount: newPaidAmount,
+                  payment_status: newStatus
+              })
+              .returning('*');
+          
+          return updatedOrder;
+      });
   }
 
   private async sendOrderNotifications(order: any) {
@@ -496,6 +559,9 @@ export class OrdersService {
     const history = await this.knex('order_history')
       .where({ order_id: id })
       .orderBy('created_at', 'asc');
+    
+    // Fetch payments
+    const payments = await this.knex('payments').where({ order_id: id }).orderBy('created_at', 'desc');
 
     order.items = items.map((item) => {
       const review = reviews.find((r) => r.product_id === item.product_id);
@@ -506,6 +572,7 @@ export class OrdersService {
     });
 
     order.history = history;
+    order.payments = payments; // Attach payments to order object
 
     return order;
   }

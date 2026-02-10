@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Heading } from "@repo/ui";
 import { Input } from "@/components/ui/Input";
@@ -18,11 +18,20 @@ export default function CreateManualOrderPage() {
     deliveryCharge: 0,
     paymentMethod: "cod",
     paymentStatus: "Pending",
+    paidAmount: 0,
+    transactionId: "",
     status: "pending"
   });
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState(1);
+  
+  // Customer Search State
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -30,6 +39,19 @@ export default function CreateManualOrderPage() {
     fetch(`${API_URL}/products?limit=100`)
       .then(res => res.json())
       .then(data => setProducts(data.data || []));
+
+    fetch(`${API_URL}/users`)
+      .then(res => res.json())
+      .then(data => setCustomers(data || []));
+
+    // Click outside to close dropdown
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowCustomerDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleAddItem = () => {
@@ -76,6 +98,60 @@ export default function CreateManualOrderPage() {
       return subtotal + (order.deliveryCharge || 0) - (order.discount || 0);
   };
 
+  const totalAmount = calculateTotal();
+
+  const handlePaymentStatusChange = (status: string) => {
+      let newPaidAmount = order.paidAmount;
+      if (status === 'Paid') {
+          newPaidAmount = totalAmount;
+      } else if (status === 'Pending') {
+          newPaidAmount = 0;
+      }
+      setOrder({ ...order, paymentStatus: status, paidAmount: newPaidAmount });
+  };
+
+  const handlePaidAmountChange = (amount: number) => {
+      let newStatus = 'Partial';
+      if (amount >= totalAmount) {
+          newStatus = 'Paid';
+      } else if (amount <= 0) {
+          newStatus = 'Pending';
+      }
+      setOrder({ ...order, paidAmount: amount, paymentStatus: newStatus });
+  };
+
+  const filteredCustomers = customers.filter(c => 
+    c.name.toLowerCase().includes(customerSearch.toLowerCase()) || 
+    c.phone.includes(customerSearch)
+  );
+
+  const selectCustomer = async (customer: any) => {
+    setOrder(prev => ({
+      ...prev,
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      customerAddress: "" // Reset address initially
+    }));
+    setCustomerSearch("");
+    setShowCustomerDropdown(false);
+
+    // Fetch address
+    try {
+      const res = await fetch(`${API_URL}/users/${customer.id}/addresses`);
+      if (res.ok) {
+        const addresses = await res.json();
+        if (addresses && addresses.length > 0) {
+          // Prefer default address, otherwise take the first one
+          const defaultAddr = addresses.find((a: any) => a.is_default) || addresses[0];
+          const fullAddress = [defaultAddr.address, defaultAddr.city, defaultAddr.zip].filter(Boolean).join(", ");
+          setOrder(prev => ({ ...prev, customerAddress: fullAddress }));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch customer address", err);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
@@ -91,6 +167,42 @@ export default function CreateManualOrderPage() {
         <div className="lg:col-span-2 space-y-6">
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Customer Information</h3>
+                
+                {/* Customer Search */}
+                <div className="mb-6 relative" ref={searchRef}>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Find Existing Customer</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                    placeholder="Search by name or phone..."
+                    value={customerSearch}
+                    onChange={(e) => {
+                      setCustomerSearch(e.target.value);
+                      setShowCustomerDropdown(true);
+                    }}
+                    onFocus={() => setShowCustomerDropdown(true)}
+                  />
+                  {showCustomerDropdown && customerSearch && (
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredCustomers.length > 0 ? (
+                        filteredCustomers.map(customer => (
+                          <div 
+                            key={customer.id}
+                            className="px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-sm"
+                            onClick={() => selectCustomer(customer)}
+                          >
+                            <div className="font-medium text-slate-900 dark:text-white">{customer.name}</div>
+                            <div className="text-xs text-slate-500">{customer.phone}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-slate-500 text-center">No customers found</div>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-[10px] text-slate-400 mt-1">Search to auto-fill details, or manually enter below for new customers.</p>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Order Source</label>
@@ -188,16 +300,48 @@ export default function CreateManualOrderPage() {
                             <option value="nagad">Nagad</option>
                         </select>
                     </div>
+                    
+                    {/* Transaction ID for non-COD */}
+                    {order.paymentMethod !== 'cod' && (
+                        <Input 
+                            label="Transaction ID" 
+                            value={order.transactionId} 
+                            onChange={e => setOrder({...order, transactionId: e.target.value})} 
+                            className="bg-slate-50/50" 
+                        />
+                    )}
+
                     <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Payment Status</label>
                         <select 
                             className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
                             value={order.paymentStatus}
-                            onChange={e => setOrder({...order, paymentStatus: e.target.value})}
+                            onChange={e => handlePaymentStatusChange(e.target.value)}
                         >
                             <option value="Pending">Pending</option>
+                            <option value="Partial">Partial</option>
                             <option value="Paid">Paid</option>
                         </select>
+                    </div>
+
+                    {/* Paid Amount Input */}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Amount Paid</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-2.5 text-slate-500 text-sm">৳</span>
+                            <input 
+                                type="number" 
+                                className="w-full pl-7 pr-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                                value={order.paidAmount}
+                                onChange={e => handlePaidAmountChange(parseFloat(e.target.value) || 0)}
+                                min="0"
+                                max={totalAmount}
+                            />
+                        </div>
+                        <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                            <span>Due: ৳{Math.max(0, totalAmount - order.paidAmount)}</span>
+                            <span>Total: ৳{totalAmount}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -229,7 +373,7 @@ export default function CreateManualOrderPage() {
                     </div>
                     <div className="flex justify-between text-sm font-bold text-slate-900 dark:text-white pt-3 border-t border-slate-100 dark:border-slate-800">
                         <span>Total</span>
-                        <span>৳{calculateTotal()}</span>
+                        <span>৳{totalAmount}</span>
                     </div>
                 </div>
             </div>

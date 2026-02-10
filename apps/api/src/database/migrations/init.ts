@@ -272,8 +272,10 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('coupon_id').nullable().references('id').inTable('coupons').onDelete('SET NULL');
     table.string('payment_method').defaultTo('cod'); // cod, bkash, nagad
     table.string('transaction_id').nullable(); // For bkash/nagad
+    table.string('payment_phone').nullable(); // Added payment phone
     table.string('order_source').defaultTo('Website'); // Facebook, Phone, WhatsApp, Website
     table.string('payment_status').defaultTo('Pending'); // Pending, Paid
+    table.decimal('paid_amount', 10, 2).defaultTo(0); // Added paid amount
     table.boolean('is_gift').defaultTo(false); // Added Gift Flag
     table.text('gift_message').nullable(); // Added Gift Message
     table.integer('points_earned').defaultTo(0); // Added Points Earned
@@ -296,6 +298,18 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('quantity').notNullable();
     table.boolean('is_active').defaultTo(true);
     table.timestamps(true, true);
+  });
+
+  // Payments Table
+  await knex.schema.createTable('payments', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE');
+    table.decimal('amount', 10, 2).notNullable();
+    table.string('method').notNullable(); // cod, bkash, nagad, cash, etc.
+    table.string('transaction_id').nullable();
+    table.string('note').nullable();
+    table.uuid('created_by').nullable().references('id').inTable('users').onDelete('SET NULL');
+    table.timestamp('created_at').defaultTo(knex.fn.now());
   });
 
   // Stock Movements Table
@@ -483,6 +497,7 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('media_folders');
   await knex.schema.dropTableIfExists('banners');
   await knex.schema.dropTableIfExists('stock_movements');
+  await knex.schema.dropTableIfExists('payments'); // Added
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
   await knex.schema.dropTableIfExists('cart_items'); // Added

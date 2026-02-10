@@ -13,8 +13,8 @@ export const databaseProviders = [
           host: process.env.DB_HOST || 'localhost',
           port: parseInt(process.env.DB_PORT || '5432', 10),
           database: process.env.DB_NAME || 'ecom',
-          user: process.env.DB_USERNAME || 'jasoumik',
-          password: process.env.DB_PASSWORD || process.env.PGPASSWORD || undefined,
+          user: process.env.DB_USERNAME || 'ecom_user',
+          password: process.env.DB_PASSWORD || process.env.PGPASSWORD || 'strong_ecom_password',
         },
         pool: {
           min: 2,
