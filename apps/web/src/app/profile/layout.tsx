@@ -63,7 +63,6 @@ export default function ProfileLayout({
                 <div className="ml-auto lg:hidden">
                     <Button 
                       variant="outline" 
-                      size="sm"
                       onClick={() => {
                         localStorage.removeItem("user");
                         localStorage.removeItem("token");
