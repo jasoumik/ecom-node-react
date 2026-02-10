@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { slugify } from '../utils/slugify';
 
 @Injectable()
 export class CategoriesService {
@@ -98,25 +99,63 @@ export class CategoriesService {
         .filter(Boolean);
   }
 
-  async findOne(id: string) {
-    const category = await this.knex('categories').where({ id }).first();
+  async findOne(idOrSlug: string) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+    
+    const query = this.knex('categories');
+    if (isUuid) {
+        query.where('id', idOrSlug);
+    } else {
+        query.where('slug', idOrSlug);
+    }
+    
+    const category = await query.first();
+    
     if (!category) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
+      throw new NotFoundException(`Category not found`);
     }
     // Get children
-    const children = await this.knex('categories').where({ parent_id: id });
+    const children = await this.knex('categories').where({ parent_id: category.id });
     return { ...category, children };
   }
 
   async create(createCategoryDto: CreateCategoryDto) {
-    const [category] = await this.knex('categories').insert(createCategoryDto).returning('*');
+    let slug = createCategoryDto.slug;
+    if (!slug) {
+        slug = slugify(createCategoryDto.name);
+    }
+    
+    let counter = 1;
+    let originalSlug = slug;
+    while (await this.knex('categories').where({ slug }).first()) {
+        slug = `${originalSlug}-${counter}`;
+        counter++;
+    }
+
+    const [category] = await this.knex('categories').insert({
+        ...createCategoryDto,
+        slug
+    }).returning('*');
     return category;
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    const dataToUpdate = { ...updateCategoryDto };
+    
+    if (dataToUpdate.slug) {
+        let slug = dataToUpdate.slug;
+        let counter = 1;
+        let originalSlug = slug;
+        while (await this.knex('categories').where({ slug }).whereNot({ id }).first()) {
+            slug = `${originalSlug}-${counter}`;
+            counter++;
+        }
+        dataToUpdate.slug = slug;
+    }
+
     const [category] = await this.knex('categories')
       .where({ id })
-      .update(updateCategoryDto)
+      .update(dataToUpdate)
       .returning('*');
     if (!category) {
       throw new NotFoundException(`Category with ID ${id} not found`);

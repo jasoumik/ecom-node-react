@@ -11,6 +11,7 @@ export class CreateVariantDto {
 export class CreateProductDto {
   name: string;
   name_bn?: string; // Added Bangla Name
+  slug?: string; // Added Slug
   description: string;
   description_bn?: string; // Added Bangla Description
   price: number;

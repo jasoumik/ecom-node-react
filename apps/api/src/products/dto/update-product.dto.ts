@@ -3,6 +3,7 @@ import { CreateProductDto, CreateVariantDto } from './create-product.dto';
 export class UpdateProductDto {
   name?: string;
   name_bn?: string;
+  slug?: string; // Added Slug
   description?: string;
   description_bn?: string;
   price?: number;

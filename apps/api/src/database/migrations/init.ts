@@ -34,6 +34,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('label').notNullable();
     table.string('label_bn').nullable();
+    table.string('slug').unique().notNullable(); // Added Slug
     table.string('icon').notNullable();
     table.string('age_range').notNullable();
     table.string('description').nullable();
@@ -60,6 +61,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.string('name_bn').nullable(); // Added Bangla Name
+    table.string('slug').unique().notNullable(); // Added Slug
     table.text('description').nullable();
     table.text('description_bn').nullable(); // Added Bangla Description
     table.string('image').nullable();
@@ -76,6 +78,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.string('name_bn').nullable(); // Added Bangla Name
+    table.string('slug').unique().notNullable(); // Added Slug
     table.string('logo').nullable();
     table.text('description').nullable();
     table.uuid('mother_category_id').nullable().references('id').inTable('mother_categories').onDelete('SET NULL');
@@ -98,6 +101,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('name').notNullable();
     table.string('name_bn').nullable(); // Added Bangla Name
+    table.string('slug').unique().notNullable(); // Added Slug
     table.text('description').notNullable();
     table.text('description_bn').nullable(); // Added Bangla Description
     table.decimal('price', 10, 2).notNullable(); // Current selling price
@@ -213,6 +217,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('title').notNullable();
     table.string('title_bn').nullable();
+    table.string('slug').unique().notNullable(); // Added Slug
     table.text('description').nullable();
     table.text('description_bn').nullable();
     table.string('image').nullable();

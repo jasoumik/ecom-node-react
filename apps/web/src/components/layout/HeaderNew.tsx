@@ -369,7 +369,7 @@ export function Header() {
                                   }`}
                                 >
                                   <Link
-                                    href={`/products?category=${parentCategory.id}`}
+                                    href={`/products?category=${parentCategory.slug || parentCategory.id}`}
                                     className="flex items-center gap-3 flex-1"
                                   >
                                     <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
@@ -440,7 +440,7 @@ export function Header() {
                                         {getLocalizedField(parentCategory, "name", language)}
                                       </h3>
                                       <Link
-                                        href={`/products?category=${parentCategory.id}`}
+                                        href={`/products?category=${parentCategory.slug || parentCategory.id}`}
                                         className="text-xs text-sky-600 dark:text-sky-400 hover:underline"
                                       >
                                         View all products →
@@ -453,7 +453,7 @@ export function Header() {
                                       {subCategories.map((subCat: any) => (
                                         <Link
                                           key={subCat.id}
-                                          href={`/products?category=${subCat.id}`}
+                                          href={`/products?category=${subCat.slug || subCat.id}`}
                                           className="flex items-center gap-2 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
                                         >
                                           <div className="w-2 h-2 rounded-full bg-sky-500 group-hover:scale-125 transition-transform" />
@@ -469,7 +469,7 @@ export function Header() {
                                         No subcategories available
                                       </p>
                                       <Link
-                                        href={`/products?category=${parentCategory.id}`}
+                                        href={`/products?category=${parentCategory.slug || parentCategory.id}`}
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors"
                                       >
                                         Browse Products
@@ -551,7 +551,7 @@ export function Header() {
                         {suggestions.map((product) => (
                           <Link
                             key={product.id}
-                            href={`/products/${product.id}`}
+                            href={`/products/${product.slug || product.id}`}
                             onClick={() => setShowSuggestions(false)}
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
                           >
@@ -910,7 +910,7 @@ export function Header() {
                     {suggestions.map((product) => (
                       <Link
                         key={product.id}
-                        href={`/products/${product.id}`}
+                        href={`/products/${product.slug || product.id}`}
                         onClick={() => setIsSearchOverlayOpen(false)}
                         className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm"
                       >
@@ -1090,7 +1090,7 @@ export function Header() {
                                   ) : (
                                     // Parent category without subcategories - link directly
                                     <Link
-                                      href={`/products?category=${parentCategory.id}`}
+                                      href={`/products?category=${parentCategory.slug || parentCategory.id}`}
                                       onClick={() => setIsMobileMenuOpen(false)}
                                       className="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
                                     >
@@ -1122,7 +1122,7 @@ export function Header() {
                                         <div className="ml-4 pl-4 pb-2 pt-1 space-y-0.5 border-l-2 border-sky-100 dark:border-sky-900">
                                           {/* View all link for parent category */}
                                           <Link
-                                            href={`/products?category=${parentCategory.id}`}
+                                            href={`/products?category=${parentCategory.slug || parentCategory.id}`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className="block px-3 py-2 text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-lg"
                                           >
@@ -1131,7 +1131,7 @@ export function Header() {
                                           {subCategories.map((subCat: any) => (
                                             <Link
                                               key={subCat.id}
-                                              href={`/products?category=${subCat.id}`}
+                                              href={`/products?category=${subCat.slug || subCat.id}`}
                                               onClick={() => setIsMobileMenuOpen(false)}
                                               className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
                                             >

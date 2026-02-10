@@ -153,7 +153,7 @@ export function CategoriesSection({ categories, motherCategories = [] }: Categor
                         className="snap-start flex-shrink-0"
                     >
                         <Link
-                        href={`/products?category=${category.id}`}
+                        href={`/products?category=${category.slug || category.id}`}
                         className="group/card flex flex-col items-center text-center gap-2 sm:gap-3"
                         >
                         {/* Category Image */}

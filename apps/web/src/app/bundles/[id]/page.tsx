@@ -14,7 +14,7 @@ import { ShoppingCart, CheckCircle2, Truck, ShieldCheck, RefreshCw } from "lucid
 
 export default function BundleDetailsPage() {
   const params = useParams();
-  const id = params.id as string;
+  const slugOrId = params.id as string;
   const [bundle, setBundle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { addItem } = useCart();
@@ -23,8 +23,8 @@ export default function BundleDetailsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (id) {
-        fetch(`${API_URL}/bundles/${id}`)
+    if (slugOrId) {
+        fetch(`${API_URL}/bundles/${slugOrId}`)
         .then(res => {
             if (!res.ok) throw new Error("Bundle not found");
             return res.json();
@@ -36,7 +36,7 @@ export default function BundleDetailsPage() {
         })
         .finally(() => setLoading(false));
     }
-  }, [id, router]);
+  }, [slugOrId, router]);
 
   const handleAddToCart = () => {
     if (!bundle) return;
@@ -53,6 +53,7 @@ export default function BundleDetailsPage() {
 
     addItem({
       id: bundle.id,
+      slug: bundle.slug, // Pass slug
       name: getLocalizedField(bundle, 'title', language),
       price: parseFloat(bundle.price),
       image: imageUrl,

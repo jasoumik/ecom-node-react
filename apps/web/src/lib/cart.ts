@@ -3,12 +3,13 @@ import { persist } from "zustand/middleware";
 
 export interface CartItem {
   id: string;
+  slug?: string; // Added slug
   variantId?: string;
   name: string;
   price: number;
   image: string;
   quantity: number;
-  stock: number; // Added stock
+  stock: number;
 }
 
 interface CartStore {
@@ -42,13 +43,15 @@ export const useCart = create<CartStore>()(
               updatedItems[existingItemIndex] = {
                 ...existingItem,
                 quantity: Math.min(newQuantity, stock),
-                stock: stock
+                stock: stock,
+                slug: newItem.slug || existingItem.slug // Update slug if provided
               };
           } else {
               updatedItems[existingItemIndex] = {
                 ...existingItem,
                 quantity: newQuantity,
-                stock: stock
+                stock: stock,
+                slug: newItem.slug || existingItem.slug // Update slug if provided
               };
           }
           set({ items: updatedItems });

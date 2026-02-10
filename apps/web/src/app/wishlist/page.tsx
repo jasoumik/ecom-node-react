@@ -38,6 +38,7 @@ export default function WishlistPage() {
   const handleAddToCart = (item: any) => {
     addItem({
       id: item.id,
+      slug: item.slug, // Pass slug
       name: item.name,
       price: item.price,
       image: item.image,
@@ -65,13 +66,15 @@ export default function WishlistPage() {
                 {items.map((item) => (
                     <div key={item.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 group hover:shadow-md transition-all">
                         <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-700 mb-4">
-                            <ResponsiveImage 
-                                src={item.image} 
-                                alt={item.name} 
-                                width={400} 
-                                height={400} 
-                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                            />
+                            <Link href={`/products/${item.slug || item.id}`} className="block w-full h-full">
+                                <ResponsiveImage 
+                                    src={item.image} 
+                                    alt={item.name} 
+                                    width={400} 
+                                    height={400} 
+                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                />
+                            </Link>
                             <button 
                                 onClick={() => handleRemove(item.id)}
                                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors shadow-sm"
@@ -81,7 +84,11 @@ export default function WishlistPage() {
                             </button>
                         </div>
                         
-                        <h3 className="font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">{item.name}</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">
+                            <Link href={`/products/${item.slug || item.id}`} className="hover:text-sky-500 transition-colors">
+                                {item.name}
+                            </Link>
+                        </h3>
                         <div className="text-sky-500 font-bold text-lg mb-4">৳{item.price}</div>
                         
                         <Button 

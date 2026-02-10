@@ -344,7 +344,8 @@ export default function CartPage() {
               id: item.id,
               name: item.name,
               price: item.price,
-              image: item.image
+              image: item.image,
+              slug: item.slug
           });
           addToast("Added to wishlist");
       }
@@ -363,6 +364,7 @@ export default function CartPage() {
 
     addItem({
       id: product.id,
+      slug: product.slug,
       name: getLocalizedField(product, 'name', language),
       price: parseFloat(product.price),
       image: imageUrl,
@@ -473,7 +475,7 @@ export default function CartPage() {
 
                             {/* Details */}
                             <div className="flex-1 min-w-0">
-                                <Link href={`/products/${item.id}`} className="text-sm font-medium text-slate-800 dark:text-white hover:text-sky-600 line-clamp-2 mb-1">
+                                <Link href={`/products/${item.slug || item.id}`} className="text-sm font-medium text-slate-800 dark:text-white hover:text-sky-600 line-clamp-2 mb-1">
                                     {item.name}
                                 </Link>
 
@@ -892,7 +894,7 @@ export default function CartPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {relatedProducts.map((product) => (
                     <div key={product.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-md p-3 hover:shadow-md transition-shadow group">
-                        <Link href={`/products/${product.id}`}>
+                        <Link href={`/products/${product.slug || product.id}`}>
                             <div className="aspect-[2/3] bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-3 relative">
                                 <img 
                                     src={getImageUrl(product.images?.[0])} 

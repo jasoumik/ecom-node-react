@@ -23,6 +23,7 @@ export class PublicService {
         id: cat.id,
         name: cat.name,
         name_bn: cat.name_bn, // Added Bangla Name
+        slug: cat.slug, // Added Slug
         image: cat.image || "https://picsum.photos/seed/default/800/800",
         mother_category_id: cat.mother_category_id // Added mother category id
     }));
@@ -34,6 +35,7 @@ export class PublicService {
             'products.id',
             'products.name',
             'products.name_bn', // Added Bangla Name
+            'products.slug', // Added Slug
             'products.price',
             'products.images',
             'products.stock'
@@ -68,8 +70,9 @@ export class PublicService {
             id: p.id,
             name: p.name,
             name_bn: p.name_bn, // Added Bangla Name
+            slug: p.slug, // Added Slug
             price: `৳${p.price}`,
-            href: `/products/${p.id}`,
+            href: `/products/${p.slug || p.id}`,
             image: {
                 src: imageUrl,
                 alt: p.name,

@@ -17,7 +17,8 @@ import { Minus, Plus, Heart, Share2, CheckCircle2, AlertCircle, Truck, ShieldChe
 
 export default function ProductPage() {
   const params = useParams();
-  const id = params.id as string;
+  // The param is named 'id' by the folder structure, but it can contain a slug
+  const slugOrId = params.id as string;
   const [product, setProduct] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
@@ -50,17 +51,21 @@ export default function ProductPage() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!id) return;
+      if (!slugOrId) return;
       setLoading(true);
       try {
-        const [productRes, reviewsRes] = await Promise.all([
-            fetch(`${API_URL}/products/${id}`),
-            fetch(`${API_URL}/reviews/product/${id}`)
-        ]);
+        // Backend findOne now accepts ID or Slug
+        const productRes = await fetch(`${API_URL}/products/${slugOrId}`);
         
         if (productRes.ok) {
           const data = await productRes.json();
           setProduct(data);
+          
+          // Fetch reviews using the actual ID from the fetched product
+          fetch(`${API_URL}/reviews/product/${data.id}`)
+            .then(res => res.json())
+            .then(reviewsData => setReviews(Array.isArray(reviewsData) ? reviewsData : []))
+            .catch(console.error);
           
           // Fetch related products
           if (data.category_id) {
@@ -92,11 +97,8 @@ export default function ProductPage() {
               if (first.color) setSelectedColor(first.color);
               if (first.weight) setSelectedWeight(first.weight);
           }
-        }
-
-        if (reviewsRes.ok) {
-            const reviewsData = await reviewsRes.json();
-            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+        } else {
+            setProduct(null);
         }
       } catch (error) {
         console.error("Failed to fetch product", error);
@@ -115,7 +117,7 @@ export default function ProductPage() {
             setNotifyEmail(user.email || "");
         } catch (e) {}
     }
-  }, [id]);
+  }, [slugOrId]);
 
   useEffect(() => {
       if (!product || !product.variants) return;
@@ -187,6 +189,7 @@ export default function ProductPage() {
 
     addItem({
       id: product.id,
+      slug: product.slug, // Pass slug
       variantId: selectedVariant?.id,
       name: `${getLocalizedField(product, 'name', language)} ${selectedVariant ? `(${[selectedSize, selectedColor, selectedWeight].filter(Boolean).join(' ')})` : ''}`,
       price: finalPrice,
@@ -640,42 +643,6 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* Description Section */}
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">Description</Heading>
-                <div 
-                    className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm"
-                    dangerouslySetInnerHTML={{ __html: getLocalizedField(product, 'description', language) }}
-                />
-                
-                {/* Specifications */}
-                {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
-                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Specifications</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                            {(selectedVariant?.material || product.material) && (
-                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                    <span className="text-slate-500">Material</span>
-                                    <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
-                                </div>
-                            )}
-                            {currentWeight && (
-                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                    <span className="text-slate-500">Weight</span>
-                                    <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
-                                </div>
-                            )}
-                            {(selectedVariant?.sku || product.sku) && (
-                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                    <span className="text-slate-500">SKU</span>
-                                    <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
             {/* Reviews Section */}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
                 <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
@@ -714,6 +681,42 @@ export default function ProductPage() {
                     )}
                 </div>
             </div>
+
+            {/* Description Section */}
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
+                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">Description</Heading>
+                <div 
+                    className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm"
+                    dangerouslySetInnerHTML={{ __html: getLocalizedField(product, 'description', language) }}
+                />
+                
+                {/* Specifications */}
+                {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
+                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Specifications</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                            {(selectedVariant?.material || product.material) && (
+                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                    <span className="text-slate-500">Material</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
+                                </div>
+                            )}
+                            {currentWeight && (
+                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                    <span className="text-slate-500">Weight</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
+                                </div>
+                            )}
+                            {(selectedVariant?.sku || product.sku) && (
+                                <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                    <span className="text-slate-500">SKU</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
           </div>
         </div>
 
@@ -732,7 +735,7 @@ export default function ProductPage() {
                         return (
                             <div key={p.id} className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm hover:shadow-md transition-all border border-slate-100 dark:border-slate-700">
                                 <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f8f8f8] mb-3 dark:bg-slate-700">
-                                    <Link href={`/products/${p.id}`} className="block w-full h-full">
+                                    <Link href={`/products/${p.slug || p.id}`} className="block w-full h-full">
                                         <ResponsiveImage
                                             src={imageUrl}
                                             alt={getLocalizedField(p, 'name', language)}
@@ -744,7 +747,7 @@ export default function ProductPage() {
                                 </div>
                                 <div className="space-y-1 text-center">
                                     <h3 className="text-sm font-bold text-slate-900 font-sans group-hover:text-sky-500 transition-colors dark:text-white line-clamp-1">
-                                        <Link href={`/products/${p.id}`}>{getLocalizedField(p, 'name', language)}</Link>
+                                        <Link href={`/products/${p.slug || p.id}`}>{getLocalizedField(p, 'name', language)}</Link>
                                     </h3>
                                     <div className="text-lg font-bold text-slate-900 dark:text-white">৳{p.price}</div>
                                 </div>
