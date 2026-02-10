@@ -78,6 +78,8 @@ export type Category = {
   name: string;
   name_bn?: string;
   image: string;
+  slug?: string;
+  mother_category_id?: string;
 };
 
 export type LandingPageContent = {
