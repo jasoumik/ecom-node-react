@@ -30,6 +30,7 @@ export type FeaturedProduct = {
   name_bn?: string;
   price: string;
   href: string;
+  slug?: string;
   image: {
     src: string;
     alt: string;
@@ -96,6 +97,7 @@ export type LandingPageContent = {
     subtitle_bn?: string;
     products: FeaturedProduct[];
     viewAllHref?: string;
+    slug?: string;
   };
   whyChooseUs: {
     title: string;
