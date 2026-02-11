@@ -46,4 +46,15 @@ export class OrdersController {
   cancelOrder(@Param('id') id: string, @Body('userId') userId: string) {
     return this.ordersService.cancelOrder(id, userId);
   }
+
+  @Post(':id/payments')
+  addPayment(
+      @Param('id') id: string,
+      @Body('amount') amount: number,
+      @Body('method') method: string,
+      @Body('transactionId') transactionId?: string,
+      @Body('note') note?: string
+  ) {
+      return this.ordersService.addPayment(id, amount, method, transactionId, note);
+  }
 }

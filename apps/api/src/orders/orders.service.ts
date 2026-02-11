@@ -26,7 +26,7 @@ export class OrdersService {
       couponCode,
       paymentMethod,
       transactionId,
-      paymentPhone, // Added
+      paymentPhone,
       isGift,
       giftMessage,
       redeemPoints,
@@ -54,7 +54,6 @@ export class OrdersService {
             userPoints = user.points || 0;
         }
       } else {
-        // Check if user exists with this phone (for guest checkout with existing account)
         const user = await this.knex('users')
           .where({ phone: orderData.customerPhone })
           .first();
@@ -117,7 +116,6 @@ export class OrdersService {
       }
       const deliveryAmount = parseFloat(deliveryCharge.amount);
 
-      // Free Shipping Logic
       const freeShippingThresholdStr = await this.settingsService.getValue(
         'free_shipping_threshold',
       );
@@ -129,7 +127,6 @@ export class OrdersService {
       let discountAmount = 0;
       let couponId = null;
 
-      // Apply Coupon
       if (couponCode) {
         const coupon = await this.knex('coupons')
           .where({ code: couponCode, is_active: true })
@@ -153,12 +150,10 @@ export class OrdersService {
         }
       }
 
-      // Apply Free Shipping as Discount
       if (isFreeShipping) {
         discountAmount += deliveryAmount;
       }
 
-      // Point Redemption Logic
       let pointsDiscount = 0;
       let pointsRedeemed = 0;
 
@@ -176,7 +171,6 @@ export class OrdersService {
           pointsDiscount = redeemPoints * redemptionRate;
           pointsRedeemed = redeemPoints;
           
-          // Ensure points discount doesn't exceed remaining total
           const remainingTotal = subtotal + deliveryAmount - discountAmount;
           if (pointsDiscount > remainingTotal) {
               pointsDiscount = remainingTotal;
@@ -184,7 +178,6 @@ export class OrdersService {
           }
       }
 
-      // Ensure total discount doesn't exceed total
       let totalDiscount = discountAmount + pointsDiscount;
       if (totalDiscount > subtotal + deliveryAmount) {
           totalDiscount = subtotal + deliveryAmount;
@@ -192,7 +185,6 @@ export class OrdersService {
 
       const totalAmount = subtotal + deliveryAmount - totalDiscount;
 
-      // Calculate Points to Earn
       const earningRateStr = await this.settingsService.getValue('points_earning_rate') || '1';
       const earningRate = parseFloat(earningRateStr);
       const pointsEarned = Math.floor((totalAmount / 100) * earningRate);
@@ -205,12 +197,12 @@ export class OrdersService {
           customer_address: orderData.customerAddress,
           subtotal: subtotal,
           delivery_charge: deliveryAmount,
-          discount: discountAmount, // Coupon + Free Shipping discount
+          discount: discountAmount,
           total_amount: totalAmount,
           coupon_id: couponId,
           payment_method: paymentMethod || 'cod',
           transaction_id: transactionId || null,
-          payment_phone: paymentPhone || null, // Added
+          payment_phone: paymentPhone || null,
           status: 'pending',
           order_source: 'Website',
           payment_status: 'Pending',
@@ -232,12 +224,10 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
-        // Deduct Redeemed Points
         if (pointsRedeemed > 0 && validUserId) {
             await trx('users').where({ id: validUserId }).decrement('points', pointsRedeemed);
         }
 
-        // Initial History Log
         await trx('order_history').insert({
           order_id: order.id,
           status: 'pending',
@@ -268,7 +258,6 @@ export class OrdersService {
           });
         }
 
-        // Send Notifications (Async, don't block)
         this.sendOrderNotifications(order).catch(err => console.error("Notification failed", err));
 
         return { ...order, items: itemsToInsert };
@@ -293,7 +282,6 @@ export class OrdersService {
     const orderItemsData: any[] = [];
 
     try {
-      // Check if user exists with this phone number
       let validUserId = null;
       const existingUser = await this.knex('users')
         .where({ phone: orderData.customerPhone })
@@ -350,7 +338,6 @@ export class OrdersService {
       const totalAmount =
         subtotal + (orderData.deliveryCharge || 0) - (orderData.discount || 0);
 
-      // Determine Payment Status
       let paymentStatus = orderData.paymentStatus;
       const amountPaid = paidAmount || 0;
       
@@ -391,7 +378,6 @@ export class OrdersService {
 
         await trx('order_items').insert(itemsToInsert);
 
-        // Record Payment if any
         if (amountPaid > 0) {
             await trx('payments').insert({
                 order_id: order.id,
@@ -402,7 +388,6 @@ export class OrdersService {
             });
         }
 
-        // Initial History Log
         await trx('order_history').insert({
           order_id: order.id,
           status: orderData.status,
@@ -489,23 +474,31 @@ export class OrdersService {
     const adminPhone = process.env.ADMIN_PHONE || '01616684803';
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
 
-    // Customer Notification
     await this.notificationService.sendSMS(order.customer_phone, customerMsg);
-    // If we had customer email, we'd send email too. Assuming user might have email in users table if registered.
+    
     if (order.user_id) {
       const user = await this.knex('users')
         .where({ id: order.user_id })
         .first();
       if (user && user.email) {
-        await this.notificationService.sendEmail(
-          user.email,
-          `Order #${order.order_number} Placed`,
-          customerMsg,
-        );
+        // Use Template for Email
+        const sent = await this.notificationService.sendTemplateEmail(user.email, 'order_placed', {
+            customer_name: order.customer_name,
+            order_number: order.order_number,
+            total_amount: order.total_amount
+        });
+        
+        if (!sent) {
+            // Fallback if template fails
+            await this.notificationService.sendEmail(
+              user.email,
+              `Order #${order.order_number} Placed`,
+              customerMsg,
+            );
+        }
       }
     }
 
-    // Admin Notification
     await this.notificationService.sendSMS(adminPhone, adminMsg);
     await this.notificationService.sendEmail(
       adminEmail,
@@ -560,7 +553,6 @@ export class OrdersService {
       .where({ order_id: id })
       .orderBy('created_at', 'asc');
     
-    // Fetch payments
     const payments = await this.knex('payments').where({ order_id: id }).orderBy('created_at', 'desc');
 
     order.items = items.map((item) => {
@@ -572,7 +564,7 @@ export class OrdersService {
     });
 
     order.history = history;
-    order.payments = payments; // Attach payments to order object
+    order.payments = payments;
 
     return order;
   }
@@ -588,7 +580,6 @@ export class OrdersService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    // Workflow Validation
     const currentStatus = order.status;
 
     if (status === 'delivered' && currentStatus === 'pending') {
@@ -610,19 +601,28 @@ export class OrdersService {
         updated_by: userId || null,
       });
 
-      // Award points if delivered AND not previously delivered
       if (status === 'delivered' && currentStatus !== 'delivered' && order.points_earned > 0 && order.user_id) {
           console.log(`Awarding ${order.points_earned} points to user ${order.user_id} for order ${order.id}`);
           await trx('users').where({ id: order.user_id }).increment('points', order.points_earned);
       }
 
-      // Notify customer on status change
       try {
           const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
           await this.notificationService.sendSMS(order.customer_phone, msg);
+          
+          // Send Email Notification for Status Update
+          if (order.user_id) {
+              const user = await trx('users').where({ id: order.user_id }).first();
+              if (user && user.email) {
+                  await this.notificationService.sendTemplateEmail(user.email, 'order_status_update', {
+                      customer_name: order.customer_name,
+                      order_number: order.order_number,
+                      status: status
+                  });
+              }
+          }
       } catch (e) {
           console.error("Failed to send status update notification", e);
-          // Don't fail the transaction just because SMS failed
       }
 
       return updatedOrder;
@@ -666,7 +666,6 @@ export class OrdersService {
         });
       }
 
-      // Refund points if any were redeemed
       if (order.points_redeemed > 0 && order.user_id) {
           await trx('users').where({ id: order.user_id }).increment('points', order.points_redeemed);
       }

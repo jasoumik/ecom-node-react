@@ -38,6 +38,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('labels').del();
   await knex('settings').del();
   await knex('countries').del();
+  await knex('email_templates').del(); // Added
 
   // Get User IDs (assuming they exist from 01_users.ts)
   const admin = await knex('users').where({ role: 'admin' }).first();
@@ -604,6 +605,44 @@ export async function seed(knex: Knex): Promise<void> {
       });
     }
   }
+
+  // ============================================
+  // INSERT EMAIL TEMPLATES
+  // ============================================
+  await knex('email_templates').insert([
+    {
+      name: 'order_placed',
+      subject: 'Order #{{order_number}} Placed Successfully',
+      body: `<p>Dear {{customer_name}},</p>
+<p>Thank you for your order! Your order <strong>#{{order_number}}</strong> has been placed successfully.</p>
+<p><strong>Total Amount:</strong> {{total_amount}}</p>
+<p>We will contact you soon regarding the delivery.</p>
+<p>Best regards,<br>Prithibee Team</p>`,
+      variables: JSON.stringify(['customer_name', 'order_number', 'total_amount']),
+      is_active: true,
+    },
+    {
+      name: 'order_status_update',
+      subject: 'Order #{{order_number}} Status Update',
+      body: `<p>Dear {{customer_name}},</p>
+<p>Your order <strong>#{{order_number}}</strong> status has been updated to: <strong>{{status}}</strong>.</p>
+<p>Thank you for shopping with us.</p>
+<p>Best regards,<br>Prithibee Team</p>`,
+      variables: JSON.stringify(['customer_name', 'order_number', 'status']),
+      is_active: true,
+    },
+    {
+      name: 'verification_code',
+      subject: 'Your Verification Code',
+      body: `<p>Hello,</p>
+<p>Your verification code is: <strong>{{otp}}</strong></p>
+<p>This code is valid for 5 minutes.</p>
+<p>If you did not request this code, please ignore this email.</p>
+<p>Best regards,<br>Prithibee Team</p>`,
+      variables: JSON.stringify(['otp']),
+      is_active: true,
+    },
+  ]);
 
   console.log('Seeding completed successfully!');
   console.log(`- ${Object.keys(ageGroups).length} age groups`);

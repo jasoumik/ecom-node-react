@@ -1,9 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Knex } from 'knex';
 import { EmailProvider } from '../email/email.provider';
 import { SmsProvider } from './sms/sms.provider.interface';
 import { NetSmsBdProvider } from './sms/netsmsbd.provider';
 import { WhatsAppProvider } from './whatsapp/whatsapp.provider.interface';
 import { MockWhatsAppProvider } from './whatsapp/mock-whatsapp.provider';
+import { EmailTemplatesService } from '../email-templates/email-templates.service';
 
 @Injectable()
 export class NotificationService {
@@ -11,50 +13,92 @@ export class NotificationService {
   private smsProvider: SmsProvider;
   private whatsAppProvider: WhatsAppProvider;
 
-  constructor(private readonly emailProvider: EmailProvider) {
-    // In the future, we can use a factory or dependency injection to switch providers
-    // For now, we instantiate NetSmsBdProvider directly or via DI if registered
+  constructor(
+    @Inject('KNEX_CONNECTION') private readonly knex: Knex,
+    private readonly emailProvider: EmailProvider,
+    private readonly emailTemplatesService: EmailTemplatesService,
+  ) {
     this.smsProvider = new NetSmsBdProvider();
     this.whatsAppProvider = new MockWhatsAppProvider();
   }
 
   async sendEmail(to: string, subject: string, text: string, html?: string) {
-    return this.emailProvider.sendEmail(to, subject, text, html);
+    let status = 'sent';
+    let error = null;
+    let result = false;
+
+    try {
+      result = await this.emailProvider.sendEmail(to, subject, text, html);
+      if (!result) {
+          status = 'failed';
+          error = 'Email provider returned false';
+      }
+    } catch (e) {
+      status = 'failed';
+      error = e.message;
+      this.logger.error(`Failed to send email to ${to}`, e);
+    }
+
+    // Log email
+    try {
+        await this.knex('email_logs').insert({
+            to,
+            subject,
+            body: html || text,
+            status,
+            error
+        });
+    } catch (logError) {
+        this.logger.error('Failed to log email', logError);
+    }
+
+    return result;
+  }
+
+  async sendTemplateEmail(to: string, templateName: string, variables: Record<string, any>) {
+    try {
+      const template = await this.emailTemplatesService.findByName(templateName);
+      if (!template) {
+        this.logger.warn(`Email template '${templateName}' not found. Falling back to default.`);
+        return false;
+      }
+
+      let subject = template.subject;
+      let body = template.body;
+
+      // Replace variables
+      for (const [key, value] of Object.entries(variables)) {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        subject = subject.replace(regex, value);
+        body = body.replace(regex, value);
+      }
+
+      return this.sendEmail(to, subject, body.replace(/<[^>]*>?/gm, ''), body);
+    } catch (e) {
+      this.logger.error(`Failed to send template email '${templateName}' to ${to}`, e);
+      return false;
+    }
   }
 
   async sendSMS(to: string, message: string) {
     const isSmsEnabled = process.env.SMS_ENABLED === 'true';
     const isWhatsAppEnabled = process.env.WHATSAPP_ENABLED === 'true';
     
-    // Try WhatsApp first if enabled
     if (isWhatsAppEnabled) {
         try {
             const sent = await this.whatsAppProvider.send(to, message);
             if (sent) {
                 this.logger.log(`Message sent via WhatsApp to ${to}`);
-                // If WhatsApp is successful, we might want to skip SMS to save cost, 
-                // or send both depending on requirement. For now, let's assume we skip SMS if WhatsApp works.
-                // But usually WhatsApp is not guaranteed to be delivered if user doesn't have it.
-                // Since we don't have a way to check if user has WhatsApp without trying, 
-                // and Mock provider always returns true, we might skip SMS.
-                // However, for reliability, we might want to fallback to SMS if WhatsApp fails.
-                
-                // For this implementation, let's just log it and proceed to SMS check 
-                // or return true if we want to prioritize WhatsApp.
-                // Let's assume we want to send SMS as fallback or if WhatsApp is just an additional channel.
-                
-                // If the requirement is "send him sms through whatsapp", it implies WhatsApp is the medium.
                 return true; 
             }
         } catch (e) {
             this.logger.error(`Failed to send WhatsApp to ${to}`, e);
-            // Fallback to SMS
         }
     }
 
     if (!isSmsEnabled) {
       this.logger.log(`[SMS Disabled] To: ${to} | Message: ${message}`);
-      return true; // Pretend success
+      return true;
     }
 
     return this.smsProvider.send(to, message);
@@ -73,7 +117,12 @@ export class NotificationService {
     const message = `Your Prithibee verification code is: ${otp}. Valid for 5 minutes.`;
     
     if (channel === 'email') {
-      return this.sendEmail(to, 'Verification Code', message);
+      // Use template if available
+      const sent = await this.sendTemplateEmail(to, 'verification_code', { otp });
+      if (!sent) {
+          return this.sendEmail(to, 'Verification Code', message);
+      }
+      return sent;
     } else if (channel === 'sms') {
       return this.sendSMS(to, message);
     } else if (channel === 'whatsapp') {
