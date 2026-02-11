@@ -27,6 +27,7 @@ import { BundlesModule } from './bundles/bundles.module';
 import { MotherCategoriesModule } from './mother-categories/mother-categories.module';
 import { EmailModule } from './email/email.module';
 import { EmailTemplatesModule } from './email-templates/email-templates.module';
+import { SmsTemplatesModule } from './sms-templates/sms-templates.module';
 import { DatabaseModule } from './database/database.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -35,7 +36,8 @@ import { join } from 'path';
   imports: [
     DatabaseModule,
     EmailModule,
-    EmailTemplatesModule, // Added EmailTemplatesModule
+    EmailTemplatesModule,
+    SmsTemplatesModule, // Added SmsTemplatesModule
     PublicModule,
     UsersModule,
     ProductsModule,

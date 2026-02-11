@@ -474,14 +474,22 @@ export class OrdersService {
     const adminPhone = process.env.ADMIN_PHONE || '01616684803';
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
 
-    await this.notificationService.sendSMS(order.customer_phone, customerMsg);
+    // Use Template for SMS
+    const smsSent = await this.notificationService.sendTemplateSMS(order.customer_phone, 'order_placed', {
+        customer_name: order.customer_name,
+        order_number: order.order_number,
+        total_amount: order.total_amount
+    });
+
+    if (!smsSent) {
+        await this.notificationService.sendSMS(order.customer_phone, customerMsg);
+    }
     
     if (order.user_id) {
       const user = await this.knex('users')
         .where({ id: order.user_id })
         .first();
       if (user && user.email) {
-        // Use Template for Email
         const sent = await this.notificationService.sendTemplateEmail(user.email, 'order_placed', {
             customer_name: order.customer_name,
             order_number: order.order_number,
@@ -489,7 +497,6 @@ export class OrdersService {
         });
         
         if (!sent) {
-            // Fallback if template fails
             await this.notificationService.sendEmail(
               user.email,
               `Order #${order.order_number} Placed`,
@@ -608,9 +615,17 @@ export class OrdersService {
 
       try {
           const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
-          await this.notificationService.sendSMS(order.customer_phone, msg);
           
-          // Send Email Notification for Status Update
+          // Use Template for SMS
+          const smsSent = await this.notificationService.sendTemplateSMS(order.customer_phone, 'order_status_update', {
+              order_number: order.order_number,
+              status: status
+          });
+
+          if (!smsSent) {
+              await this.notificationService.sendSMS(order.customer_phone, msg);
+          }
+          
           if (order.user_id) {
               const user = await trx('users').where({ id: order.user_id }).first();
               if (user && user.email) {

@@ -502,9 +502,31 @@ export async function up(knex: Knex): Promise<void> {
     table.text('error').nullable();
     table.timestamp('created_at').defaultTo(knex.fn.now());
   });
+
+  // SMS Templates Table
+  await knex.schema.createTable('sms_templates', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('name').unique().notNullable(); // e.g., 'order_placed', 'verification_code'
+    table.text('body').notNullable(); // SMS content
+    table.jsonb('variables').nullable(); // List of available variables
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // SMS Logs Table
+  await knex.schema.createTable('sms_logs', (table) => {
+    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.string('to').notNullable();
+    table.text('body').notNullable();
+    table.string('status').defaultTo('sent'); // sent, failed
+    table.text('error').nullable();
+    table.timestamp('created_at').defaultTo(knex.fn.now());
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('sms_logs');
+  await knex.schema.dropTableIfExists('sms_templates');
   await knex.schema.dropTableIfExists('email_logs');
   await knex.schema.dropTableIfExists('email_templates');
   await knex.schema.dropTableIfExists('coupon_usages');

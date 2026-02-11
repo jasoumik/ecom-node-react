@@ -38,7 +38,8 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('labels').del();
   await knex('settings').del();
   await knex('countries').del();
-  await knex('email_templates').del(); // Added
+  await knex('email_templates').del();
+  await knex('sms_templates').del(); // Added
 
   // Get User IDs (assuming they exist from 01_users.ts)
   const admin = await knex('users').where({ role: 'admin' }).first();
@@ -639,6 +640,30 @@ export async function seed(knex: Knex): Promise<void> {
 <p>This code is valid for 5 minutes.</p>
 <p>If you did not request this code, please ignore this email.</p>
 <p>Best regards,<br>Prithibee Team</p>`,
+      variables: JSON.stringify(['otp']),
+      is_active: true,
+    },
+  ]);
+
+  // ============================================
+  // INSERT SMS TEMPLATES
+  // ============================================
+  await knex('sms_templates').insert([
+    {
+      name: 'order_placed',
+      body: `Dear {{customer_name}}, your order #{{order_number}} has been placed successfully. Total: {{total_amount}}. We will contact you soon.`,
+      variables: JSON.stringify(['customer_name', 'order_number', 'total_amount']),
+      is_active: true,
+    },
+    {
+      name: 'order_status_update',
+      body: `Your order #{{order_number}} status has been updated to: {{status}}.`,
+      variables: JSON.stringify(['order_number', 'status']),
+      is_active: true,
+    },
+    {
+      name: 'verification_code',
+      body: `Your Prithibee verification code is: {{otp}}. Valid for 5 minutes.`,
       variables: JSON.stringify(['otp']),
       is_active: true,
     },
