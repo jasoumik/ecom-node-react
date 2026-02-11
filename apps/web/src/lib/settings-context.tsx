@@ -20,7 +20,7 @@ const defaultSettings: Settings = {
   shop_name: "Prithibee",
   shop_name_bn: "পৃথিবী",
   shop_phone: "+880 1616-684803",
-  shop_address: "House 12, Road 5, Dhanmondi, Dhaka-1209",
+  shop_address: "Uttara Model Town, Dhaka-1230",
   support_email: "support@prithibee.com",
   facebook_link: "https://www.facebook.com/prithibeeofficial",
   whatsapp_number: "+8801616684803",

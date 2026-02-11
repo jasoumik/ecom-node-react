@@ -16,7 +16,7 @@ export class SettingsService implements OnModuleInit {
           { key: 'shop_name', value: 'Prithibee', description: 'Name of the shop displayed in header/footer' },
           { key: 'shop_name_bn', value: 'পৃথিবী', description: 'Name of the shop in Bangla' },
           { key: 'shop_phone', value: '+880 1616-684803', description: 'Primary contact number' },
-          { key: 'shop_address', value: 'House 12, Road 5, Dhanmondi, Dhaka-1209', description: 'Physical store address' },
+          { key: 'shop_address', value: 'Uttara Model Town, Dhaka-1230', description: 'Physical store address' },
           { key: 'facebook_link', value: 'https://www.facebook.com/prithibeeofficial', description: 'Facebook page URL' },
           { key: 'whatsapp_number', value: '+8801616684803', description: 'WhatsApp number for chat button' },
           { key: 'free_shipping_threshold', value: '5000', description: 'Minimum order amount for free shipping' },
