@@ -59,9 +59,10 @@ export function FloatingActionGroup() {
   return (
     <>
       {/* Adjusted bottom position for mobile to avoid sticky product bar. Increased z-index to be above sticky bars. */}
-      <div className="fixed bottom-22 sm:bottom-20 right-6 z-50 flex flex-col items-end gap-3">
+      {/* Added pointer-events-none to container to prevent blocking clicks on page content */}
+      <div className="fixed bottom-22 sm:bottom-20 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
         {/* Expanded Actions */}
-        <div className={`flex flex-col gap-3 transition-all duration-300 origin-bottom ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-10 pointer-events-none'}`}>
+        <div className={`flex flex-col gap-3 transition-all duration-300 origin-bottom ${isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-90 translate-y-10 pointer-events-none'}`}>
             
             {/* WhatsApp Button */}
             <a
@@ -89,7 +90,7 @@ export function FloatingActionGroup() {
         {/* Main Toggle Button */}
         <button 
             onClick={() => setIsOpen(!isOpen)}
-            className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110 ${isOpen ? 'bg-slate-800 rotate-45' : 'bg-sky-600'}`}
+            className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110 pointer-events-auto ${isOpen ? 'bg-slate-800 rotate-45' : 'bg-sky-600'}`}
             aria-label={t('toggle_actions')}
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
