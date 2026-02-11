@@ -3,12 +3,13 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { DatabaseModule } from '../database/database.module';
 import { NotificationModule } from '../notification/notification.module';
-import { SettingsModule } from '../settings/settings.module'; // Import SettingsModule
+import { SettingsModule } from '../settings/settings.module';
+import { InvoiceService } from './invoice.service';
 
 @Module({
-  imports: [DatabaseModule, NotificationModule, SettingsModule], // Add SettingsModule
+  imports: [DatabaseModule, NotificationModule, SettingsModule],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, InvoiceService],
   exports: [OrdersService],
 })
 export class OrdersModule {}

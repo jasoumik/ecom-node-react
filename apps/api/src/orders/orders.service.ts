@@ -10,6 +10,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 import { NotificationService } from '../notification/notification.service';
 import { SettingsService } from '../settings/settings.service';
+import { InvoiceService } from './invoice.service';
 
 @Injectable()
 export class OrdersService {
@@ -17,6 +18,7 @@ export class OrdersService {
     @Inject('KNEX_CONNECTION') private readonly knex: Knex,
     private readonly notificationService: NotificationService,
     private readonly settingsService: SettingsService,
+    private readonly invoiceService: InvoiceService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<any> {
@@ -258,7 +260,16 @@ export class OrdersService {
           });
         }
 
-        this.sendOrderNotifications(order).catch(err => console.error("Notification failed", err));
+        // Prepare Order Object for Invoice
+        const orderForInvoice = { ...order, items: itemsToInsert };
+        const pdfBuffer = await this.invoiceService.generateInvoicePdf(orderForInvoice);
+        const attachments = [{
+            filename: `invoice-${order.order_number}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf'
+        }];
+
+        this.sendOrderNotifications(order, attachments).catch(err => console.error("Notification failed", err));
 
         return { ...order, items: itemsToInsert };
       });
@@ -418,6 +429,17 @@ export class OrdersService {
           });
         }
 
+        // Prepare Order Object for Invoice
+        const orderForInvoice = { ...order, items: itemsToInsert };
+        const pdfBuffer = await this.invoiceService.generateInvoicePdf(orderForInvoice);
+        const attachments = [{
+            filename: `invoice-${order.order_number}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf'
+        }];
+
+        this.sendOrderNotifications(order, attachments).catch(err => console.error("Notification failed", err));
+
         return { ...order, items: itemsToInsert };
       });
     } catch (error) {
@@ -468,39 +490,34 @@ export class OrdersService {
       });
   }
 
-  private async sendOrderNotifications(order: any) {
+  private async sendOrderNotifications(order: any, attachments: any[] = []) {
     const customerMsg = `Dear ${order.customer_name}, your order #${order.order_number} has been placed successfully. Total: ${order.total_amount}. We will contact you soon.`;
     const adminMsg = `New Order #${order.order_number} received from ${order.customer_name}. Total: ${order.total_amount}.`;
     const adminPhone = process.env.ADMIN_PHONE || '01616684803';
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
 
-    // Use Template for SMS
-    const smsSent = await this.notificationService.sendTemplateSMS(order.customer_phone, 'order_placed', {
-        customer_name: order.customer_name,
-        order_number: order.order_number,
-        total_amount: order.total_amount
-    });
-
-    if (!smsSent) {
-        await this.notificationService.sendSMS(order.customer_phone, customerMsg);
-    }
+    await this.notificationService.sendSMS(order.customer_phone, customerMsg);
     
     if (order.user_id) {
       const user = await this.knex('users')
         .where({ id: order.user_id })
         .first();
       if (user && user.email) {
+        // Use Template for Email
         const sent = await this.notificationService.sendTemplateEmail(user.email, 'order_placed', {
             customer_name: order.customer_name,
             order_number: order.order_number,
             total_amount: order.total_amount
-        });
+        }, attachments); // Pass attachments
         
         if (!sent) {
+            // Fallback if template fails
             await this.notificationService.sendEmail(
               user.email,
               `Order #${order.order_number} Placed`,
               customerMsg,
+              undefined,
+              attachments // Pass attachments
             );
         }
       }
@@ -511,6 +528,8 @@ export class OrdersService {
       adminEmail,
       `New Order #${order.order_number}`,
       adminMsg,
+      undefined,
+      attachments // Pass attachments to admin too
     );
     await this.notificationService.sendWhatsApp(adminPhone, adminMsg);
   }
@@ -615,17 +634,9 @@ export class OrdersService {
 
       try {
           const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
+          await this.notificationService.sendSMS(order.customer_phone, msg);
           
-          // Use Template for SMS
-          const smsSent = await this.notificationService.sendTemplateSMS(order.customer_phone, 'order_status_update', {
-              order_number: order.order_number,
-              status: status
-          });
-
-          if (!smsSent) {
-              await this.notificationService.sendSMS(order.customer_phone, msg);
-          }
-          
+          // Send Email Notification for Status Update
           if (order.user_id) {
               const user = await trx('users').where({ id: order.user_id }).first();
               if (user && user.email) {

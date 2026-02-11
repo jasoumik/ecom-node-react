@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmailProvider } from '../email.provider';
+import { EmailProvider, EmailAttachment } from '../email.provider';
 
 @Injectable()
 export class BrevoEmailProvider extends EmailProvider {
@@ -19,30 +19,48 @@ export class BrevoEmailProvider extends EmailProvider {
     }
   }
 
-  async sendEmail(to: string, subject: string, text: string, html?: string): Promise<boolean> {
+  async sendEmail(to: string, subject: string, text: string, html?: string, attachments?: EmailAttachment[]): Promise<boolean> {
     if (!this.apiKey) {
       this.logger.error('Cannot send email: BREVO_API_KEY is missing');
       return false;
     }
 
     try {
+      const payload: any = {
+        sender: {
+          name: this.senderName,
+          email: this.senderEmail,
+        },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: html || text,
+        textContent: text,
+      };
+
+      if (attachments && attachments.length > 0) {
+        payload.attachment = attachments.map((att) => {
+          let contentStr = '';
+          if (Buffer.isBuffer(att.content)) {
+            contentStr = att.content.toString('base64');
+          } else {
+            contentStr = Buffer.from(att.content).toString('base64');
+          }
+
+          return {
+            name: att.filename,
+            content: contentStr,
+          };
+        });
+      }
+
       const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'api-key': this.apiKey,
           'content-type': 'application/json',
         },
-        body: JSON.stringify({
-          sender: {
-            name: this.senderName,
-            email: this.senderEmail,
-          },
-          to: [{ email: to }],
-          subject: subject,
-          htmlContent: html || text,
-          textContent: text,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -52,7 +70,9 @@ export class BrevoEmailProvider extends EmailProvider {
       }
 
       const data = await response.json();
-      this.logger.log(`Email sent successfully via Brevo. MessageId: ${data.messageId}`);
+      this.logger.log(
+        `Email sent successfully via Brevo. MessageId: ${data.messageId}`,
+      );
       return true;
     } catch (error) {
       this.logger.error('Error sending email via Brevo:', error);

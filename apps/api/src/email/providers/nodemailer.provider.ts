@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmailProvider } from '../email.provider';
+import { EmailProvider, EmailAttachment } from '../email.provider';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
@@ -35,7 +35,7 @@ export class NodemailerProvider extends EmailProvider {
     }
   }
 
-  async sendEmail(to: string, subject: string, text: string, html?: string): Promise<boolean> {
+  async sendEmail(to: string, subject: string, text: string, html?: string, attachments?: EmailAttachment[]): Promise<boolean> {
     try {
       const info = await this.transporter.sendMail({
         from: process.env.SMTP_FROM || '"Prithibee" <noreply@prithibee.com>',
@@ -43,6 +43,7 @@ export class NodemailerProvider extends EmailProvider {
         subject,
         text,
         html: html || text,
+        attachments: attachments,
       });
       
       this.logger.log(`Email sent via Nodemailer: ${info.messageId}`);

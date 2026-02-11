@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Knex } from 'knex';
-import { EmailProvider } from '../email/email.provider';
+import { EmailProvider, EmailAttachment } from '../email/email.provider';
 import { SmsProvider } from './sms/sms.provider.interface';
 import { NetSmsBdProvider } from './sms/netsmsbd.provider';
 import { WhatsAppProvider } from './whatsapp/whatsapp.provider.interface';
@@ -24,13 +24,13 @@ export class NotificationService {
     this.whatsAppProvider = new MockWhatsAppProvider();
   }
 
-  async sendEmail(to: string, subject: string, text: string, html?: string) {
+  async sendEmail(to: string, subject: string, text: string, html?: string, attachments?: EmailAttachment[]) {
     let status = 'sent';
     let error: string | null = null;
     let result = false;
 
     try {
-      result = await this.emailProvider.sendEmail(to, subject, text, html);
+      result = await this.emailProvider.sendEmail(to, subject, text, html, attachments);
       if (!result) {
           status = 'failed';
           error = 'Email provider returned false';
@@ -56,7 +56,7 @@ export class NotificationService {
     return result;
   }
 
-  async sendTemplateEmail(to: string, templateName: string, variables: Record<string, any>) {
+  async sendTemplateEmail(to: string, templateName: string, variables: Record<string, any>, attachments?: EmailAttachment[]) {
     try {
       const template = await this.emailTemplatesService.findByName(templateName);
       if (!template) {
@@ -73,7 +73,7 @@ export class NotificationService {
         body = body.replace(regex, value);
       }
 
-      return this.sendEmail(to, subject, body.replace(/<[^>]*>?/gm, ''), body);
+      return this.sendEmail(to, subject, body.replace(/<[^>]*>?/gm, ''), body, attachments);
     } catch (e) {
       this.logger.error(`Failed to send template email '${templateName}' to ${to}`, e);
       return false;
