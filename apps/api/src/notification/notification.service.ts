@@ -26,7 +26,7 @@ export class NotificationService {
 
   async sendEmail(to: string, subject: string, text: string, html?: string) {
     let status = 'sent';
-    let error = null;
+    let error: string | null = null;
     let result = false;
 
     try {
@@ -84,7 +84,7 @@ export class NotificationService {
     const isSmsEnabled = process.env.SMS_ENABLED === 'true';
     const isWhatsAppEnabled = process.env.WHATSAPP_ENABLED === 'true';
     let status = 'sent';
-    let error = null;
+    let error: string | null = null;
     let result = false;
     
     // Try WhatsApp first if enabled

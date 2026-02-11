@@ -68,8 +68,8 @@ export default function EmailTemplatesPage() {
         <Table
           data={templates}
           columns={[
-            { header: "Name", accessor: "name", className: "font-medium capitalize" },
-            { header: "Subject", accessor: "subject" },
+            { header: "Name", accessorKey: "name", className: "font-medium capitalize" },
+            { header: "Subject", accessorKey: "subject" },
             { 
               header: "Variables", 
               cell: (row) => (
@@ -90,7 +90,7 @@ export default function EmailTemplatesPage() {
                   <Button 
                     variant="outline" 
                     onClick={() => setEditingTemplate(row)}
-                    className="text-xs h-auto py-1.5 px-3"
+                    className="text-xs h-8 px-3 rounded-lg shadow-sm"
                   >
                     Edit
                   </Button>
@@ -103,7 +103,7 @@ export default function EmailTemplatesPage() {
         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize">Edit Template: {editingTemplate.name.replace(/_/g, ' ')}</h3>
-            <Button variant="outline" onClick={() => setEditingTemplate(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditingTemplate(null)} className="rounded-lg shadow-sm h-10 px-4">Cancel</Button>
           </div>
 
           <form onSubmit={handleUpdate} className="space-y-6">
@@ -119,7 +119,11 @@ export default function EmailTemplatesPage() {
                 Body (HTML)
               </label>
               <div className="mb-2 text-xs text-slate-500">
-                Available variables: {editingTemplate.variables?.map((v: string) => <span key={v} className="font-mono mx-1 bg-slate-100 px-1 rounded">{{`{{${v}}}`}}</span>)}
+                Available variables: {editingTemplate.variables?.map((v: string) => (
+                  <span key={v} className="font-mono mx-1 bg-slate-100 px-1 rounded">
+                    {'{' + '{' + v + '}' + '}'}
+                  </span>
+                ))}
               </div>
               <textarea 
                 className="w-full h-64 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 font-mono text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
@@ -130,7 +134,7 @@ export default function EmailTemplatesPage() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="bg-sky-600 hover:bg-sky-700 text-white">Save Changes</Button>
+              <Button type="submit" className="bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-md h-10 px-6">Save Changes</Button>
             </div>
           </form>
         </div>
