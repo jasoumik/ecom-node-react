@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Heading, Button } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 const PAGES: Record<string, string> = {
     'page_terms': 'Terms & Conditions',
@@ -64,14 +65,12 @@ export default function EditPageContent() {
       </div>
       
       <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Content (HTML/Markdown supported)</label>
-        <textarea 
-            className="w-full h-[500px] px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 font-mono text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
+        <RichTextEditor
+            label="Content"
             value={content}
-            onChange={e => setContent(e.target.value)}
-            placeholder="Enter page content here..."
+            onChange={setContent}
+            className="min-h-[500px]"
         />
-        <p className="text-xs text-slate-500 mt-2">You can use HTML tags for formatting.</p>
       </div>
     </div>
   );

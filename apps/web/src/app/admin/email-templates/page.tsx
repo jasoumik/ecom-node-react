@@ -6,6 +6,7 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { Table } from "@/components/ui/Table";
 import { Input } from "@/components/ui/Input";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 export default function EmailTemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -116,7 +117,7 @@ export default function EmailTemplatesPage() {
             
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                Body (HTML)
+                Body (Rich Text)
               </label>
               <div className="mb-2 text-xs text-slate-500">
                 Available variables: {editingTemplate.variables?.map((v: string) => (
@@ -125,10 +126,9 @@ export default function EmailTemplatesPage() {
                   </span>
                 ))}
               </div>
-              <textarea 
-                className="w-full h-64 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 font-mono text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+              <RichTextEditor
                 value={editingTemplate.body}
-                onChange={e => setEditingTemplate({...editingTemplate, body: e.target.value})}
+                onChange={val => setEditingTemplate({...editingTemplate, body: val})}
                 required
               />
             </div>
