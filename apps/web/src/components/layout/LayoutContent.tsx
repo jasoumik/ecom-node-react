@@ -15,6 +15,8 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
   const isAuthPage = pathname === "/login" || pathname === "/register";
+  // The home page is now the "Coming Soon" page, so we treat it like a standalone page
+  const isHomePage = pathname === "/";
 
   const [queryClient] = useState(
     () =>
@@ -32,15 +34,15 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <SettingsProvider>
         <LanguageProvider>
-          {!isAdmin && !isAuthPage && <Header />}
-          <main className={`flex-grow ${!isAuthPage ? 'pb-16 lg:pb-0' : ''}`}>
+          {!isAdmin && !isAuthPage && !isHomePage && <Header />}
+          <main className={`flex-grow ${!isAuthPage && !isHomePage ? 'pb-16 lg:pb-0' : ''}`}>
             {children}
           </main>
           {!isAdmin && (
             <>
-              {!isAuthPage && <Footer />}
-              {!isAuthPage && <FloatingActionGroup />}
-              {!isAuthPage && <BottomNav />}
+              {!isAuthPage && !isHomePage && <Footer />}
+              {!isAuthPage && !isHomePage && <FloatingActionGroup />}
+              {!isAuthPage && !isHomePage && <BottomNav />}
               <ToastContainer />
             </>
           )}
