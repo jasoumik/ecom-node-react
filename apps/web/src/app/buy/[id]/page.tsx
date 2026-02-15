@@ -407,11 +407,17 @@ export default function BuyNowPage() {
                     {getLocalizedField(product, 'name', language)}
                 </Heading>
                 
-                <div className="flex flex-wrap items-center gap-3 mb-6">
-                    <div className="text-3xl font-black text-sky-600 dark:text-sky-400">৳{currentPrice}</div>
-                    {product.old_price && <div className="text-xl text-slate-400 line-through">৳{product.old_price}</div>}
+                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-6">
+                    <div className="text-2xl sm:text-3xl font-black text-sky-600 dark:text-sky-400 break-words max-w-full">
+                      ৳{currentPrice}
+                    </div>
                     {product.old_price && (
-                        <div className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap">
+                      <div className="text-base sm:text-xl text-slate-400 line-through break-words max-w-full">
+                        ৳{product.old_price}
+                      </div>
+                    )}
+                    {product.old_price && (
+                        <div className="bg-red-100 text-red-600 text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap">
                             SAVE ৳{parseFloat(product.old_price) - parseFloat(currentPrice)}
                         </div>
                     )}
@@ -535,22 +541,30 @@ export default function BuyNowPage() {
             
             {/* Order Summary Top */}
             <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex flex-wrap items-start gap-3 mb-4">
                     <div className="w-16 h-16 rounded-lg bg-white p-1 border border-slate-200 overflow-hidden shrink-0">
-                        <img src={getImageUrl(currentImage)} className="w-full h-full object-contain" />
+                        <img src={getImageUrl(currentImage)} alt={getLocalizedField(product, 'name', language)} className="w-full h-full object-contain" />
                     </div>
-                    <div className="flex-1">
-                        <div className="font-bold text-sm line-clamp-1 text-slate-900 dark:text-white flex items-center gap-2">
-                            <span className="text-lg">{user?.name}</span>
-                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{user?.phone}</span>
+                    <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm text-slate-900 dark:text-white flex flex-wrap items-center gap-1">
+                            <span className="text-sm sm:text-lg truncate max-w-full">{user?.name || getLocalizedField(product, 'name', language)}</span>
+                            {user?.phone && (
+                              <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 break-words">
+                                {user.phone}
+                              </span>
+                            )}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 break-words">
                             {selectedVariant ? [selectedSize, selectedColor].filter(Boolean).join(' / ') : ''}
                         </div>
-                        <div className="font-bold text-sky-600 dark:text-sky-400">৳{currentPrice} x {quantity}</div>
+                        <div className="font-bold text-sky-600 dark:text-sky-400 mt-1 text-sm sm:text-base break-words">
+                          ৳{currentPrice} x {quantity}
+                        </div>
                     </div>
-                    <div className="text-right">
-                        <div className="font-bold text-lg text-slate-900 dark:text-white">৳{subtotal}</div>
+                    <div className="text-right ml-auto">
+                        <div className="font-bold text-base sm:text-lg text-slate-900 dark:text-white break-words max-w-full">
+                          ৳{subtotal}
+                        </div>
                     </div>
                 </div>
                 
