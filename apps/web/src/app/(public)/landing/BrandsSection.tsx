@@ -120,22 +120,22 @@ export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
             </div>
         )}
 
-        <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 gap-4 items-start">
           <div>
-            <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl">
-              {selectedMotherCategory 
+            <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl text-left">
+              {selectedMotherCategory
                 ? `${t('top_brands')} - ${currentSelectionName}`
                 : t('top_brands')
               }
             </Heading>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 text-left">
               {language === "bn" ? "বিশ্বস্ত ব্র্যান্ড থেকে পণ্য" : "Products from trusted brands"}
             </p>
           </div>
           
           <Link
             href="/brands"
-            className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md dark:bg-slate-800/50"
+            className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md dark:bg-slate-800/50 self-start sm:self-auto"
           >
             {t('view_all')}
             <ChevronRight size={16} />

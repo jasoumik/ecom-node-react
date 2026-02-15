@@ -9,4 +9,3 @@ export * from "./BannerSection";
 export * from "./BrandsSection";
 export * from "./ShopByAgeSection";
 export * from "./TrustSection";
-export * from "./NewsletterSection";

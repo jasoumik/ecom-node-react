@@ -1,4 +1,5 @@
 import { Knex } from 'knex';
+import { seedAgeGroups, seedCountries, seedLabels, seedCoupons, seedPromises, seedEmailAndSmsTemplates } from './others';
 
 function slugify(text: string): string {
   return text

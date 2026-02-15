@@ -8,7 +8,6 @@ import { BannerSection } from "./landing/BannerSection";
 import { BrandsSection } from "./landing/BrandsSection";
 import { ShopByAgeSection } from "./landing/ShopByAgeSection";
 import { TrustSection } from "./landing/TrustSection";
-import { NewsletterSection } from "./landing/NewsletterSection";
 import { BundlesSection } from "./landing/BundlesSection";
 
 export const dynamic = 'force-dynamic'; // Fix for dynamic server usage
@@ -47,7 +46,6 @@ export default async function LandingPage() {
         <BannerSection banners={data.hero.banners} />
       )}
 
-
       {/* Trust Section - Baby Blue Background */}
       <TrustSection />
 
@@ -70,9 +68,6 @@ export default async function LandingPage() {
 
       {/* Testimonials / Social Proof */}
       <TestimonialsSection {...data.testimonials} />
-
-      {/* Newsletter Signup */}
-      <NewsletterSection />
 
       {/* Call to Action */}
       {/*<CallToActionSection {...data.callToAction} />*/}
