@@ -277,6 +277,8 @@ export const translations = {
     error: "Error",
     description: "Description",
     specifications: "Specifications",
+    see_more: "See more",
+    see_less: "See less",
   },
   bn: {
     // Header
@@ -556,5 +558,7 @@ export const translations = {
     error: "ত্রুটি",
     description: "বিবরণ",
     specifications: "স্পেসিফিকেশন",
+    see_more: "আরও দেখুন",
+    see_less: "কম দেখুন",
   }
 };

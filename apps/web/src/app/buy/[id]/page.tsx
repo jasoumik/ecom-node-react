@@ -71,6 +71,12 @@ export default function BuyNowPage() {
     return null;
   }, [selectedVariant, product]);
 
+  const rawDescription = getLocalizedField(product, 'description', language) || '';
+  const descriptionWordCount = useMemo(
+    () => rawDescription.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length,
+    [rawDescription]
+  );
+
   useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
@@ -504,21 +510,21 @@ export default function BuyNowPage() {
                   <div
                     className={
                       "prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm " +
-                      (isDescriptionExpanded ? "max-h-none" : "max-h-[30rem] overflow-hidden")
+                      (isDescriptionExpanded || descriptionWordCount <= 100
+                        ? "max-h-none"
+                        : "max-h-[30rem] overflow-hidden")
                     }
-                    // Rich text HTML from backend
-                    dangerouslySetInnerHTML={{
-                      __html: getLocalizedField(product, 'description', language) || '',
-                    }}
+                    dangerouslySetInnerHTML={{ __html: rawDescription }}
                   />
-                  {/* See more / See less toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setIsDescriptionExpanded((prev) => !prev)}
-                    className="mt-3 text-xs font-bold text-sky-600 hover:text-sky-700"
-                  >
-                    {isDescriptionExpanded ? t('see_less') || 'See less' : t('see_more') || 'See more'}
-                  </button>
+                  {descriptionWordCount > 100 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                      className="mt-3 text-xs font-bold text-sky-600 hover:text-sky-700"
+                    >
+                      {isDescriptionExpanded ? t('see_less') : t('see_more')}
+                    </button>
+                  )}
                 </div>
             </div>
         </div>
