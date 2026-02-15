@@ -113,14 +113,28 @@ export class AuthService {
   }
 
   async generateOtp(identifier: string) {
+    const trimmed = (identifier || '').trim();
+
     // Ensure a user exists for this identifier before sending OTP
-    const user = await this.ensureUserForIdentifier(identifier);
+    const user = await this.ensureUserForIdentifier(trimmed);
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit
-    this.otpStore.set(identifier, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min
+    this.otpStore.set(trimmed, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min
 
-    const isEmail = !!user.email;
-    await this.notificationService.sendOTP(identifier, isEmail ? 'email' : 'sms', otp);
+    const isEmailId = this.isLikelyEmail(trimmed);
+    const isPhoneId = this.isLikelyBdPhone(trimmed);
+
+    if (isEmailId) {
+      // Send OTP via email to the actual email address
+      const toEmail = user.email || trimmed;
+      await this.notificationService.sendOTP(toEmail, 'email', otp);
+    } else if (isPhoneId) {
+      // Send OTP via SMS only for phone identifiers
+      const toPhone = trimmed;
+      await this.notificationService.sendOTP(toPhone, 'sms', otp);
+    } else {
+      throw new BadRequestException('Invalid phone or email format');
+    }
 
     return { message: 'OTP sent' };
   }
