@@ -934,19 +934,33 @@ export default function CartPage() {
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {relatedProducts.map((product) => (
-                    <div key={product.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-md p-3 hover:shadow-md transition-shadow group">
+                {relatedProducts.map((product) => {
+                    let imageUrl = "https://picsum.photos/seed/default/800/800";
+                    if (Array.isArray(product.images) && product.images.length > 0) {
+                        imageUrl = getImageUrl(product.images[0]);
+                    } else if (typeof product.images === 'string') {
+                        try {
+                            const parsed = JSON.parse(product.images);
+                            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = getImageUrl(parsed[0]);
+                            else imageUrl = getImageUrl(product.images);
+                        } catch {
+                            imageUrl = getImageUrl(product.images);
+                        }
+                    }
+
+                    return (
+                      <div key={product.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-md p-3 hover:shadow-md transition-shadow group">
                         <Link href={`/products/${product.slug || product.id}`}>
-                            <div className="aspect-[2/3] bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-3 relative">
-                                <img 
-                                    src={getImageUrl(product.images?.[0])} 
-                                    alt={getLocalizedField(product, 'name', language)}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                            </div>
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-white line-clamp-2 mb-1 h-8">
-                                {getLocalizedField(product, 'name', language)}
-                            </h4>
+                          <div className="aspect-[2/3] bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-3 relative">
+                            <img
+                              src={imageUrl}
+                              alt={getLocalizedField(product, 'name', language)}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-white line-clamp-2 mb-1 h-8">
+                              {getLocalizedField(product, 'name', language)}
+                          </h4>
                         </Link>
                         {product.author && (
                             <p className="text-xs text-slate-500 mb-2 truncate">
@@ -963,8 +977,9 @@ export default function CartPage() {
                         >
                             Add to Cart
                         </button>
-                    </div>
-                ))}
+                      </div>
+                    );
+                })}
             </div>
         </div>
 

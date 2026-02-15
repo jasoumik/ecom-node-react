@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
 import { API_URL } from "@/lib/config";
@@ -61,6 +61,15 @@ export default function BuyNowPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
   const settings = useSettings();
+
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  // Derive simple specs similar to product details page
+  const currentWeight = useMemo(() => {
+    if (selectedVariant?.weight) return selectedVariant.weight;
+    if (product?.weight) return product.weight;
+    return null;
+  }, [selectedVariant, product]);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -458,8 +467,58 @@ export default function BuyNowPage() {
                     </div>
                 </div>
 
-                <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed">
-                    {getLocalizedField(product, 'description', language)}
+                {/* Specifications Section (if available) */}
+                {(currentWeight || product?.material || selectedVariant?.sku || product?.sku) && (
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-6 mt-6">
+                    <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-3">
+                      {t('specifications')}
+                    </Heading>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm">
+                      {(selectedVariant?.material || product?.material) && (
+                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                          <span className="text-slate-500">{t('material')}</span>
+                          <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product?.material}</span>
+                        </div>
+                      )}
+                      {currentWeight && (
+                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                          <span className="text-slate-500">{t('weight')}</span>
+                          <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
+                        </div>
+                      )}
+                      {(selectedVariant?.sku || product?.sku) && (
+                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                          <span className="text-slate-500">{t('sku')}</span>
+                          <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product?.sku}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description Section with rich text and see more */}
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-6 mt-6">
+                  <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-3">
+                    {t('description')}
+                  </Heading>
+                  <div
+                    className={
+                      "prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm " +
+                      (isDescriptionExpanded ? "max-h-none" : "max-h-[30rem] overflow-hidden")
+                    }
+                    // Rich text HTML from backend
+                    dangerouslySetInnerHTML={{
+                      __html: getLocalizedField(product, 'description', language) || '',
+                    }}
+                  />
+                  {/* See more / See less toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                    className="mt-3 text-xs font-bold text-sky-600 hover:text-sky-700"
+                  >
+                    {isDescriptionExpanded ? t('see_less') || 'See less' : t('see_more') || 'See more'}
+                  </button>
                 </div>
             </div>
         </div>
@@ -475,7 +534,10 @@ export default function BuyNowPage() {
                         <img src={getImageUrl(currentImage)} className="w-full h-full object-contain" />
                     </div>
                     <div className="flex-1">
-                        <div className="font-bold text-sm line-clamp-1 text-slate-900 dark:text-white">{getLocalizedField(product, 'name', language)}</div>
+                        <div className="font-bold text-sm line-clamp-1 text-slate-900 dark:text-white flex items-center gap-2">
+                            <span className="text-lg">{user?.name}</span>
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{user?.phone}</span>
+                        </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
                             {selectedVariant ? [selectedSize, selectedColor].filter(Boolean).join(' / ') : ''}
                         </div>
