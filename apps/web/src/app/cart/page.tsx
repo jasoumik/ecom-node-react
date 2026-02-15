@@ -45,6 +45,11 @@ interface UserAddress {
 const parseAmount = (value: string | number): number =>
   typeof value === "number" ? value : parseFloat(value);
 
+const isLikelyBdPhone = (value: string) => {
+  const trimmed = value.replace(/\s+/g, "");
+  return /^01[3-9]\d{8}$/.test(trimmed) || /^\+8801[3-9]\d{8}$/.test(trimmed);
+};
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice, totalItems, clearCart, addItem } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, items: wishlistItems } = useWishlist();
@@ -246,6 +251,12 @@ export default function CartPage() {
         return;
     }
 
+    // Enforce Bangladeshi phone validation on checkout
+    if (!isLikelyBdPhone(customerPhone)) {
+        addToast("Please enter a valid Bangladeshi phone number", "error");
+        return;
+    }
+
     if (!selectedDeliveryId) {
         addToast(t("select_delivery_area"), "error");
         return;
@@ -257,6 +268,10 @@ export default function CartPage() {
         }
         if (!paymentPhone) {
             addToast("Please enter the phone number you sent money from", "error");
+            return;
+        }
+        if (!isLikelyBdPhone(paymentPhone)) {
+            addToast("Please enter a valid Bangladeshi sender phone number", "error");
             return;
         }
     }

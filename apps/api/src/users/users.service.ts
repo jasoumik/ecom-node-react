@@ -9,6 +9,11 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
+  private isValidBdPhone(phone: string): boolean {
+    const trimmed = phone.replace(/\s+/g, '');
+    return /^01[3-9]\d{8}$/.test(trimmed) || /^\+?8801[3-9]\d{8}$/.test(trimmed);
+  }
+
   async findAll(): Promise<any[]> {
     return this.knex('users').select('id', 'name', 'email', 'phone', 'role', 'created_at', 'avatar', 'is_active');
   }
@@ -58,6 +63,21 @@ export class UsersService {
   }
 
   async update(id: string, updateProfileDto: UpdateProfileDto): Promise<any> {
+    if (updateProfileDto.phone) {
+      if (!this.isValidBdPhone(updateProfileDto.phone)) {
+        throw new BadRequestException('Invalid Bangladeshi phone number');
+      }
+
+      const existing = await this.knex('users')
+        .where({ phone: updateProfileDto.phone })
+        .andWhereNot({ id })
+        .first();
+
+      if (existing) {
+        throw new BadRequestException('Phone number already in use');
+      }
+    }
+
     const [user] = await this.knex('users')
       .where({ id })
       .update(updateProfileDto)

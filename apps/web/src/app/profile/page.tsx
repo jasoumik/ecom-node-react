@@ -76,8 +76,20 @@ export default function ProfilePage() {
     }
   };
 
+  const isLikelyBdPhone = (value: string) => {
+    const trimmed = value.replace(/\s+/g, "");
+    return /^01[3-9]\d{8}$/.test(trimmed) || /^\+?8801[3-9]\d{8}$/.test(trimmed);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Basic client-side BD phone validation before hitting backend
+    if (formData.phone && !isLikelyBdPhone(formData.phone)) {
+      addToast("Please enter a valid Bangladeshi phone number", "error");
+      return;
+    }
+
     setLoading(true);
     try {
         const res = await fetch(`${API_URL}/users/${user.id}`, {
@@ -86,6 +98,7 @@ export default function ProfilePage() {
             body: JSON.stringify({
                 name: formData.name,
                 email: formData.email,
+                phone: formData.phone,
                 avatar: formData.avatar
             })
         });
@@ -96,7 +109,9 @@ export default function ProfilePage() {
             window.dispatchEvent(new Event("storage"));
             addToast("Profile updated successfully", "success");
         } else {
-            addToast("Failed to update profile", "error");
+            const errorBody = await res.json().catch(() => null);
+            const message = errorBody?.message || "Failed to update profile";
+            addToast(message, "error");
         }
     } catch (error) {
         addToast("Something went wrong", "error");
@@ -184,11 +199,12 @@ export default function ProfilePage() {
                             <input 
                                 type="text"
                                 value={formData.phone}
-                                readOnly
-                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-800 text-slate-500 cursor-not-allowed text-sm font-medium"
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-sky-500 outline-none transition-all text-sm font-medium text-slate-900 dark:text-white"
+                                placeholder="01XXXXXXXXX or +8801XXXXXXXXX"
                             />
                         </div>
-                        <p className="text-[10px] text-slate-400 pl-1">Phone number cannot be changed.</p>
+                        <p className="text-[10px] text-slate-400 pl-1">Use your active Bangladeshi mobile number.</p>
                     </div>
 
                     <div className="space-y-2">

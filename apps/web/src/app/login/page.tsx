@@ -77,10 +77,21 @@ export default function LoginPage() {
     }
   };
 
+  const isLikelyEmail = (value: string) => value.includes('@') && value.includes('.');
+  const isLikelyBdPhone = (value: string) => {
+    const trimmed = value.replace(/\s+/g, '');
+    return /^01[3-9]\d{8}$/.test(trimmed) || /^\+?8801[3-9]\d{8}$/.test(trimmed);
+  };
+
+  const validateIdentifier = () => {
+    if (!identifier) return false;
+    return isLikelyEmail(identifier) || isLikelyBdPhone(identifier);
+  };
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier) {
-      addToast(t('error'), "error");
+    if (!validateIdentifier()) {
+      addToast(t('invalid_identifier') || 'Please enter a valid Bangladeshi phone number or email', 'error');
       return;
     }
     setIsLoading(true);
@@ -93,6 +104,8 @@ export default function LoginPage() {
       if (res.ok) {
         setOtpSent(true);
         addToast(t('otp_sent_success'), "success");
+      } else if (res.status === 400) {
+        addToast(t('invalid_identifier') || 'Invalid phone or email format', 'error');
       } else {
         addToast(t('otp_send_failed'), "error");
       }
@@ -104,6 +117,10 @@ export default function LoginPage() {
   };
 
   const handleVerifyOtp = async () => {
+    if (!otp || otp.length < 6) {
+      addToast(t('invalid_otp') || 'Invalid or incomplete OTP', 'error');
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/auth/otp/login`, {
@@ -114,8 +131,14 @@ export default function LoginPage() {
       if (res.ok) {
         const data = await res.json();
         handleSuccess(data);
+      } else if (res.status === 401) {
+        addToast(t('invalid_otp') || 'Invalid or expired OTP', 'error');
+        setIsLoading(false);
+      } else if (res.status === 400) {
+        addToast(t('invalid_identifier') || 'Invalid phone or email format', 'error');
+        setIsLoading(false);
       } else {
-        addToast(t('invalid_otp'), "error");
+        addToast(t('login_failed'), 'error');
         setIsLoading(false);
       }
     } catch (e) {

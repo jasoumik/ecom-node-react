@@ -350,12 +350,6 @@ export async function seedEmailAndSmsTemplates(knex: Knex) {
       is_active: true,
     },
     {
-      name: 'order_status_update',
-      body: `Your order #{{order_number}} status has been updated to: {{status}}.`,
-      variables: JSON.stringify(['order_number', 'status']),
-      is_active: true,
-    },
-    {
       name: 'verification_code',
       body: `Your Prithibee verification code is: {{otp}}. Valid for 5 minutes.`,
       variables: JSON.stringify(['otp']),

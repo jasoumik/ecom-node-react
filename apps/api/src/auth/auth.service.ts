@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { Knex } from 'knex';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -60,61 +60,101 @@ export class AuthService {
   }
 
   // OTP Logic
-  private otpStore = new Map<string, { otp: string, expires: number }>();
+  private otpStore = new Map<string, { otp: string; expires: number }>();
+
+  private isLikelyEmail(identifier: string): boolean {
+    return identifier.includes('@') && identifier.includes('.');
+  }
+
+  private isLikelyBdPhone(identifier: string): boolean {
+    // Very light BD mobile validation: 01XXXXXXXXX (11 digits) or +8801XXXXXXXXX (14 chars)
+    const trimmed = identifier.replace(/\s+/g, '');
+    return /^01[3-9]\d{8}$/.test(trimmed) || /^\+?8801[3-9]\d{8}$/.test(trimmed);
+  }
+
+  private async ensureUserForIdentifier(identifier: string) {
+    // Try to find existing user by phone or email
+    let user = await this.knex('users')
+      .where({ phone: identifier })
+      .orWhere({ email: identifier })
+      .first();
+
+    if (user) {
+      return user;
+    }
+
+    const isEmail = this.isLikelyEmail(identifier);
+    const isPhone = this.isLikelyBdPhone(identifier);
+
+    if (!isEmail && !isPhone) {
+      throw new BadRequestException('Invalid phone or email format');
+    }
+
+    const name = isEmail ? identifier.split('@')[0] || 'New Customer' : 'New Customer';
+
+    // Because users.phone is NOT NULL in the DB, we must always provide a value.
+    // For phone-based identifiers, use the real phone.
+    // For email-based identifiers, generate a synthetic placeholder phone that encodes email.
+    const phoneValue = isPhone ? identifier : `email:${identifier}`;
+
+    const [newUser] = await this.knex('users')
+      .insert({
+        name,
+        phone: phoneValue,
+        email: isEmail ? identifier : null,
+        // Mark that this user signed up via OTP; password is not used for login
+        passwordHash: 'otp-login',
+        role: 'customer',
+        is_active: true,
+      })
+      .returning('*');
+
+    return newUser;
+  }
 
   async generateOtp(identifier: string) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit
-      this.otpStore.set(identifier, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min
-      
-      // Determine channel
-      const isEmail = identifier.includes('@');
-      await this.notificationService.sendOTP(identifier, isEmail ? 'email' : 'sms', otp);
-      
-      return { message: 'OTP sent' };
+    // Ensure a user exists for this identifier before sending OTP
+    const user = await this.ensureUserForIdentifier(identifier);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit
+    this.otpStore.set(identifier, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min
+
+    const isEmail = !!user.email;
+    await this.notificationService.sendOTP(identifier, isEmail ? 'email' : 'sms', otp);
+
+    return { message: 'OTP sent' };
   }
 
   async verifyOtp(identifier: string, otp: string) {
-      const record = this.otpStore.get(identifier);
-      if (!record) return false;
-      if (Date.now() > record.expires) {
-          this.otpStore.delete(identifier);
-          return false;
-      }
-      if (record.otp === otp) {
-          this.otpStore.delete(identifier);
-          return true;
-      }
+    const record = this.otpStore.get(identifier);
+    if (!record) return false;
+    if (Date.now() > record.expires) {
+      this.otpStore.delete(identifier);
       return false;
+    }
+    if (record.otp === otp) {
+      this.otpStore.delete(identifier);
+      return true;
+    }
+    return false;
   }
-  
+
   async loginWithOtp(identifier: string, otp: string) {
-      const isValid = await this.verifyOtp(identifier, otp);
-      if (!isValid) throw new Error('Invalid or expired OTP');
-      
-      let user = await this.knex('users')
-        .where({ phone: identifier })
-        .orWhere({ email: identifier })
-        .first();
-        
-      if (!user) {
-          // Auto-register if new user? Or throw error?
-          // Let's throw error for now, or create a temp user.
-          // For simplicity, assume user must exist or we create a skeleton user.
-          // Let's create a new user if phone number.
-          if (!identifier.includes('@')) {
-             const [newUser] = await this.knex('users').insert({
-                 phone: identifier,
-                 name: 'New User',
-                 passwordHash: 'otp-login', // Placeholder
-                 role: 'customer'
-             }).returning('*');
-             user = newUser;
-          } else {
-              throw new Error('User not found');
-          }
-      }
-      
-      const { passwordHash, ...result } = user;
-      return this.login(result);
+    const isValid = await this.verifyOtp(identifier, otp);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
+
+    let user = await this.knex('users')
+      .where({ phone: identifier })
+      .orWhere({ email: identifier })
+      .first();
+
+    if (!user) {
+      user = await this.ensureUserForIdentifier(identifier);
+    }
+
+    const { passwordHash, ...result } = user;
+    return this.login(result);
   }
 }

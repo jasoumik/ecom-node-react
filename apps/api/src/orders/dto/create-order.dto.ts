@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, IsUUID } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, IsUUID, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateOrderItemDto {
@@ -18,6 +18,7 @@ export class CreateOrderDto {
   customerName: string;
 
   @IsString()
+  @Matches(/^(01[3-9]\d{8}|\+8801[3-9]\d{8})$/, { message: 'customerPhone must be a valid Bangladeshi phone number' })
   customerPhone: string;
 
   @IsString()
@@ -48,6 +49,7 @@ export class CreateOrderDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^(01[3-9]\d{8}|\+8801[3-9]\d{8})$/, { message: 'paymentPhone must be a valid Bangladeshi phone number' })
   paymentPhone?: string; // Added payment phone
 
   @IsOptional()

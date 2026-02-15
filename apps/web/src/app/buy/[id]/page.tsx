@@ -14,6 +14,11 @@ import { DISTRICTS, DHAKA_METRO_THANAS, DHAKA_SUBURBS } from "@/lib/bd-locations
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { CheckCircle2, Truck } from "lucide-react";
 
+const isLikelyBdPhone = (value: string) => {
+  const trimmed = value.replace(/\s+/g, "");
+  return /^01[3-9]\d{8}$/.test(trimmed) || /^\+8801[3-9]\d{8}$/.test(trimmed);
+};
+
 export default function BuyNowPage() {
   const params = useParams();
   const slugOrId = params.id as string;
@@ -195,6 +200,16 @@ export default function BuyNowPage() {
     
     if (product.has_variants && product.variants.length > 0 && !selectedVariant) {
         addToast("Please select valid options (Size/Color)", "error");
+        return;
+    }
+
+    if (!customerName || !customerPhone || !customerAddress) {
+        addToast("Please fill in all required fields", "error");
+        return;
+    }
+
+    if (!isLikelyBdPhone(customerPhone)) {
+        addToast("Please enter a valid Bangladeshi phone number", "error");
         return;
     }
 

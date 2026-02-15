@@ -633,17 +633,14 @@ export class OrdersService {
       }
 
       try {
-          const msg = `Your order #${order.order_number} status has been updated to: ${status}.`;
-          await this.notificationService.sendSMS(order.customer_phone, msg);
-          
-          // Send Email Notification for Status Update
+          // Only email notification for status updates; no SMS
           if (order.user_id) {
               const user = await trx('users').where({ id: order.user_id }).first();
               if (user && user.email) {
                   await this.notificationService.sendTemplateEmail(user.email, 'order_status_update', {
                       customer_name: order.customer_name,
                       order_number: order.order_number,
-                      status: status
+                      status: status,
                   });
               }
           }
@@ -708,3 +705,4 @@ export class OrdersService {
     return { ...order, status: 'cancelled' };
   }
 }
+
