@@ -275,6 +275,8 @@ export const translations = {
     loading: "Loading...",
     success: "Success",
     error: "Error",
+    description: "Description",
+    specifications: "Specifications",
   },
   bn: {
     // Header
@@ -552,5 +554,7 @@ export const translations = {
     loading: "লোড হচ্ছে...",
     success: "সফল",
     error: "ত্রুটি",
+    description: "বিবরণ",
+    specifications: "স্পেসিফিকেশন",
   }
 };

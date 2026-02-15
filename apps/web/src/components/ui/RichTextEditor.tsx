@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Bold, Italic, Underline, List, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, Heading1, Heading2 } from "lucide-react";
+// TipTap-based rich text editor
+import React from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Bold, Italic, List, ListOrdered, Heading1, Heading2 } from "lucide-react";
 
 interface RichTextEditorProps {
   value: string;
@@ -11,99 +14,113 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-export function RichTextEditor({ value, onChange, label, required, className }: RichTextEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
+interface ToolbarButtonProps {
+  icon: React.ComponentType<{ size?: number }>;
+  onClick: () => void;
+  isActive?: boolean;
+  title: string;
+}
 
-  // Sync initial value or external updates to the editor
-  useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      // Only update if content is significantly different to avoid cursor jumping
-      // Simple check: if empty or completely different. 
-      // For a robust editor, we'd need better diffing, but for this simple one:
-      if (value === "" && editorRef.current.innerHTML !== "<br>") {
-          editorRef.current.innerHTML = "";
-      } else if (editorRef.current.innerHTML === "" && value) {
-          editorRef.current.innerHTML = value;
-      }
-    }
-  }, [value]);
-
-  const handleInput = () => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-  };
-
-  const execCommand = (command: string, value: string | undefined = undefined) => {
-    document.execCommand(command, false, value);
-    if (editorRef.current) {
-        editorRef.current.focus();
-        handleInput(); // Sync changes immediately
-    }
-  };
-
-  const ToolbarButton = ({ icon: Icon, command, arg, title }: { icon: any, command: string, arg?: string, title: string }) => (
+function ToolbarButton({ icon: Icon, onClick, isActive, title }: ToolbarButtonProps) {
+  return (
     <button
       type="button"
       onClick={(e) => {
-          e.preventDefault();
-          execCommand(command, arg);
+        e.preventDefault();
+        onClick();
       }}
-      className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+      className={`p-1.5 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${
+        isActive ? "bg-slate-200 dark:bg-slate-600" : ""
+      }`}
       title={title}
     >
       <Icon size={16} />
     </button>
   );
+}
+
+export function RichTextEditor({ value, onChange, label, required, className }: RichTextEditorProps) {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: value || "",
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  const handleEditorClick = () => {
+    editor?.chain().focus().run();
+  };
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-2 ${className ?? ""}`}>
       {label && (
         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      
-      <div className={`border rounded-lg overflow-hidden transition-all ${isFocused ? 'border-sky-500 ring-2 ring-sky-100' : 'border-slate-200 dark:border-slate-700'}`}>
+
+      <div
+        className={`border rounded-lg overflow-hidden transition-all ${
+          editor?.isFocused ? "border-sky-500 ring-2 ring-sky-100" : "border-slate-200 dark:border-slate-700"
+        }`}
+      >
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-          <ToolbarButton icon={Bold} command="bold" title="Bold" />
-          <ToolbarButton icon={Italic} command="italic" title="Italic" />
-          <ToolbarButton icon={Underline} command="underline" title="Underline" />
+          <ToolbarButton
+            icon={Bold}
+            title="Bold"
+            isActive={editor?.isActive("bold")}
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+          />
+          <ToolbarButton
+            icon={Italic}
+            title="Italic"
+            isActive={editor?.isActive("italic")}
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+          />
           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
-          <ToolbarButton icon={Heading1} command="formatBlock" arg="H1" title="Heading 1" />
-          <ToolbarButton icon={Heading2} command="formatBlock" arg="H2" title="Heading 2" />
+          <ToolbarButton
+            icon={Heading1}
+            title="Heading 1"
+            isActive={editor?.isActive("heading", { level: 1 })}
+            onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+          />
+          <ToolbarButton
+            icon={Heading2}
+            title="Heading 2"
+            isActive={editor?.isActive("heading", { level: 2 })}
+            onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+          />
           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
-          <ToolbarButton icon={AlignLeft} command="justifyLeft" title="Align Left" />
-          <ToolbarButton icon={AlignCenter} command="justifyCenter" title="Align Center" />
-          <ToolbarButton icon={AlignRight} command="justifyRight" title="Align Right" />
-          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
-          <ToolbarButton icon={List} command="insertUnorderedList" title="Bullet List" />
-          <button
-            type="button"
-            onClick={(e) => {
-                e.preventDefault();
-                const url = prompt("Enter URL:");
-                if (url) execCommand("createLink", url);
-            }}
-            className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
-            title="Link"
-          >
-            <LinkIcon size={16} />
-          </button>
+          <ToolbarButton
+            icon={List}
+            title="Bullet List"
+            isActive={editor?.isActive("bulletList")}
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          />
+          <ToolbarButton
+            icon={ListOrdered}
+            title="Numbered List"
+            isActive={editor?.isActive("orderedList")}
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+          />
         </div>
 
-        {/* Editor Area */}
+        {/* Editor */}
         <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleInput}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className="min-h-[200px] max-h-[500px] overflow-y-auto p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none prose dark:prose-invert max-w-none text-sm"
-          dangerouslySetInnerHTML={{ __html: value }} // Initial render
-        />
+          className="min-h-[200px] max-h-[500px] overflow-y-auto bg-white dark:bg-slate-900 cursor-text"
+          onClick={handleEditorClick}
+        >
+          {editor ? (
+            <EditorContent
+              editor={editor}
+              className="p-4 prose dark:prose-invert max-w-none text-sm text-slate-900 dark:text-slate-50 focus:outline-none"
+            />
+          ) : (
+            <div className="p-4 text-sm text-slate-400">Loading editor...</div>
+          )}
+        </div>
       </div>
     </div>
   );

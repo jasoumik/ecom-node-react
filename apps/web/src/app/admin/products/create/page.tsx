@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ 
@@ -123,26 +124,20 @@ export default function CreateProductPage() {
                         <Input label="Product Name (Bangla)" value={newProduct.name_bn} onChange={e => setNewProduct({...newProduct, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                     </div>
                     
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
-                            <textarea 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
-                            value={newProduct.description} 
-                            onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
-                            required 
-                            rows={4}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
-                            <textarea 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 text-sm"
-                            value={newProduct.description_bn} 
-                            onChange={e => setNewProduct({...newProduct, description_bn: e.target.value})} 
-                            rows={4}
-                            />
-                        </div>
+                    {/* Description as big full-width editor */}
+                    <div className="space-y-4">
+                        <RichTextEditor
+                          label="Description (English)"
+                          value={newProduct.description}
+                          onChange={(val) => setNewProduct({ ...newProduct, description: val })}
+                          className="w-full"
+                        />
+                        <RichTextEditor
+                          label="Description (Bangla)"
+                          value={newProduct.description_bn}
+                          onChange={(val) => setNewProduct({ ...newProduct, description_bn: val })}
+                          className="w-full"
+                        />
                     </div>
                 </div>
             </div>

@@ -737,47 +737,44 @@ export default function ProductPage() {
                             </div>
                         </div>
 
+                        {/* Specifications Section */}
+                        {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
+                            <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">
+                                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">
+                                    {t('specifications')}
+                                </Heading>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                                    {(selectedVariant?.material || product.material) && (
+                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                            <span className="text-slate-500">{t('material')}</span>
+                                            <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
+                                        </div>
+                                    )}
+                                    {currentWeight && (
+                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                            <span className="text-slate-500">{t('weight')}</span>
+                                            <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
+                                        </div>
+                                    )}
+                                    {(selectedVariant?.sku || product.sku) && (
+                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                            <span className="text-slate-500">{t('sku')}</span>
+                                            <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Description Section */}
-                        <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-                            <Heading size="md"
-                                     className="font-sans text-slate-900 dark:text-white mb-4">Description</Heading>
+                        <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">
+                            <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">
+                                {t('description')}
+                            </Heading>
                             <div
                                 className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-sm"
                                 dangerouslySetInnerHTML={{__html: getLocalizedField(product, 'description', language)}}
                             />
-
-                            {/* Specifications */}
-                            {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
-                                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                                    <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Specifications</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                                        {(selectedVariant?.material || product.material) && (
-                                            <div
-                                                className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                                <span className="text-slate-500">Material</span>
-                                                <span
-                                                    className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
-                                            </div>
-                                        )}
-                                        {currentWeight && (
-                                            <div
-                                                className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                                <span className="text-slate-500">Weight</span>
-                                                <span
-                                                    className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
-                                            </div>
-                                        )}
-                                        {(selectedVariant?.sku || product.sku) && (
-                                            <div
-                                                className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                                <span className="text-slate-500">SKU</span>
-                                                <span
-                                                    className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -929,3 +926,4 @@ export default function ProductPage() {
         </div>
     );
 }
+

@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { getImageUrl } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 export default function CreateBundlePage() {
   const [bundle, setBundle] = useState({ 
@@ -23,7 +24,7 @@ export default function CreateBundlePage() {
   useEffect(() => {
     fetch(`${API_URL}/products?limit=100`)
       .then(res => res.json())
-      .then(data => setProducts(data.data || []))
+      .then((data: any) => setProducts(data.data || []))
       .catch(console.error);
   }, []);
 
@@ -80,7 +81,7 @@ export default function CreateBundlePage() {
       setItems(newItems);
   };
 
-  const productOptions = products.map(p => ({
+  const productOptions = products.map((p: any) => ({
       label: p.name,
       value: p.id,
       subLabel: `Price: ৳${p.price} | Cost: ৳${p.cost_price || 0}`
@@ -117,25 +118,20 @@ export default function CreateBundlePage() {
                         <Input label="Title (English)" value={bundle.title} onChange={e => setBundle({...bundle, title: e.target.value})} required className="bg-slate-50/50" />
                         <Input label="Title (Bangla)" value={bundle.title_bn} onChange={e => setBundle({...bundle, title_bn: e.target.value})} className="bg-slate-50/50" />
                     </div>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (English)</label>
-                            <textarea 
-                                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-sm"
-                                value={bundle.description} 
-                                onChange={e => setBundle({...bundle, description: e.target.value})} 
-                                rows={3}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Description (Bangla)</label>
-                            <textarea 
-                                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-sm"
-                                value={bundle.description_bn} 
-                                onChange={e => setBundle({...bundle, description_bn: e.target.value})} 
-                                rows={3}
-                            />
-                        </div>
+                    {/* Description as big full-width editors */}
+                    <div className="space-y-4">
+                        <RichTextEditor
+                          label="Description (English)"
+                          value={bundle.description}
+                          onChange={(val) => setBundle({ ...bundle, description: val })}
+                          className="w-full"
+                        />
+                        <RichTextEditor
+                          label="Description (Bangla)"
+                          value={bundle.description_bn}
+                          onChange={(val) => setBundle({ ...bundle, description_bn: val })}
+                          className="w-full"
+                        />
                     </div>
                 </div>
             </div>
