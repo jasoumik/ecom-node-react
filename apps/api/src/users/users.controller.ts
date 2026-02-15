@@ -2,6 +2,7 @@ import { Controller, Get, Delete, Param, UseGuards, Put, Body, Post, Request } f
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -30,6 +31,11 @@ export class UsersController {
   @Put(':id')
   updateProfile(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
     return this.usersService.update(id, updateProfileDto);
+  }
+
+  @Put(':id/password')
+  changePassword(@Param('id') id: string, @Body() changePasswordDto: ChangePasswordDto) {
+    return this.usersService.changePassword(id, changePasswordDto);
   }
 
   @Delete(':id')

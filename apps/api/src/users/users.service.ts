@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import { Knex } from 'knex';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -67,6 +68,23 @@ export class UsersService {
     }
     const { passwordHash, ...result } = user;
     return result;
+  }
+
+  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+    const user = await this.knex('users').where({ id }).first();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const isMatch = await bcrypt.compare(changePasswordDto.currentPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(changePasswordDto.newPassword, salt);
+
+    await this.knex('users').where({ id }).update({ passwordHash });
   }
 
   async remove(id: string): Promise<void> {
