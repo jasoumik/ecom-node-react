@@ -90,7 +90,7 @@ export default function AdminReviewsPage() {
   };
 
   const getProductImage = (imageStr: string) => {
-      if (!imageStr) return "https://picsum.photos/seed/default/800/800";
+      if (!imageStr) return "https://picsum.photos/seed/product-item/700/700";
       try {
           const parsed = JSON.parse(imageStr);
           if (Array.isArray(parsed) && parsed.length > 0) return getImageUrl(parsed[0]);

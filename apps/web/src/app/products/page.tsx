@@ -186,7 +186,7 @@ function ProductsContent() {
   };
 
   const handleAddToCart = (product: any) => {
-    let imageUrl = "https://picsum.photos/seed/default/800/800";
+    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = getImageUrl(product.images[0]);
     } else if (typeof product.images === 'string') {
@@ -219,7 +219,7 @@ function ProductsContent() {
   };
 
   const toggleWishlist = async (product: any) => {
-    let imageUrl = "https://picsum.photos/seed/default/800/800";
+    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = getImageUrl(product.images[0]);
     } else if (typeof product.images === 'string') {
@@ -537,7 +537,7 @@ function ProductsContent() {
             <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                 {products.map((product: any) => {
-                    let imageUrl = "https://picsum.photos/seed/default/800/800";
+                    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
                     if (Array.isArray(product.images) && product.images.length > 0) {
                         imageUrl = getImageUrl(product.images[0]);
                     } else if (typeof product.images === 'string') {

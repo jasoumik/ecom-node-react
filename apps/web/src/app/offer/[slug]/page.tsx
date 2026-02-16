@@ -203,7 +203,7 @@ export default function LandingOfferPage() {
           mediaList = [product.images];
       }
   }
-  if (mediaList.length === 0) mediaList = ["https://picsum.photos/seed/default/800/800"];
+  if (mediaList.length === 0) mediaList = ["https://picsum.photos/seed/product-item/700/700"];
 
   const currentImage = mediaList[selectedImageIndex] || mediaList[0];
 
