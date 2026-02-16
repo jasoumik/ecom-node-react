@@ -228,7 +228,6 @@ export default function LandingOfferPage() {
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsZoomed(true)}
                 onMouseLeave={() => setIsZoomed(false)}
-                onClick={() => setIsZoomed(!isZoomed)}
             >
                 <div 
                     className="absolute inset-0 w-full h-full"
@@ -237,7 +236,7 @@ export default function LandingOfferPage() {
                         backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
                         backgroundSize: isZoomed ? '200%' : 'contain',
                         backgroundRepeat: 'no-repeat',
-                        transition: isZoomed ? 'none' : 'background-size 0.3s ease-out'
+                        transition: isZoomed ? 'none' : 'background-size 0.3s ease-out, background-position 0.2s ease-out'
                     }}
                 />
                 <img 

@@ -2,7 +2,7 @@
 
 import {useEffect, useState, useRef} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {Heading, Text, Button, ResponsiveImage, RatingStars} from "@repo/ui";
+import {Heading, Button, ResponsiveImage, RatingStars} from "@repo/ui";
 import {API_URL} from "@/lib/config";
 import {useCart} from "@/lib/cart";
 import {useWishlist} from "@/lib/wishlist";
@@ -371,83 +371,105 @@ export default function ProductPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid md:grid-cols-12 gap-8 lg:gap-12">
-                    {/* Left Column: Media Gallery */}
-                    <div className="md:col-span-6 lg:col-span-6 space-y-4">
-                        <div
-                            className="aspect-square rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 relative group cursor-zoom-in shadow-sm"
-                            ref={imageRef}
-                            onMouseMove={handleMouseMove}
-                            onMouseEnter={() => setIsZoomed(true)}
-                            onMouseLeave={() => setIsZoomed(false)}
-                            onClick={() => setIsZoomed(!isZoomed)}
-                        >
-                            {/* Discount Badge */}
-                            {product.old_price && (
-                                <div
-                                    className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
-                                    {Math.round(((parseFloat(product.old_price) - parseFloat(currentPrice)) / parseFloat(product.old_price)) * 100)}%
-                                    OFF
+                    {/* Left Column: Sticky Media Gallery (Amazon-style) */}
+                    <div className="md:col-span-6 lg:col-span-6 md:sticky md:top-24 self-start">
+                        <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
+                            {/* Thumbnails - vertical on desktop, horizontal scroll on mobile */}
+                            {mediaList.length > 1 && (
+                                <div className="order-2 sm:order-1 flex sm:flex-col gap-2 sm:gap-3 overflow-x-auto sm:overflow-y-auto max-h-[480px] sm:max-h-[520px] pr-1 scrollbar-hide">
+                                    {mediaList.map((media: string, i: number) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            className={`shrink-0 w-16 h-16 sm:w-18 sm:h-18 rounded-xl overflow-hidden bg-white dark:bg-slate-900 cursor-pointer hover:opacity-80 border-2 transition-all ${
+                                                selectedMedia === media
+                                                    ? 'border-sky-500 ring-2 ring-sky-500/20'
+                                                    : 'border-slate-100 dark:border-slate-800'
+                                            }`}
+                                            onClick={() => setSelectedMedia(media)}
+                                            onMouseEnter={() => setSelectedMedia(media)}
+                                        >
+                                            {isVideo(media) ? (
+                                                <div className="w-full h-full relative flex items-center justify-center bg-black">
+                                                    <span className="text-white text-xl">▶</span>
+                                                    <video
+                                                        src={getImageUrl(media)}
+                                                        className="absolute inset-0 w-full h-full object-cover opacity-50"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <ResponsiveImage
+                                                    src={getImageUrl(media)}
+                                                    alt={`Thumbnail ${i}`}
+                                                    width={80}
+                                                    height={80}
+                                                    className="w-full h-full object-contain p-1"
+                                                />
+                                            )}
+                                        </button>
+                                    ))}
                                 </div>
                             )}
 
-                            {isVideo(selectedMedia) ? (
-                                <video
-                                    src={getImageUrl(selectedMedia)}
-                                    controls
-                                    className="w-full h-full object-contain"
-                                    autoPlay
-                                    muted
-                                    loop
-                                />
-                            ) : (
-                                <>
-                                    <div
-                                        className="w-full h-full"
-                                        style={{
-                                            backgroundImage: `url(${getImageUrl(selectedMedia)})`,
-                                            backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
-                                            backgroundSize: isZoomed ? '200%' : 'contain',
-                                            backgroundRepeat: 'no-repeat',
-                                            transition: isZoomed ? 'none' : 'background-size 0.3s ease-out'
-                                        }}
-                                    />
-                                    <img
-                                        src={getImageUrl(selectedMedia)}
-                                        alt={getLocalizedField(product, 'name', language)}
-                                        className={`w-full h-full object-contain p-4 ${isZoomed ? 'opacity-0' : 'opacity-100'}`}
-                                    />
-                                </>
-                            )}
-                        </div>
+                            {/* Main Image with hover zoom */}
+                            <div className="order-1 sm:order-2 flex-1 min-w-0 flex flex-col md:flex-row gap-4">
+                                <div
+                                    className="flex-1 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 relative group cursor-zoom-in shadow-sm aspect-square"
+                                    ref={imageRef}
+                                    onMouseMove={handleMouseMove}
+                                    onMouseEnter={() => setIsZoomed(true)}
+                                    onMouseLeave={() => setIsZoomed(false)}
+                                >
+                                    {/* Discount Badge */}
+                                    {product.old_price && (
+                                        <div className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                                            {Math.round(
+                                                ((parseFloat(product.old_price) - parseFloat(currentPrice)) /
+                                                    parseFloat(product.old_price)) * 100
+                                            )}
+                                            % OFF
+                                        </div>
+                                    )}
 
-                        {mediaList.length > 1 && (
-                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                {mediaList.map((media: string, i: number) => (
-                                    <button
-                                        key={i}
-                                        className={`w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-slate-900 cursor-pointer hover:opacity-80 border-2 shrink-0 transition-all ${selectedMedia === media ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-800'}`}
-                                        onClick={() => setSelectedMedia(media)}
-                                    >
-                                        {isVideo(media) ? (
+                                    {isVideo(selectedMedia) ? (
+                                        <video
+                                            src={getImageUrl(selectedMedia)}
+                                            controls
+                                            className="w-full h-full object-contain"
+                                            autoPlay
+                                            muted
+                                            loop
+                                        />
+                                    ) : (
+                                        <>
+                                            {/* Zoomed background layer (within same card) */}
                                             <div
-                                                className="w-full h-full relative flex items-center justify-center bg-black">
-                                                <span className="text-white text-xl">▶</span>
-                                                <video src={getImageUrl(media)}
-                                                       className="absolute inset-0 w-full h-full object-cover opacity-50"/>
-                                            </div>
-                                        ) : (
-                                            <ResponsiveImage
-                                                src={getImageUrl(media)}
-                                                alt={`Thumbnail ${i}`}
-                                                width={80}
-                                                height={80}
-                                                className="w-full h-full object-contain p-1"
+                                                className="absolute inset-0 w-full h-full"
+                                                style={{
+                                                    backgroundImage: `url(${getImageUrl(selectedMedia)})`,
+                                                    backgroundPosition: isZoomed
+                                                        ? `${mousePos.x}% ${mousePos.y}%`
+                                                        : 'center',
+                                                    backgroundSize: isZoomed ? '200%' : 'contain',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    transition: isZoomed
+                                                        ? 'none'
+                                                        : 'background-size 0.3s ease-out, background-position 0.2s ease-out',
+                                                }}
                                             />
-                                        )}
-                                    </button>
-                                ))}
+                                            {/* Base image for non-zoom / mobile */}
+                                            <img
+                                                src={getImageUrl(selectedMedia)}
+                                                alt={getLocalizedField(product, 'name', language)}
+                                                className={`absolute inset-0 w-full h-full object-contain p-4 ${
+                                                    isZoomed ? 'opacity-0' : 'opacity-100'
+                                                }`}
+                                            />
+                                        </>
+                                    )}
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     {/* Right Column: Product Details */}
@@ -689,10 +711,38 @@ export default function ProductPage() {
                             </div>
                         </div>
 
-                        {/* Reviews Section */}
+                        {/* Specifications Section - now before Reviews */}
+                        {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
+                            <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">
+                                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">
+                                    {t('specifications')}
+                                </Heading>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                                    {(selectedVariant?.material || product.material) && (
+                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                            <span className="text-slate-500">{t('material')}</span>
+                                            <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
+                                        </div>
+                                    )}
+                                    {currentWeight && (
+                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                            <span className="text-slate-500">{t('weight')}</span>
+                                            <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
+                                        </div>
+                                    )}
+                                    {(selectedVariant?.sku || product.sku) && (
+                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
+                                            <span className="text-slate-500">{t('sku')}</span>
+                                            <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Reviews Section - now comes after Specifications and no longer followed by a separate Specs block */}
                         <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-                            <Heading size="md"
-                                     className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
+                            <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
                             <div className="space-y-6">
                                 {reviews.length === 0 ? (
                                     <div
@@ -736,35 +786,6 @@ export default function ProductPage() {
                                 )}
                             </div>
                         </div>
-
-                        {/* Specifications Section */}
-                        {(currentWeight || product.material || selectedVariant?.sku || product.sku) && (
-                            <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">
-                                <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-4">
-                                    {t('specifications')}
-                                </Heading>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                                    {(selectedVariant?.material || product.material) && (
-                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                            <span className="text-slate-500">{t('material')}</span>
-                                            <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.material || product.material}</span>
-                                        </div>
-                                    )}
-                                    {currentWeight && (
-                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                            <span className="text-slate-500">{t('weight')}</span>
-                                            <span className="font-medium text-slate-900 dark:text-white">{currentWeight}</span>
-                                        </div>
-                                    )}
-                                    {(selectedVariant?.sku || product.sku) && (
-                                        <div className="flex justify-between py-2 border-b border-slate-50 dark:border-slate-800">
-                                            <span className="text-slate-500">{t('sku')}</span>
-                                            <span className="font-medium text-slate-900 dark:text-white">{selectedVariant?.sku || product.sku}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
 
                         {/* Description Section */}
                         <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">

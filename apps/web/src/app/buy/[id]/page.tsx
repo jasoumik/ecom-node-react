@@ -54,7 +54,7 @@ export default function BuyNowPage() {
 
   // Zoom State
   const [isZoomed, setIsZoomed] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const imageRef = useRef<HTMLDivElement>(null);
 
   const { addToast } = useToast();
@@ -356,28 +356,30 @@ export default function BuyNowPage() {
       <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
         {/* Product Hero */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden mb-8">
-            <div 
+            <div
                 className="aspect-video w-full relative bg-slate-100 dark:bg-slate-700 cursor-zoom-in group"
                 ref={imageRef}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsZoomed(true)}
                 onMouseLeave={() => setIsZoomed(false)}
-                onClick={() => setIsZoomed(!isZoomed)}
             >
-                <div 
+                <div
                     className="absolute inset-0 w-full h-full"
                     style={{
                         backgroundImage: `url(${getImageUrl(currentImage)})`,
-                        backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : 'center',
-                        backgroundSize: isZoomed ? '200%' : 'contain',
-                        backgroundRepeat: 'no-repeat',
-                        transition: isZoomed ? 'none' : 'background-size 0.3s ease-out'
+                        backgroundPosition: isZoomed ? `${mousePos.x}% ${mousePos.y}%` : "center",
+                        backgroundSize: isZoomed ? "200%" : "contain",
+                        backgroundRepeat: "no-repeat",
+                        transition: isZoomed ? "none" : "background-size 0.2s ease-out, background-position 0.2s ease-out",
                     }}
                 />
-                <img 
-                    src={getImageUrl(currentImage)} 
-                    alt={getLocalizedField(product, 'name', language)} 
-                    className={`absolute inset-0 w-full h-full object-contain p-2 ${isZoomed ? 'opacity-0' : 'opacity-100'}`}
+                {/* Fallback image for SEO and when JS is disabled; hidden when zoomed */}
+                <img
+                    src={getImageUrl(currentImage)}
+                    alt={getLocalizedField(product, "name", language)}
+                    className={`absolute inset-0 w-full h-full object-contain p-2 ${
+                        isZoomed ? "opacity-0" : "opacity-100"
+                    }`}
                 />
             </div>
             
