@@ -1,17 +1,12 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Poppins, Hind_Siliguri } from "next/font/google"; // Removed Inter
+import { Lato } from "next/font/google";
 import { LayoutContent } from "@/components/layout/LayoutContent";
 
-const poppins = Poppins({ 
-  weight: ['400', '500', '600', '700', '800'],
-  subsets: ["latin"], 
-  variable: "--font-poppins" 
-});
-const hindSiliguri = Hind_Siliguri({
-  weight: ['300', '400', '500', '600', '700'],
-  subsets: ['bengali'],
-  variable: '--font-hind',
+const lato = Lato({
+  weight: ["300", "400", "700", "900"],
+  subsets: ["latin"],
+  variable: "--font-lato",
 });
 
 export const metadata: Metadata = {
@@ -76,7 +71,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body suppressHydrationWarning className={`${poppins.variable} ${hindSiliguri.variable} font-sans bg-gradient-to-br from-sky-50 via-white to-sky-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen`}>
+      <body
+        suppressHydrationWarning
+        className={`${lato.variable} font-sans bg-gradient-to-br from-sky-50 via-white to-sky-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen`}
+      >
         <LayoutContent>{children}</LayoutContent>
       </body>
     </html>

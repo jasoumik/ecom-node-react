@@ -1,6 +1,17 @@
 @import "tailwindcss";
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
 
+/* Bangla font face */
+@font-face {
+  font-family: "ShohidShafkatSamir";
+  src: url("/fonts/ShohidShafkatSamir.woff2") format("woff2"),
+       url("/fonts/ShohidShafkatSamir.woff") format("woff"),
+       url("/fonts/ShohidShafkatSamir.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Force class-based dark mode */
 @variant dark (&:where(.dark, .dark *));
 
@@ -21,6 +32,10 @@
 
   /* Safe area for mobile */
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Font variables */
+  --font-english: var(--font-lato), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-bangla: "ShohidShafkatSamir", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* Apply dark mode variables ONLY when .dark class is present */
@@ -33,8 +48,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Update font stack to include Hind Siliguri for Bangla */
-  --font-sans: var(--font-poppins), var(--font-hind), sans-serif;
+  /* Default font stack: English first, Bangla fallback where needed */
+  --font-sans: var(--font-english);
 
   /* Custom colors matching Baby Blue theme */
   --color-brand-primary: #0EA5E9; /* Sky 500 */
@@ -46,7 +61,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-poppins), var(--font-hind), sans-serif;
+  font-family: var(--font-english);
+}
+
+/* Utility for Bangla text blocks */
+.font-bangla {
+  font-family: var(--font-bangla);
 }
 
 /* Hide scrollbar but keep functionality */
@@ -220,4 +240,3 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;
 }
-
