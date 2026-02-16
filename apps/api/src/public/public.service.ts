@@ -17,18 +17,7 @@ export class PublicService {
     // Fetch Mother Categories
     const motherCategories = await this.motherCategoriesService.findAll();
 
-    // Fetch Categories with Products
-    const categories = await this.knex('categories')
-        .join('products', 'categories.id', 'products.category_id')
-        .select('categories.*')
-        .count('products.id as product_count')
-        .where('categories.is_active', true)
-        .where('products.is_active', true)
-        .where('products.stock', '>', 0)
-        .groupBy('categories.id')
-        .having('product_count', '>', 0)
-        .orderBy('product_count', 'desc');
-
+    const categories = await this.categoriesService.findAll();
     // Return top 15 categories
     const displayCategories = categories.slice(0, 15).map(cat => ({
         id: cat.id,
