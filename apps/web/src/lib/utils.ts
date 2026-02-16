@@ -23,7 +23,7 @@ export function getLocalizedField(obj: any, field: string, language: 'en' | 'bn'
 }
 
 export function getImageUrl(url: any) {
-    if (!url || typeof url !== 'string') return "https://api.dicebear.com/7.x/shapes/svg?seed=product";
+    if (!url || typeof url !== 'string') return "https://picsum.photos/seed/product-item/700/700";
     // console.log('url', url);
 
     if (url.startsWith("http") || url.startsWith("https")) {

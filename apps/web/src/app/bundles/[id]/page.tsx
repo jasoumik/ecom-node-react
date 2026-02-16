@@ -41,7 +41,7 @@ export default function BundleDetailsPage() {
   const handleAddToCart = () => {
     if (!bundle) return;
 
-    let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
+    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
     if (bundle.image) {
         imageUrl = getImageUrl(bundle.image);
     } else if (bundle.items && bundle.items.length > 0 && bundle.items[0].product_images) {
@@ -72,7 +72,7 @@ export default function BundleDetailsPage() {
   if (loading) return <FullScreenLoader />;
   if (!bundle) return null;
 
-  let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
+  let imageUrl = "https://picsum.photos/seed/product-item/700/700";
   if (bundle.image) {
       imageUrl = getImageUrl(bundle.image);
   } else if (bundle.items && bundle.items.length > 0 && bundle.items[0].product_images) {

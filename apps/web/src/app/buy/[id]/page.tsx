@@ -342,7 +342,7 @@ export default function BuyNowPage() {
           mediaList = [product.images];
       }
   }
-  if (mediaList.length === 0) mediaList = ["https://api.dicebear.com/7.x/shapes/svg?seed=product"];
+  if (mediaList.length === 0) mediaList = ["https://picsum.photos/seed/product-item/700/700"];
 
   const currentImage = mediaList[selectedImageIndex] || mediaList[0];
 

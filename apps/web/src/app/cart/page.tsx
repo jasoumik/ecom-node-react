@@ -375,7 +375,7 @@ export default function CartPage() {
   };
 
   const handleAddToCart = (product: any) => {
-    let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
+    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
     if (Array.isArray(product.images) && product.images.length > 0) {
         imageUrl = getImageUrl(product.images[0]);
     } else if (typeof product.images === 'string') {
@@ -935,7 +935,7 @@ export default function CartPage() {
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {relatedProducts.map((product) => {
-                    let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
+                    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
                     if (Array.isArray(product.images) && product.images.length > 0) {
                         imageUrl = getImageUrl(product.images[0]);
                     } else if (typeof product.images === 'string') {

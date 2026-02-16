@@ -24,7 +24,7 @@ export class PublicService {
         name: cat.name,
         name_bn: cat.name_bn, // Added Bangla Name
         slug: cat.slug, // Added Slug
-        image: cat.image || "https://api.dicebear.com/7.x/shapes/svg?seed=product",
+        image: cat.image || "https://picsum.photos/seed/product-item/700/700",
         mother_category_id: cat.mother_category_id // Added mother category id
     }));
 
@@ -56,7 +56,7 @@ export class PublicService {
     }
     
     const featuredProducts = productsToDisplay.map((p: any) => {
-        let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
+        let imageUrl = "https://picsum.photos/seed/product-item/700/700";
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
             imageUrl = p.images[0];
         } else if (p.images && typeof p.images === 'string') {
