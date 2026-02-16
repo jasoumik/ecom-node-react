@@ -189,7 +189,7 @@ export default function ProductPage() {
             return;
         }
 
-        let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+        let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
         if (Array.isArray(product.images) && product.images.length > 0) {
             imageUrl = getImageUrl(product.images[0]);
         } else if (typeof product.images === 'string') {
@@ -278,7 +278,7 @@ export default function ProductPage() {
             removeFromWishlist(product.id);
             addToast("Removed from wishlist");
         } else {
-            let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+            let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
             if (Array.isArray(product.images) && product.images.length > 0) {
                 imageUrl = getImageUrl(product.images[0]);
             } else if (typeof product.images === 'string') {
@@ -323,7 +323,7 @@ export default function ProductPage() {
             mediaList = [product.images];
         }
     }
-    if (mediaList.length === 0) mediaList = ["https://picsum.photos/seed/product-item/700/700"];
+    if (mediaList.length === 0) mediaList = ["https://api.dicebear.com/7.x/shapes/svg?seed=product"];
 
     const isVideo = (url: string) => {
         return url.match(/\.(mp4|webm|ogg)$/i);
@@ -807,7 +807,7 @@ export default function ProductPage() {
                                  className="font-sans text-slate-900 dark:text-white mb-8 text-center">{t('you_might_like')}</Heading>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                             {relatedProducts.map((p: any) => {
-                                let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+                                let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
                                 if (Array.isArray(p.images) && p.images.length > 0) {
                                     imageUrl = getImageUrl(p.images[0]);
                                 } else if (typeof p.images === 'string') {

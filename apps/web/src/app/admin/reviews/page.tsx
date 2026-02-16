@@ -90,7 +90,7 @@ export default function AdminReviewsPage() {
   };
 
   const getProductImage = (imageStr: string) => {
-      if (!imageStr) return "https://picsum.photos/seed/product-item/700/700";
+      if (!imageStr) return "https://api.dicebear.com/7.x/shapes/svg?seed=product";
       try {
           const parsed = JSON.parse(imageStr);
           if (Array.isArray(parsed) && parsed.length > 0) return getImageUrl(parsed[0]);

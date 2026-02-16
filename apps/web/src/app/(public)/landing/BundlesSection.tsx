@@ -29,7 +29,7 @@ export function BundlesSection() {
     e.stopPropagation();
 
     // Use bundle image or first item's image
-    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+    let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
     if (bundle.image) {
         imageUrl = getImageUrl(bundle.image);
     } else if (bundle.items && bundle.items.length > 0 && bundle.items[0].product_images) {
@@ -86,7 +86,7 @@ export function BundlesSection() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {bundles.slice(0, 4).map((bundle, index) => {
-            let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+            let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
             if (bundle.image) {
                 imageUrl = getImageUrl(bundle.image);
             } else if (bundle.items && bundle.items.length > 0 && bundle.items[0].product_images) {

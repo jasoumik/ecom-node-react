@@ -40,7 +40,7 @@ export default function BundlesPage() {
     e.preventDefault(); // Prevent navigation to details page
     e.stopPropagation();
 
-    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+    let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
     if (bundle.image) {
         imageUrl = getImageUrl(bundle.image);
     } else if (bundle.items && bundle.items.length > 0 && bundle.items[0].product_images) {
@@ -90,7 +90,7 @@ export default function BundlesPage() {
         ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 {bundles.map((bundle) => {
-                    let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+                    let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
                     if (bundle.image) {
                         imageUrl = getImageUrl(bundle.image);
                     } else if (bundle.items && bundle.items.length > 0 && bundle.items[0].product_images) {

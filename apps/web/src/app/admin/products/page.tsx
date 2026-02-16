@@ -100,7 +100,7 @@ export default function AdminProductsPage() {
           {
             header: "Product",
             cell: (product) => {
-              let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+              let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
               try {
                   const parsed = JSON.parse(product.images);
                   if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
@@ -177,7 +177,7 @@ export default function AdminProductsPage() {
           }
         ]}
         mobileRenderer={(product) => {
-            let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+            let imageUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=product";
             try {
                 const parsed = JSON.parse(product.images);
                 if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
