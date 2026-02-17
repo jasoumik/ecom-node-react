@@ -8,6 +8,7 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { getImageUrl } from "@/lib/utils";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ 
@@ -55,11 +56,20 @@ export default function CreateProductPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const imagesArray = newProduct.images.split(",").map(s => s.trim());
+    const imagesArray = newProduct.images.split(",").map(s => s.trim()).filter(Boolean);
     
-    const payload: any = { ...newProduct, images: imagesArray };
+    const payload: any = { 
+        ...newProduct, 
+        images: imagesArray,
+        price: parseFloat(newProduct.price) || 0,
+        stock: parseInt(newProduct.stock) || 0,
+        old_price: newProduct.old_price ? parseFloat(newProduct.old_price) : null,
+        cost_price: newProduct.cost_price ? parseFloat(newProduct.cost_price) : null,
+    };
+
     if (!payload.brand_id) delete payload.brand_id;
     if (!payload.country_id) delete payload.country_id;
+    if (!payload.category_id) delete payload.category_id;
     
     try {
         const res = await fetch(`${API_URL}/products`, {
@@ -72,7 +82,8 @@ export default function CreateProductPage() {
             addToast("Product created successfully", "success");
             router.push("/admin/products");
         } else {
-            addToast("Failed to create product", "error");
+            const errorData = await res.json();
+            addToast(errorData.message || "Failed to create product", "error");
         }
     } catch (e) {
         addToast("Error creating product", "error");
@@ -236,7 +247,7 @@ export default function CreateProductPage() {
                 <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Media</h3>
                 <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Product Images</label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-2">
                         <Input 
                             className="flex-1 bg-slate-50/50 text-sm" 
                             value={newProduct.images} 
@@ -245,6 +256,25 @@ export default function CreateProductPage() {
                         />
                         <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
                     </div>
+                    {newProduct.images && (
+                        <div className="flex flex-wrap gap-2">
+                            {newProduct.images.split(',').map((img: string, i: number) => (
+                                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                                    <img src={getImageUrl(img.trim())} alt="Preview" className="w-full h-full object-cover" />
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            const newImages = newProduct.images.split(',').map(s => s.trim()).filter((_, idx) => idx !== i).join(', ');
+                                            setNewProduct({...newProduct, images: newImages});
+                                        }}
+                                        className="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 rounded-bl-lg flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -71,7 +71,15 @@ export default function EditProductPage() {
           } else if (Array.isArray(images)) {
               images = images.join(', ');
           }
-          setProduct({ ...data, images, age_groups: data.age_groups || [] });
+          
+          let age_groups = data.age_groups;
+          if (typeof age_groups === 'string') {
+              age_groups = age_groups.split(',').filter(Boolean);
+          } else if (!Array.isArray(age_groups)) {
+              age_groups = [];
+          }
+
+          setProduct({ ...data, images, age_groups });
           setVariants(Array.isArray(data.variants) ? data.variants : []);
       })
       .catch(err => console.error(err));
@@ -138,7 +146,8 @@ export default function EditProductPage() {
             addToast("Product updated successfully", "success");
             fetchProduct();
         } else {
-            addToast("Failed to update product", "error");
+            const errorData = await res.json();
+            addToast(errorData.message || "Failed to update product", "error");
         }
     } catch (e) {
         addToast("Error updating product", "error");
@@ -159,7 +168,8 @@ export default function EditProductPage() {
               setNewBatch({ batch_number: "", purchase_price: "", selling_price: "", quantity: "", expiry_date: "" });
               fetchProduct();
           } else {
-              addToast("Failed to add batch", "error");
+              const errorData = await res.json();
+              addToast(errorData.message || "Failed to add batch", "error");
           }
       } catch (e) {
           addToast("Error adding batch", "error");

@@ -222,6 +222,12 @@ export class ProductsService {
         counter++;
     }
 
+    // Ensure category_id is null if empty string
+    if (productData.category_id === '') {
+        // @ts-ignore
+        productData.category_id = null;
+    }
+
     return this.knex.transaction(async (trx) => {
         const [product] = await trx('products').insert({
             ...productData,
