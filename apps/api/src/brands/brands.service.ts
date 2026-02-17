@@ -9,7 +9,7 @@ export class BrandsService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
   async findAll(publicOnly: boolean = false): Promise<any[]> {
-    const query = this.knex('brands').select('*');
+    const query = this.knex('brands').select('*').orderBy('created_at', 'desc');
     
     if (publicOnly) {
         // Filter brands that have products with stock > 0

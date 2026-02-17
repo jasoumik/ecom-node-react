@@ -9,7 +9,7 @@ export class CategoriesService {
   constructor(@Inject('KNEX_CONNECTION') private readonly knex: Knex) {}
 
   async findAll(publicOnly: boolean = false, ageId?: string) {
-    let query = this.knex('categories').select('*');
+    let query = this.knex('categories').select('*').orderBy('created_at', 'desc');
     
     if (publicOnly) {
         query.where('is_active', true);
