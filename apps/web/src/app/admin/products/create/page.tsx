@@ -9,6 +9,9 @@ import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { getImageUrl } from "@/lib/utils";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+
+const STORAGE_KEY = "create_product_draft";
 
 export default function CreateProductPage() {
   const [newProduct, setNewProduct] = useState({ 
@@ -20,8 +23,28 @@ export default function CreateProductPage() {
   const [countries, setCountries] = useState<any[]>([]);
   const [ageGroups, setAgeGroups] = useState<any[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const router = useRouter();
   const { addToast } = useToast();
+
+  // Load from local storage on mount
+  useEffect(() => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+          try {
+              setNewProduct(JSON.parse(saved));
+          } catch (e) {
+              console.error("Failed to parse saved draft", e);
+          }
+      }
+      setIsLoaded(true);
+  }, []);
+
+  // Save to local storage on change
+  useEffect(() => {
+      if (!isLoaded) return;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProduct));
+  }, [newProduct, isLoaded]);
 
   useEffect(() => {
     fetch(`${API_URL}/categories`)
@@ -80,6 +103,7 @@ export default function CreateProductPage() {
         
         if (res.ok) {
             addToast("Product created successfully", "success");
+            localStorage.removeItem(STORAGE_KEY); // Clear draft
             router.push("/admin/products");
         } else {
             const errorData = await res.json();
@@ -102,41 +126,65 @@ export default function CreateProductPage() {
       });
   };
 
+  // Prepare options for SearchableSelect
+  const categoryOptions = categories.map(cat => ({
+      label: `${'\u00A0'.repeat(cat.level * 4)}${cat.name}`,
+      value: cat.id
+  }));
+
+  const brandOptions = brands.map(brand => ({
+      label: brand.name,
+      value: brand.id
+  }));
+
+  const countryOptions = countries.map(country => ({
+      label: country.name,
+      value: country.id
+  }));
+
+  if (!isLoaded) return null; // Prevent hydration mismatch or flash of empty content
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
-        <Heading size="md" className="font-sans text-slate-900 dark:text-white">Add Product</Heading>
-        <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-lg py-2 px-4 text-sm h-auto">Cancel</Button>
-            <Button type="submit" form="product-form" className="rounded-lg shadow-md shadow-sky-500/20 py-2 px-6 text-sm h-auto">Save Product</Button>
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-10 bg-slate-50/80 dark:bg-black/80 backdrop-blur-md py-4 -mx-4 px-4 border-b border-slate-200/50 dark:border-slate-800/50">
+        <div>
+            <Heading size="lg" className="font-sans text-slate-900 dark:text-white">Add Product</Heading>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Create a new product in your catalog</p>
+        </div>
+        <div className="flex gap-3 w-full sm:w-auto">
+            <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1 sm:flex-none rounded-lg py-2.5 px-4 text-sm h-auto">Cancel</Button>
+            <Button type="submit" form="product-form" className="flex-1 sm:flex-none rounded-lg shadow-lg shadow-sky-500/20 py-2.5 px-6 text-sm h-auto font-bold">Save Product</Button>
         </div>
       </div>
       
-      <form id="product-form" onSubmit={handleCreate} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form id="product-form" onSubmit={handleCreate} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Main Info */}
-        <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white">Basic Information</h3>
-                    <label className="flex items-center gap-2 cursor-pointer">
+        <div className="lg:col-span-2 space-y-8">
+            {/* Basic Info Section */}
+            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                        <span className="w-1 h-6 bg-sky-500 rounded-full"></span>
+                        Basic Information
+                    </h3>
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
                         <input 
                             type="checkbox" 
                             checked={newProduct.is_active} 
                             onChange={e => setNewProduct({...newProduct, is_active: e.target.checked})}
                             className="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
                         />
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Active</span>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Active Status</span>
                     </label>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
-                        <Input label="Product Name (English)" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
-                        <Input label="Product Name (Bangla)" value={newProduct.name_bn} onChange={e => setNewProduct({...newProduct, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+                        <Input label="Product Name (English)" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" placeholder="e.g. Premium Baby Diapers" />
+                        <Input label="Product Name (Bangla)" value={newProduct.name_bn} onChange={e => setNewProduct({...newProduct, name_bn: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" placeholder="e.g. প্রিমিয়াম বেবি ডায়াপার" />
                     </div>
                     
-                    {/* Description as big full-width editor */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <RichTextEditor
                           label="Description (English)"
                           value={newProduct.description}
@@ -153,20 +201,28 @@ export default function CreateProductPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Pricing & Inventory</h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <Input label="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
-                    <Input label="Old Price" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
-                    <Input label="Cost Price" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
-                    <Input label="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" />
-                    <Input label="SKU" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
+            {/* Pricing & Inventory Section */}
+            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-4 mb-6 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                    Pricing & Inventory
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <Input label="Selling Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50 font-medium" placeholder="0.00" />
+                    <Input label="Old Price (Compare At)" type="number" value={newProduct.old_price} onChange={e => setNewProduct({...newProduct, old_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" placeholder="0.00" />
+                    <Input label="Cost Price (Internal)" type="number" value={newProduct.cost_price} onChange={e => setNewProduct({...newProduct, cost_price: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" placeholder="0.00" />
+                    <Input label="Initial Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} required className="bg-slate-50/50 dark:bg-slate-800/50" placeholder="0" />
+                    <Input label="SKU (Stock Keeping Unit)" value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" placeholder="e.g. PROD-001" />
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Attributes</h3>
-                <div className="grid grid-cols-2 gap-4">
+            {/* Attributes Section */}
+            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-4 mb-6 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
+                    Attributes
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <Input label="Size" placeholder="e.g. M, L, XL" value={newProduct.size} onChange={e => setNewProduct({...newProduct, size: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                     <Input label="Weight" placeholder="e.g. 500g" value={newProduct.weight} onChange={e => setNewProduct({...newProduct, weight: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
                     <Input label="Color" placeholder="e.g. Red" value={newProduct.color} onChange={e => setNewProduct({...newProduct, color: e.target.value})} className="bg-slate-50/50 dark:bg-slate-800/50" />
@@ -176,66 +232,52 @@ export default function CreateProductPage() {
         </div>
 
         {/* Right Column: Organization & Media */}
-        <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Organization</h3>
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
-                        <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
-                            value={newProduct.category_id}
-                            onChange={e => setNewProduct({...newProduct, category_id: e.target.value})}
-                            required
-                        >
-                            <option value="">Select Category</option>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>
-                                    {'\u00A0'.repeat(cat.level * 4)}{cat.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Brand</label>
-                        <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
-                            value={newProduct.brand_id}
-                            onChange={e => setNewProduct({...newProduct, brand_id: e.target.value})}
-                        >
-                            <option value="">Select Brand</option>
-                            {brands.map(brand => (
-                                <option key={brand.id} value={brand.id}>{brand.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Country of Origin</label>
-                        <select 
-                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
-                            value={newProduct.country_id}
-                            onChange={e => setNewProduct({...newProduct, country_id: e.target.value})}
-                        >
-                            <option value="">Select Country</option>
-                            {countries.map(country => (
-                                <option key={country.id} value={country.id}>{country.name}</option>
-                            ))}
-                        </select>
-                    </div>
+        <div className="lg:col-span-1 space-y-8">
+            {/* Organization Section */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-4 mb-6 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-orange-500 rounded-full"></span>
+                    Organization
+                </h3>
+                <div className="space-y-6">
+                    <SearchableSelect
+                        label="Category"
+                        options={categoryOptions}
+                        value={newProduct.category_id}
+                        onChange={(val) => setNewProduct({...newProduct, category_id: val})}
+                        placeholder="Select Category"
+                        required
+                    />
+                    
+                    <SearchableSelect
+                        label="Brand"
+                        options={brandOptions}
+                        value={newProduct.brand_id}
+                        onChange={(val) => setNewProduct({...newProduct, brand_id: val})}
+                        placeholder="Select Brand"
+                    />
+
+                    <SearchableSelect
+                        label="Country of Origin"
+                        options={countryOptions}
+                        value={newProduct.country_id}
+                        onChange={(val) => setNewProduct({...newProduct, country_id: val})}
+                        placeholder="Select Country"
+                    />
                     
                     {/* Age Groups Selection */}
                     <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Shop by Age</label>
-                        <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/50 dark:bg-slate-800/50">
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Shop by Age</label>
+                        <div className="space-y-2 max-h-60 overflow-y-auto p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/50">
                             {ageGroups.map(group => (
-                                <label key={group.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
+                                <label key={group.id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg transition-colors">
                                     <input 
                                         type="checkbox" 
                                         checked={newProduct.age_groups.includes(group.id)}
                                         onChange={() => toggleAgeGroup(group.id)}
                                         className="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
                                     />
-                                    <span className="text-sm text-slate-700 dark:text-slate-300">{group.label} ({group.age_range})</span>
+                                    <span className="text-sm text-slate-700 dark:text-slate-300">{group.label} <span className="text-slate-400 text-xs">({group.age_range})</span></span>
                                 </label>
                             ))}
                         </div>
@@ -243,23 +285,27 @@ export default function CreateProductPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">Media</h3>
+            {/* Media Section */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-4 mb-6 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Media
+                </h3>
                 <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Product Images</label>
-                    <div className="flex gap-2 mb-2">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Product Images</label>
+                    <div className="flex gap-2 mb-4">
                         <Input 
-                            className="flex-1 bg-slate-50/50 text-sm" 
+                            className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 text-sm" 
                             value={newProduct.images} 
                             onChange={e => setNewProduct({...newProduct, images: e.target.value})} 
                             placeholder="Image URLs..."
                         />
-                        <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
+                        <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-4 text-xs h-auto">Select</Button>
                     </div>
                     {newProduct.images && (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-3 gap-3">
                             {newProduct.images.split(',').map((img: string, i: number) => (
-                                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-50 dark:bg-slate-800">
                                     <img src={getImageUrl(img.trim())} alt="Preview" className="w-full h-full object-cover" />
                                     <button 
                                         type="button"
@@ -267,7 +313,7 @@ export default function CreateProductPage() {
                                             const newImages = newProduct.images.split(',').map(s => s.trim()).filter((_, idx) => idx !== i).join(', ');
                                             setNewProduct({...newProduct, images: newImages});
                                         }}
-                                        className="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 rounded-bl-lg flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all shadow-md hover:bg-red-600"
                                     >
                                         ✕
                                     </button>
