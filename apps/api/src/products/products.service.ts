@@ -394,6 +394,11 @@ export class ProductsService {
   }
 
   async addBatch(productId: string, batchData: any): Promise<any> {
+    // Sanitize expiry_date: if empty string, set to null
+    if (batchData.expiry_date === '') {
+        batchData.expiry_date = null;
+    }
+
     return this.knex.transaction(async (trx) => {
         const batch = await trx('product_batches').insert({
         product_id: productId,
