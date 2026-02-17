@@ -17,14 +17,25 @@ export class PublicService {
     // Fetch Mother Categories
     const motherCategories = await this.motherCategoriesService.findAll();
 
-    const categories = await this.categoriesService.findAll();
+    // Fetch Categories with Products
+    const categories = await this.knex('categories')
+        .join('products', 'categories.id', 'products.category_id')
+        .select('categories.*')
+        .count('products.id as product_count')
+        .where('categories.is_active', true)
+        .where('products.is_active', true)
+        .where('products.stock', '>', 0)
+        .groupBy('categories.id')
+        .havingRaw('count(products.id) > 0')
+        .orderBy('product_count', 'desc');
+
     // Return top 15 categories
     const displayCategories = categories.slice(0, 15).map(cat => ({
         id: cat.id,
         name: cat.name,
         name_bn: cat.name_bn, // Added Bangla Name
         slug: cat.slug, // Added Slug
-        image: cat.image || "https://picsum.photos/seed/product-item/700/700",
+        image: cat.image || "https://picsum.photos/seed/default/800/800",
         mother_category_id: cat.mother_category_id // Added mother category id
     }));
 
@@ -56,7 +67,7 @@ export class PublicService {
     }
     
     const featuredProducts = productsToDisplay.map((p: any) => {
-        let imageUrl = "https://picsum.photos/seed/product-item/700/700";
+        let imageUrl = "https://picsum.photos/seed/default/800/800";
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
             imageUrl = p.images[0];
         } else if (p.images && typeof p.images === 'string') {
@@ -85,10 +96,18 @@ export class PublicService {
         };
     });
 
-    // Fetch Banners
+    // Fetch Banners with Labels
     const banners = await this.knex('banners')
-        .where({ is_active: true })
-        .orderBy('order', 'asc');
+        .leftJoin('labels', 'banners.label_id', 'labels.id')
+        .select(
+            'banners.*',
+            'labels.name as label_name',
+            'labels.name_bn as label_name_bn',
+            'labels.slug as label_slug',
+            'labels.color as label_color'
+        )
+        .where('banners.is_active', true)
+        .orderBy('banners.order', 'asc');
 
     // Fetch Promises
     const promises = await this.knex('promises')
@@ -132,7 +151,10 @@ export class PublicService {
             src: b.image,
             alt: b.title,
             alt_bn: b.title_bn, // Added Bangla Title
-            link: b.link
+            link: b.link,
+            label_name: b.label_name,
+            label_name_bn: b.label_name_bn,
+            label_color: b.label_color
         })) : [],
         image: {
           src: "/prithibee.png",

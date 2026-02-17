@@ -1,3 +1,14 @@
+export type Banner = {
+  id: string;
+  src: string;
+  alt: string;
+  alt_bn?: string;
+  link?: string;
+  label_name?: string;
+  label_name_bn?: string;
+  label_color?: string;
+};
+
 export type HeroContent = {
   headline: string;
   headline_bn?: string;
@@ -13,7 +24,7 @@ export type HeroContent = {
     priority?: boolean;
   };
   stats?: Array<{ label: string; label_bn?: string; value: string }>;
-  banners?: Array<{ id: string; src: string; alt: string; alt_bn?: string; link?: string }>;
+  banners?: Banner[];
 };
 
 export type TrustBadge = {

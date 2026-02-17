@@ -106,10 +106,29 @@ export class BannersService {
   }
 
   async update(id: string, updateBannerDto: UpdateBannerDto): Promise<any> {
+    // Filter out fields that are not columns in the banners table
+    // We are NOT ignoring the label_id, just the joined fields that are read-only
+    const {
+        // @ts-ignore
+        label_name,
+        // @ts-ignore
+        label_slug,
+        // @ts-ignore
+        label_color,
+        // @ts-ignore
+        created_at,
+        // @ts-ignore
+        updated_at,
+        // @ts-ignore
+        id: _id,
+        ...dataToUpdate
+    } = updateBannerDto as any;
+
     const [banner] = await this.knex('banners')
       .where({ id })
-      .update(updateBannerDto)
+      .update(dataToUpdate)
       .returning('*');
+
     if (!banner) {
       throw new NotFoundException(`Banner with ID ${id} not found`);
     }

@@ -7,14 +7,7 @@ import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface Banner {
-    id: string;
-    src: string;
-    alt: string;
-    alt_bn?: string;
-    link?: string;
-}
+import type { Banner } from "./types";
 
 interface BannerSectionProps {
     banners: Banner[];
@@ -63,6 +56,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
 
     const currentBanner = banners[currentIndex];
 
+    console.log("currentBanner", currentBanner);
     return (
         <section
             ref={containerRef}
@@ -105,17 +99,22 @@ export function BannerSection({ banners }: BannerSectionProps) {
                         {/* Content Overlay */}
                         <div className="absolute inset-0 flex items-end lg:items-center pb-8 sm:pb-16 lg:pb-0 px-3 sm:px-8 lg:px-16 xl:px-24 z-10">
                             <div className="max-w-xl space-y-2 sm:space-y-4 lg:space-y-6">
-                                {/* Featured Badge - Hidden on mobile */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 8 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="hidden sm:inline-block"
-                                >
-                                    <span className="px-3 py-1.5 bg-sky-500 text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-lg">
-                                        {t('featured')}
-                                    </span>
-                                </motion.div>
+                                {/* Dynamic Label Badge - Hidden on mobile */}
+                                {currentBanner.label_name && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.1 }}
+                                        className="hidden sm:inline-block"
+                                    >
+                                        <span 
+                                            className="px-3 py-1.5 text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-lg"
+                                            style={{ backgroundColor: currentBanner.label_color || '#0ea5e9' }}
+                                        >
+                                            {getLocalizedField({ name: currentBanner.label_name, name_bn: currentBanner.label_name_bn }, 'name', language)}
+                                        </span>
+                                    </motion.div>
+                                )}
 
                                 {/* Headline */}
                                 <motion.h1
@@ -207,4 +206,3 @@ export function BannerSection({ banners }: BannerSectionProps) {
         </section>
     );
 }
-
