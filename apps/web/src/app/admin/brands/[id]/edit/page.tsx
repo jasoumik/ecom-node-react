@@ -8,6 +8,7 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { FullScreenLoader } from "@/components/ui/Loader";
+import { getImageUrl } from "@/lib/utils";
 
 export default function EditBrandPage() {
   const [brand, setBrand] = useState({ name: "", name_bn: "", logo: "", description: "", mother_category_id: "", is_active: true });
@@ -111,7 +112,7 @@ export default function EditBrandPage() {
           <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Mother Category</label>
               <select 
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800/50 dark:border-slate-700 dark:text-white text-sm"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
                   value={brand.mother_category_id}
                   onChange={e => setBrand({...brand, mother_category_id: e.target.value})}
               >
@@ -135,6 +136,18 @@ export default function EditBrandPage() {
                 />
                 <Button type="button" variant="secondary" onClick={() => setShowMediaPicker(true)} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
             </div>
+            {brand.logo && (
+                <div className="mt-2 relative w-24 h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-50 dark:bg-slate-800">
+                    <img src={getImageUrl(brand.logo)} alt="Preview" className="w-full h-full object-contain p-2" />
+                    <button 
+                        type="button"
+                        onClick={() => setBrand({...brand, logo: ""})}
+                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all shadow-md hover:bg-red-600"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
           </div>
           
           <div>

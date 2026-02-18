@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { MediaPicker } from "@/components/ui/MediaPicker";
+import { getImageUrl } from "@/lib/utils";
 
 interface AgeGroup {
   id: string;
@@ -186,6 +187,18 @@ export default function CreateCategoryPage() {
                     />
                     <Button type="button" variant="secondary" onClick={() => openMediaPicker('image')} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
                 </div>
+                {newCategory.image && (
+                    <div className="mt-2 relative w-24 h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-50 dark:bg-slate-800">
+                        <img src={getImageUrl(newCategory.image)} alt="Preview" className="w-full h-full object-contain p-2" />
+                        <button 
+                            type="button"
+                            onClick={() => setNewCategory({...newCategory, image: ""})}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all shadow-md hover:bg-red-600"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
             </div>
             <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Banner Image (Large)</label>
@@ -198,6 +211,18 @@ export default function CreateCategoryPage() {
                     />
                     <Button type="button" variant="secondary" onClick={() => openMediaPicker('banner_image')} className="rounded-lg py-2 px-3 text-xs h-auto">Select</Button>
                 </div>
+                {newCategory.banner_image && (
+                    <div className="mt-2 relative w-full h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-50 dark:bg-slate-800">
+                        <img src={getImageUrl(newCategory.banner_image)} alt="Preview" className="w-full h-full object-cover" />
+                        <button 
+                            type="button"
+                            onClick={() => setNewCategory({...newCategory, banner_image: ""})}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all shadow-md hover:bg-red-600"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
             </div>
           </div>
           
