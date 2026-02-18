@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { Knex } from 'knex';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -228,44 +228,48 @@ export class ProductsService {
         productData.category_id = null;
     }
 
-    return this.knex.transaction(async (trx) => {
-        const [product] = await trx('products').insert({
-            ...productData,
-            slug,
-            images: JSON.stringify(images),
-            age_groups: age_groups ? age_groups.join(',') : null, // Store as comma-separated string
-            has_variants: variants && variants.length > 0
-        }).returning('*');
+    try {
+        return await this.knex.transaction(async (trx) => {
+            const [product] = await trx('products').insert({
+                ...productData,
+                slug,
+                images: JSON.stringify(images),
+                age_groups: age_groups ? age_groups.join(',') : null, // Store as comma-separated string
+                has_variants: variants && variants.length > 0
+            }).returning('*');
 
-        if (variants && variants.length > 0) {
-            const variantsToInsert = variants.map(v => ({
-                product_id: product.id,
-                size: v.size || null,
-                color: v.color || null,
-                material: v.material || null,
-                weight: v.weight || null,
-                price: v.price ? parseFloat(v.price.toString()) : null,
-                stock: parseInt(v.stock.toString()) || 0,
-                sku: v.sku || null
-            }));
-            await trx('product_variants').insert(variantsToInsert);
+            if (variants && variants.length > 0) {
+                const variantsToInsert = variants.map(v => ({
+                    product_id: product.id,
+                    size: v.size || null,
+                    color: v.color || null,
+                    material: v.material || null,
+                    weight: v.weight || null,
+                    price: v.price ? parseFloat(v.price.toString()) : null,
+                    stock: parseInt(v.stock.toString()) || 0,
+                    sku: v.sku || null
+                }));
+                await trx('product_variants').insert(variantsToInsert);
+                
+                const totalStock = variants.reduce((sum, v) => sum + (parseInt(v.stock.toString()) || 0), 0);
+                await trx('products').where({ id: product.id }).update({ stock: totalStock });
+                product.stock = totalStock;
+            }
             
-            const totalStock = variants.reduce((sum, v) => sum + (parseInt(v.stock.toString()) || 0), 0);
-            await trx('products').where({ id: product.id }).update({ stock: totalStock });
-            product.stock = totalStock;
-        }
-        
-        if (product.stock > 0) {
-             await trx('stock_movements').insert({
-                product_id: product.id,
-                quantity_change: product.stock,
-                type: 'initial_stock',
-                reason: 'Product Created'
-            });
-        }
-        
-        return product;
-    });
+            if (product.stock > 0) {
+                await trx('stock_movements').insert({
+                    product_id: product.id,
+                    quantity_change: product.stock,
+                    type: 'initial_stock',
+                    reason: 'Product Created'
+                });
+            }
+            
+            return product;
+        });
+    } catch (error) {
+        throw new InternalServerErrorException(error.message);
+    }
   }
 
   async update(id: string, updateProductDto: UpdateProductDto): Promise<any> {
@@ -331,59 +335,64 @@ export class ProductsService {
         dataToUpdate.slug = slug;
     }
     
-    return this.knex.transaction(async (trx) => {
-        const [product] = await trx('products')
-          .where({ id })
-          .update(dataToUpdate)
-          .returning('*');
-          
-        if (!product) {
-           throw new NotFoundException(`Product with ID ${id} not found`);
-        }
-
-        if (variants) {
-            await trx('product_variants').where({ product_id: id }).delete();
+    try {
+        return await this.knex.transaction(async (trx) => {
+            const [product] = await trx('products')
+            .where({ id })
+            .update(dataToUpdate)
+            .returning('*');
             
-            if (variants.length > 0) {
-                const variantsToInsert = variants.map((v: any) => ({
-                    product_id: id,
-                    size: v.size || null,
-                    color: v.color || null,
-                    material: v.material || null,
-                    weight: v.weight || null,
-                    price: v.price ? parseFloat(v.price.toString()) : null,
-                    stock: parseInt(v.stock.toString()) || 0,
-                    sku: v.sku || null
-                }));
-                await trx('product_variants').insert(variantsToInsert);
-                
-                const totalStock = variants.reduce((sum: number, v: any) => sum + (parseInt(v.stock.toString()) || 0), 0);
-                
-                const oldStock = product.stock;
-                const diff = totalStock - oldStock;
-                
-                await trx('products').where({ id }).update({ stock: totalStock });
-                product.stock = totalStock;
+            if (!product) {
+            throw new NotFoundException(`Product with ID ${id} not found`);
+            }
 
-                if (diff !== 0) {
-                    await trx('stock_movements').insert({
+            if (variants) {
+                await trx('product_variants').where({ product_id: id }).delete();
+                
+                if (variants.length > 0) {
+                    const variantsToInsert = variants.map((v: any) => ({
                         product_id: id,
-                        quantity_change: diff,
-                        type: 'manual_adjustment',
-                        reason: 'Variant Update'
-                    });
+                        size: v.size || null,
+                        color: v.color || null,
+                        material: v.material || null,
+                        weight: v.weight || null,
+                        price: v.price ? parseFloat(v.price.toString()) : null,
+                        stock: parseInt(v.stock.toString()) || 0,
+                        sku: v.sku || null
+                    }));
+                    await trx('product_variants').insert(variantsToInsert);
+                    
+                    const totalStock = variants.reduce((sum: number, v: any) => sum + (parseInt(v.stock.toString()) || 0), 0);
+                    
+                    const oldStock = product.stock;
+                    const diff = totalStock - oldStock;
+                    
+                    await trx('products').where({ id }).update({ stock: totalStock });
+                    product.stock = totalStock;
+
+                    if (diff !== 0) {
+                        await trx('stock_movements').insert({
+                            product_id: id,
+                            quantity_change: diff,
+                            type: 'manual_adjustment',
+                            reason: 'Variant Update'
+                        });
+                    }
                 }
             }
-        }
-        
-        // Check for stock requests if stock increased
-        if (product.stock > 0) {
-            // This is async, don't await to block response
-            this.requestsService.notifyStockAvailable(id);
-        }
-        
-        return product;
-    });
+            
+            // Check for stock requests if stock increased
+            if (product.stock > 0) {
+                // This is async, don't await to block response
+                this.requestsService.notifyStockAvailable(id);
+            }
+            
+            return product;
+        });
+    } catch (error) {
+        if (error instanceof NotFoundException) throw error;
+        throw new InternalServerErrorException(error.message);
+    }
   }
 
   async remove(id: string): Promise<void> {
