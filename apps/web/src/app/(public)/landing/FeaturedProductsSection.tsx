@@ -8,10 +8,10 @@ import { useToast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getImageUrl, getLocalizedField } from "@/lib/utils";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { API_URL } from "@/lib/config";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Heart, ShoppingCart, ChevronRight, Star } from "lucide-react";
 
 interface FeaturedProductsSectionProps {
   title: string;
@@ -34,7 +34,6 @@ export function FeaturedProductsSection({
   const [user, setUser] = useState<any>(null);
   const [animatingProductId, setAnimatingProductId] = useState<string | null>(null);
   const [heartAnimatingId, setHeartAnimatingId] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -113,16 +112,6 @@ export function FeaturedProductsSection({
     }
   }, [addToast, addToWishlist, removeFromWishlist, user, wishlistItems, language]);
 
-  const scroll = useCallback((direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 300;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  }, []);
-
   return (
     <Section variant="blue" className="py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,20 +138,9 @@ export function FeaturedProductsSection({
           )}
         </div>
 
-        {/* Products Grid/Carousel */}
+        {/* Products Grid */}
         <div className="relative group">
-          {/* Desktop Navigation Arrows */}
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 hidden lg:flex"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          {/* Products Container */}
           <div
-            ref={scrollRef}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
           >
             {products.map((product, index) => {
@@ -268,15 +246,6 @@ export function FeaturedProductsSection({
               );
             })}
           </div>
-
-          {/* Desktop Navigation Arrow Right */}
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 hidden lg:flex"
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={20} />
-          </button>
         </div>
       </div>
     </Section>
