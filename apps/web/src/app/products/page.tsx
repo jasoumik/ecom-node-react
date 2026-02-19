@@ -12,7 +12,7 @@ import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import { ProductRequestButton } from "@/components/ui/ProductRequestButton";
-import { Filter, ArrowUpDown, X, ChevronDown } from "lucide-react";
+import { Filter, ArrowUpDown, X, ChevronDown, Loader2 } from "lucide-react";
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -625,12 +625,18 @@ function ProductsContent() {
                 {hasMore && (
                     <div className="mt-12 text-center">
                         <Button 
-                            variant="outline" 
                             onClick={loadMore} 
                             disabled={loadingMore}
-                            className="rounded-xl px-8 py-3"
+                            className="rounded-full px-8 py-3 bg-sky-500 hover:bg-sky-600 text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {loadingMore ? t('loading') : t('load_more')}
+                            {loadingMore ? (
+                                <span className="flex items-center gap-2">
+                                    <Loader2 className="animate-spin" size={18} />
+                                    {t('loading')}
+                                </span>
+                            ) : (
+                                t('load_more')
+                            )}
                         </Button>
                     </div>
                 )}
