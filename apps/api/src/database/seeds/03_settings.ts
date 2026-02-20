@@ -123,5 +123,17 @@ export async function seed(knex: Knex): Promise<void> {
       description: 'Currency symbol',
       is_active: true,
     },
+    {
+      key: 'bkash_number',
+      value: '01XXXXXXXXX',
+      description: 'Personal bKash number for payments',
+      is_active: true,
+    },
+    {
+      key: 'nagad_number',
+      value: '01XXXXXXXXX',
+      description: 'Personal Nagad number for payments',
+      is_active: true,
+    },
   ]);
 }

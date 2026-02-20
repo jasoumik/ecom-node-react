@@ -23,6 +23,8 @@ export class SettingsService implements OnModuleInit {
           { key: 'inventory_method', value: 'FIFO', description: 'Inventory valuation method: FIFO or LIFO' },
           { key: 'currency', value: 'BDT', description: 'Default currency' },
           { key: 'currency_symbol', value: '৳', description: 'Currency symbol' },
+          { key: 'bkash_number', value: '01XXXXXXXXX', description: 'Personal bKash number for payments' },
+          { key: 'nagad_number', value: '01XXXXXXXXX', description: 'Personal Nagad number for payments' },
       ];
 
       for (const setting of defaults) {
@@ -35,17 +37,21 @@ export class SettingsService implements OnModuleInit {
 
   async findAll(): Promise<any[]> {
     // Double check critical settings to ensure they appear in admin panel immediately
-    const criticalKeys = ['payment_methods', 'support_email'];
+    const criticalKeys = ['payment_methods', 'support_email', 'bkash_number', 'nagad_number'];
     for (const key of criticalKeys) {
         const exists = await this.knex('settings').where({ key }).first();
         if (!exists) {
              const defaults: any = {
                  'payment_methods': 'bKash,Nagad,Visa,Mastercard,COD',
-                 'support_email': 'support@prithibee.com'
+                 'support_email': 'support@prithibee.com',
+                 'bkash_number': '01XXXXXXXXX',
+                 'nagad_number': '01XXXXXXXXX'
              };
              const descriptions: any = {
                  'payment_methods': 'Available payment methods (comma separated)',
-                 'support_email': 'Support email address'
+                 'support_email': 'Support email address',
+                 'bkash_number': 'Personal bKash number for payments',
+                 'nagad_number': 'Personal Nagad number for payments'
              };
              
              await this.knex('settings').insert({
