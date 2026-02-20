@@ -311,7 +311,7 @@ export function Header() {
                 className="h-10 w-auto object-contain"
               />
               <div className="flex flex-col leading-none">
-                <span className="font-bold text-lg text-sky-600 dark:text-sky-400">Prithibee</span>
+                <span className="font-bold text-lg text-sky-600 dark:text-sky-400">PrithiBee</span>
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">পৃথিবী</span>
               </div>
             </Link>
@@ -737,7 +737,7 @@ export function Header() {
                   className="h-8 w-auto object-contain"
                 />
                 <div className="flex flex-col leading-none">
-                  <span className="font-bold text-base text-sky-600 dark:text-sky-400">Prithibee</span>
+                  <span className="font-bold text-base text-sky-600 dark:text-sky-400">PrithiBee</span>
                   <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">পৃথিবী</span>
                 </div>
               </Link>
@@ -975,7 +975,7 @@ export function Header() {
                     className="h-9 w-auto object-contain"
                   />
                   <div className="flex flex-col leading-none">
-                    <span className="font-bold text-lg text-sky-600 dark:text-sky-400">Prithibee</span>
+                    <span className="font-bold text-lg text-sky-600 dark:text-sky-400">PrithiBee</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">পৃথিবী</span>
                   </div>
                 </Link>
