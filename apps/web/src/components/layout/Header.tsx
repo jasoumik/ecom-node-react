@@ -228,7 +228,7 @@ export function Header() {
                         priority
                     />
                     <span className="font-bold text-lg text-sky-600 dark:text-sky-400">
-                        {language === 'bn' ? 'পৃথিবী' : 'Prithibee'}
+                        {language === 'bn' ? 'পৃথিবী' : 'PrithiBee'}
                     </span>
                 </Link>
             </div>
