@@ -8,7 +8,7 @@ import { OtpInput } from "@/components/ui/OtpInput";
 import { useLanguage } from "@/lib/language-context";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Phone, Lock, ArrowRight, Mail } from "lucide-react";
+import { Phone, Lock, ArrowRight, Mail, Eye, EyeOff } from "lucide-react";
 import { AuthLayout } from "@/components/ui/AuthLayout";
 import { Text } from "@repo/ui";
 import { Home } from "lucide-react";
@@ -16,6 +16,7 @@ import { Home } from "lucide-react";
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isOtpLogin, setIsOtpLogin] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
@@ -232,14 +233,21 @@ export default function LoginPage() {
                 <Lock size={20} />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
                 disabled={isLoading}
-                className="w-full h-14 pl-12 pr-4 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-base font-medium"
+                className="w-full h-14 pl-12 pr-12 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-base font-medium"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
 
