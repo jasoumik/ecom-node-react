@@ -39,9 +39,10 @@ export class PublicService {
         mother_category_id: cat.mother_category_id // Added mother category id
     }));
 
-    // Fetch Trending Products (Most Ordered)
+    // Fetch Trending Products (Most Ordered) with category + mother category
     const trendingProducts = await this.knex('order_items')
         .join('products', 'order_items.product_id', 'products.id')
+        .leftJoin('categories', 'products.category_id', 'categories.id')
         .select(
             'products.id',
             'products.name',
@@ -49,21 +50,55 @@ export class PublicService {
             'products.slug', // Added Slug
             'products.price',
             'products.images',
-            'products.stock'
+            'products.stock',
+            'categories.mother_category_id', // Wire mother category
         )
         .sum('order_items.quantity as total_sold')
-        .groupBy('products.id')
+        .groupBy(
+            'products.id',
+            'products.name',
+            'products.name_bn',
+            'products.slug',
+            'products.price',
+            'products.images',
+            'products.stock',
+            'categories.mother_category_id'
+        )
         .orderBy('total_sold', 'desc')
         .limit(8);
 
     // Fallback to latest products if no orders yet
-    let productsToDisplay = trendingProducts;
+    let productsToDisplay: any[] = trendingProducts;
     if (trendingProducts.length < 4) {
         const latestProducts = await this.productsService.findAll(1, 8);
         // Merge and deduplicate
         const existingIds = new Set(trendingProducts.map(p => p.id));
         const additional = (latestProducts.data || []).filter(p => !existingIds.has(p.id));
-        productsToDisplay = [...trendingProducts, ...additional].slice(0, 8);
+
+        // We still want mother_category_id on these, so join categories table
+        const additionalIds = additional.map(p => p.id);
+        let additionalWithMother: any[] = [];
+        if (additionalIds.length > 0) {
+            additionalWithMother = await this.knex('products')
+                .leftJoin('categories', 'products.category_id', 'categories.id')
+                .select(
+                    'products.id',
+                    'categories.mother_category_id',
+                )
+                .whereIn('products.id', additionalIds);
+        }
+
+        const motherMap = additionalWithMother.reduce((acc, row) => {
+            acc[row.id] = row.mother_category_id;
+            return acc;
+        }, {} as Record<string, string | null>);
+
+        const additionalEnriched = additional.map((p: any) => ({
+            ...p,
+            mother_category_id: p.mother_category_id ?? motherMap[p.id] ?? null,
+        }));
+
+        productsToDisplay = [...trendingProducts, ...additionalEnriched].slice(0, 8);
     }
     
     const featuredProducts = productsToDisplay.map((p: any) => {
@@ -93,6 +128,7 @@ export class PublicService {
             tag: p.total_sold > 5 ? "Best Seller" : (p.stock < 10 ? "Low Stock" : "New"),
             rating: 5.0,
             reviewCount: 0,
+            mother_category_id: p.mother_category_id || null,
         };
     });
 
