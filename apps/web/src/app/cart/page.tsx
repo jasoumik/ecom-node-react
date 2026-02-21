@@ -2,13 +2,13 @@
 
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
-import { Button, Heading, Text, ResponsiveImage } from "@repo/ui";
-import { useState, useEffect, useCallback } from "react";
+import { Button, Heading, Text } from "@repo/ui";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
-import { Trash2, Heart, Minus, Plus, MapPin, Edit2, Gift, ArrowRight, CheckCircle2, PlusCircle, ShoppingCart, Tag, Coins, Truck } from "lucide-react";
+import { Trash2, Heart, Minus, Plus, Gift, ArrowRight, CheckCircle2, Tag, Truck } from "lucide-react";
 import Link from "next/link";
 import { getImageUrl, getLocalizedField } from "@/lib/utils";
 import { Input } from "@/components/ui/Input";
@@ -493,7 +493,7 @@ export default function CartPage() {
                             
                             {/* Image */}
                             <div className="w-20 h-28 shrink-0 border border-slate-100 dark:border-slate-700 rounded-sm overflow-hidden bg-slate-50">
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
                             </div>
 
                             {/* Details */}
