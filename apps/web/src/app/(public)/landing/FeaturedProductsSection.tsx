@@ -13,11 +13,19 @@ import { API_URL } from "@/lib/config";
 import { motion } from "framer-motion";
 import { Heart, ShoppingCart, ChevronRight, Star } from "lucide-react";
 
+interface MotherCategoryTab {
+  id: string;
+  slug?: string;
+  name: string;
+  name_bn?: string;
+}
+
 interface FeaturedProductsSectionProps {
   title: string;
   subtitle?: string;
   products: FeaturedProduct[];
   viewAllHref?: string;
+  motherCategories?: MotherCategoryTab[];
 }
 
 export function FeaturedProductsSection({
@@ -25,23 +33,27 @@ export function FeaturedProductsSection({
   subtitle,
   products,
   viewAllHref,
+  motherCategories = [],
 }: FeaturedProductsSectionProps) {
   const { addItem } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, items: wishlistItems } = useWishlist();
   const { addToast } = useToast();
   const { t, language } = useLanguage();
-  const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [animatingProductId, setAnimatingProductId] = useState<string | null>(null);
   const [heartAnimatingId, setHeartAnimatingId] = useState<string | null>(null);
+  const [selectedMotherCategory, setSelectedMotherCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        setUser(JSON.parse(userStr));
-      } catch {}
+    if (!userStr) return;
+    try {
+      const parsed = JSON.parse(userStr) as { id: string };
+      if (parsed && parsed.id) {
+        setUser(parsed);
+      }
+    } catch {
+      // ignore invalid stored user
     }
   }, []);
 
@@ -49,76 +61,136 @@ export function FeaturedProductsSection({
     e?.preventDefault();
     e?.stopPropagation();
 
-    const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
-    
+    const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ""));
+
     addItem({
       id: product.id,
       slug: product.slug, // Pass slug
-      name: getLocalizedField(product, 'name', language),
+      name: getLocalizedField(product, "name", language),
       price: isNaN(priceValue) ? 0 : priceValue,
       image: product.image.src,
       quantity: 1,
       stock: 999,
     });
 
-    // Animate the cart button
     setAnimatingProductId(product.id);
     setTimeout(() => setAnimatingProductId(null), 500);
 
     addToast(
-      `Added ${getLocalizedField(product, 'name', language)} to cart`,
+      `Added ${getLocalizedField(product, "name", language)} to cart`,
       "success",
       { label: "View Cart", href: "/cart" }
     );
   }, [addItem, addToast, language]);
 
-  const toggleWishlist = useCallback(async (product: FeaturedProduct, e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+  const toggleWishlist = useCallback(
+    async (product: FeaturedProduct, e?: React.MouseEvent) => {
+      e?.preventDefault();
+      e?.stopPropagation();
 
-    const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ''));
-    const isWishlisted = wishlistItems.some(i => i.id === product.id);
+      const priceValue = parseFloat(product.price.replace(/[^0-9.]/g, ""));
+      const isWishlisted = wishlistItems.some((i) => i.id === product.id);
 
-    // Trigger heart animation
-    setHeartAnimatingId(product.id);
-    setTimeout(() => setHeartAnimatingId(null), 500);
+      setHeartAnimatingId(product.id);
+      setTimeout(() => setHeartAnimatingId(null), 500);
 
-    if (isWishlisted) {
-      removeFromWishlist(product.id);
-      addToast("Removed from wishlist");
-      if (user) {
-        try {
-          await fetch(`${API_URL}/wishlist/${user.id}/${product.id}`, { method: 'DELETE' });
-        } catch {}
+      if (isWishlisted) {
+        removeFromWishlist(product.id);
+        addToast("Removed from wishlist");
+        if (user) {
+          try {
+            await fetch(`${API_URL}/wishlist/${user.id}/${product.id}`, { method: "DELETE" });
+          } catch {}
+        }
+      } else {
+        addToWishlist({
+          id: product.id,
+          slug: product.slug, // Pass slug
+          name: getLocalizedField(product, "name", language),
+          price: isNaN(priceValue) ? 0 : priceValue,
+          image: product.image.src,
+        });
+        addToast("Added to wishlist");
+        if (user) {
+          try {
+            await fetch(`${API_URL}/wishlist/${user.id}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ productId: product.id }),
+            });
+          } catch {}
+        }
       }
-    } else {
-      addToWishlist({
-        id: product.id,
-        slug: product.slug, // Pass slug
-        name: getLocalizedField(product, 'name', language),
-        price: isNaN(priceValue) ? 0 : priceValue,
-        image: product.image.src
-      });
-      addToast("Added to wishlist");
-      if (user) {
-        try {
-          await fetch(`${API_URL}/wishlist/${user.id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId: product.id })
-          });
-        } catch {}
-      }
-    }
-  }, [addToast, addToWishlist, removeFromWishlist, user, wishlistItems, language]);
+    },
+    [addToast, addToWishlist, removeFromWishlist, user, wishlistItems, language]
+  );
+
+  const filteredProducts = selectedMotherCategory
+    ? products.filter((p) => (p as any).mother_category_id === selectedMotherCategory)
+    : products;
 
   return (
     <Section variant="blue" className="py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Mother category tabs (optional) */}
+        {motherCategories.length > 0 && (
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <div className="inline-flex bg-white dark:bg-slate-800 p-1.5 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
+              {/* Mother categories first */}
+              {motherCategories.map((mc) => (
+                <button
+                  key={mc.id}
+                  onClick={() => setSelectedMotherCategory(mc.id)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                    selectedMotherCategory === mc.id
+                      ? "text-white"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {selectedMotherCategory === mc.id && (
+                    <motion.div
+                      layoutId="activeTabFeatured"
+                      className="absolute inset-0 bg-sky-500 rounded-full"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    {getLocalizedField(mc, "name", language)}
+                  </span>
+                </button>
+              ))}
+
+              {/* All last */}
+              <button
+                onClick={() => setSelectedMotherCategory(null)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                  selectedMotherCategory === null
+                    ? "text-white"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
+              >
+                {selectedMotherCategory === null && (
+                  <motion.div
+                    layoutId="activeTabFeatured"
+                    className="absolute inset-0 bg-sky-500 rounded-full"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  {language === "bn" ? "সব" : "All"}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 sm:mb-8 gap-3">
           <div>
-            <Heading size="md" className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl tracking-tight">
+            <Heading
+              size="md"
+              className="font-sans text-slate-900 dark:text-white font-bold text-xl sm:text-2xl tracking-tight"
+            >
               {title}
             </Heading>
             {subtitle && (
@@ -132,7 +204,7 @@ export function FeaturedProductsSection({
               href={viewAllHref}
               className="text-sm font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md"
             >
-              {t('view_all')}
+              {t("view_all")}
               <ChevronRight size={16} />
             </Link>
           )}
@@ -140,11 +212,9 @@ export function FeaturedProductsSection({
 
         {/* Products Grid */}
         <div className="relative group">
-          <div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
-          >
-            {products.map((product, index) => {
-              const isWishlisted = mounted && wishlistItems.some(i => i.id === product.id);
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {filteredProducts.map((product, index) => {
+              const isWishlisted = wishlistItems.some((i) => i.id === product.id);
               const isAnimating = animatingProductId === product.id;
               const isHeartAnimating = heartAnimatingId === product.id;
 
@@ -161,7 +231,7 @@ export function FeaturedProductsSection({
                     <Link href={product.href} className="block w-full h-full">
                       <ResponsiveImage
                         src={getImageUrl(product.image.src)}
-                        alt={getLocalizedField(product, 'name', language)}
+                        alt={getLocalizedField(product, "name", language)}
                         width={300}
                         height={300}
                         className="object-cover w-full h-full group-hover/card:scale-105 transition-transform duration-500 ease-out"
@@ -183,8 +253,8 @@ export function FeaturedProductsSection({
                       animate={isHeartAnimating && !isWishlisted ? { scale: [1, 1.3, 1] } : {}}
                       className={`absolute top-2 right-2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 shadow-md touch-target ${
                         isWishlisted
-                          ? 'bg-rose-500 text-white'
-                          : 'bg-white/90 dark:bg-slate-700/90 text-slate-400 hover:text-rose-500'
+                          ? "bg-rose-500 text-white"
+                          : "bg-white/90 dark:bg-slate-700/90 text-slate-400 hover:text-rose-500"
                       }`}
                     >
                       <Heart
@@ -214,30 +284,23 @@ export function FeaturedProductsSection({
                     {/* Product Name */}
                     <h3 className="text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug min-h-[2.5em] mb-2">
                       <Link href={product.href} className="hover:text-sky-600 transition-colors">
-                        {getLocalizedField(product, 'name', language)}
+                        {getLocalizedField(product, "name", language)}
                       </Link>
                     </h3>
 
                     {/* Price & Add to Cart */}
                     <div className="mt-auto pt-2 space-y-2">
-                      <div className="text-lg font-bold text-orange-500">
-                        {product.price}
-                      </div>
+                      <div className="text-lg font-bold text-orange-500">{product.price}</div>
 
-                      {/* Add to Cart Button - Always Visible */}
-                      <motion.div
-                        animate={isAnimating ? { scale: [1, 0.95, 1] } : {}}
-                      >
+                      <motion.div animate={isAnimating ? { scale: [1, 0.95, 1] } : {}}>
                         <Button
                           onClick={(e: React.MouseEvent) => handleAddToCart(product, e)}
                           className={`w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 min-h-[40px] transition-colors ${
-                            isAnimating
-                              ? 'bg-green-500 text-white'
-                              : 'bg-sky-500 text-white hover:bg-sky-600'
+                            isAnimating ? "bg-green-500 text-white" : "bg-sky-500 text-white hover:bg-sky-600"
                           }`}
                         >
                           <ShoppingCart size={14} />
-                          {isAnimating ? '✓ Added!' : t('add_to_cart')}
+                          {isAnimating ? "✓ Added!" : t("add_to_cart")}
                         </Button>
                       </motion.div>
                     </div>

@@ -6,8 +6,15 @@ import { API_URL } from "@/lib/config";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Baby, Heart, LayoutGrid, ChevronRight } from "lucide-react";
+
+interface MotherCategoryTab {
+  id: string;
+  slug?: string;
+  name: string;
+  name_bn?: string;
+}
 
 interface Brand {
   id: string;
@@ -20,20 +27,19 @@ interface Brand {
 }
 
 interface BrandsSectionProps {
-    motherCategories?: any[];
+  motherCategories?: MotherCategoryTab[];
 }
 
 export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
   const [brands, setBrands] = useState<Brand[]>([]);
-  // Default to null (All)
   const [selectedMotherCategory, setSelectedMotherCategory] = useState<string | null>(null);
   const { t, language } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch(`${API_URL}/brands?public=true`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (Array.isArray(data)) {
           setBrands(data);
         }
@@ -43,81 +49,78 @@ export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
 
   if (brands.length === 0) return null;
 
-  const filteredBrands = selectedMotherCategory 
-    ? brands.filter(b => b.mother_category_id === selectedMotherCategory)
+  const filteredBrands = selectedMotherCategory
+    ? brands.filter((b) => b.mother_category_id === selectedMotherCategory)
     : brands;
 
-  // Duplicate brands for seamless infinite scroll if enough brands
-  const duplicatedBrands = filteredBrands.length > 5 
-    ? [...filteredBrands, ...filteredBrands, ...filteredBrands] 
+  const duplicatedBrands = filteredBrands.length > 5
+    ? [...filteredBrands, ...filteredBrands, ...filteredBrands]
     : filteredBrands;
 
-  // Helper to get icon based on slug
   const getIcon = (slug: string) => {
-      if (slug === 'baby-care') return <Baby size={16} />;
-      if (slug === 'mom-care') return <Heart size={16} />;
-      return <LayoutGrid size={16} />;
+    if (slug === "baby-care") return <Baby size={16} />;
+    if (slug === "mom-care") return <Heart size={16} />;
+    return <LayoutGrid size={16} />;
   };
 
-  // Get current selection name for dynamic title
-  const currentSelectionName = selectedMotherCategory 
-    ? getLocalizedField(motherCategories.find(mc => mc.id === selectedMotherCategory), 'name', language)
+  const currentSelectionName = selectedMotherCategory
+    ? getLocalizedField(motherCategories.find((mc) => mc.id === selectedMotherCategory), "name", language)
     : "";
 
   return (
     <Section className="py-8 sm:py-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Tabs - Centered and Prominent */}
         {motherCategories.length > 0 && (
-            <div className="flex justify-center mb-8">
-                <div className="inline-flex bg-slate-50 dark:bg-slate-800 p-1.5 rounded-full shadow-inner">
-                    <button
-                        onClick={() => setSelectedMotherCategory(null)}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
-                            selectedMotherCategory === null
-                                ? 'text-white'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                    >
-                        {selectedMotherCategory === null && (
-                            <motion.div
-                                layoutId="activeTabBrand"
-                                className="absolute inset-0 bg-sky-500 rounded-full shadow-md"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                            />
-                        )}
-                        <span className="relative z-10 flex items-center gap-2">
-                            <LayoutGrid size={16} />
-                            {language === 'bn' ? 'সব' : 'All'}
-                        </span>
-                    </button>
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex bg-slate-50 dark:bg-slate-800 p-1.5 rounded-full shadow-inner">
+              {/* Mother categories first */}
+              {motherCategories.map((mc) => (
+                <button
+                  key={mc.id}
+                  onClick={() => setSelectedMotherCategory(mc.id)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                    selectedMotherCategory === mc.id
+                      ? "text-white"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {selectedMotherCategory === mc.id && (
+                    <motion.div
+                      layoutId="activeTabBrand"
+                      className="absolute inset-0 bg-sky-500 rounded-full shadow-md"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    {getIcon(mc.slug)}
+                    {getLocalizedField(mc, "name", language)}
+                  </span>
+                </button>
+              ))}
 
-                    {motherCategories.map((mc) => (
-                        <button
-                            key={mc.id}
-                            onClick={() => setSelectedMotherCategory(mc.id)}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
-                                selectedMotherCategory === mc.id
-                                    ? 'text-white'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                            }`}
-                        >
-                            {selectedMotherCategory === mc.id && (
-                                <motion.div
-                                    layoutId="activeTabBrand"
-                                    className="absolute inset-0 bg-sky-500 rounded-full shadow-md"
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                />
-                            )}
-                            <span className="relative z-10 flex items-center gap-2">
-                                {getIcon(mc.slug)}
-                                {getLocalizedField(mc, 'name', language)}
-                            </span>
-                        </button>
-                    ))}
-                </div>
+              {/* All last */}
+              <button
+                onClick={() => setSelectedMotherCategory(null)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                  selectedMotherCategory === null
+                    ? "text-white"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
+              >
+                {selectedMotherCategory === null && (
+                  <motion.div
+                    layoutId="activeTabBrand"
+                    className="absolute inset-0 bg-sky-500 rounded-full shadow-md"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  <LayoutGrid size={16} />
+                  {language === "bn" ? "সব" : "All"}
+                </span>
+              </button>
             </div>
+          </div>
         )}
 
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 gap-4 items-start">

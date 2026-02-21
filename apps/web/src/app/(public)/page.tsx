@@ -2,7 +2,6 @@ import { CategoriesSection } from "./landing/CategoriesSection";
 import { FeaturedProductsSection } from "./landing/FeaturedProductsSection";
 import { WhyChooseUsSection } from "./landing/WhyChooseUsSection";
 import { TestimonialsSection } from "./landing/TestimonialsSection";
-import { CallToActionSection } from "./landing/CallToActionSection";
 import { API_URL } from "@/lib/config";
 import { BannerSection } from "./landing/BannerSection";
 import { BrandsSection } from "./landing/BrandsSection";
@@ -59,7 +58,7 @@ export default async function LandingPage() {
       <BundlesSection />
 
       {/* Featured Products */}
-      <FeaturedProductsSection {...data.featuredProducts} />
+      <FeaturedProductsSection {...data.featuredProducts} motherCategories={data.motherCategories} />
 
       {/* Shop by Age Timeline */}
       <ShopByAgeSection />

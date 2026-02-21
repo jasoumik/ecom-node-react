@@ -54,27 +54,7 @@ export function CategoriesSection({ categories, motherCategories = [] }: Categor
         {motherCategories.length > 0 && (
             <div className="flex justify-center mb-8">
                 <div className="inline-flex bg-white dark:bg-slate-800 p-1.5 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
-                    <button
-                        onClick={() => setSelectedMotherCategory(null)}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
-                            selectedMotherCategory === null
-                                ? 'text-white'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                    >
-                        {selectedMotherCategory === null && (
-                            <motion.div
-                                layoutId="activeTabCat"
-                                className="absolute inset-0 bg-sky-500 rounded-full"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                            />
-                        )}
-                        <span className="relative z-10 flex items-center gap-2">
-                            <LayoutGrid size={16} />
-                            {language === 'bn' ? 'সব' : 'All'}
-                        </span>
-                    </button>
-
+                    {/* Mother categories first */}
                     {motherCategories.map((mc) => (
                         <button
                             key={mc.id}
@@ -98,6 +78,28 @@ export function CategoriesSection({ categories, motherCategories = [] }: Categor
                             </span>
                         </button>
                     ))}
+
+                    {/* All last */}
+                    <button
+                        onClick={() => setSelectedMotherCategory(null)}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all relative ${
+                            selectedMotherCategory === null
+                                ? 'text-white'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
+                    >
+                        {selectedMotherCategory === null && (
+                            <motion.div
+                                layoutId="activeTabCat"
+                                className="absolute inset-0 bg-sky-500 rounded-full"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <span className="relative z-10 flex items-center gap-2">
+                            <LayoutGrid size={16} />
+                            {language === 'bn' ? 'সব' : 'All'}
+                        </span>
+                    </button>
                 </div>
             </div>
         )}
