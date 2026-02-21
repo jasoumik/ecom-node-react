@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Section, Heading, ResponsiveImage } from "@repo/ui";
 import { API_URL } from "@/lib/config";
 import { useLanguage } from "@/lib/language-context";
@@ -57,7 +57,7 @@ export function BrandsSection({ motherCategories = [] }: BrandsSectionProps) {
     ? [...filteredBrands, ...filteredBrands, ...filteredBrands]
     : filteredBrands;
 
-  const getIcon = (slug: string) => {
+  const getIcon = (slug?: string): React.ReactNode => {
     if (slug === "baby-care") return <Baby size={16} />;
     if (slug === "mom-care") return <Heart size={16} />;
     return <LayoutGrid size={16} />;
