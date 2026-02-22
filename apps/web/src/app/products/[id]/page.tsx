@@ -741,51 +741,51 @@ export default function ProductPage() {
                         )}
 
                         {/* Reviews Section - now comes after Specifications and no longer followed by a separate Specs block */}
-                        <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-                            <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>
-                            <div className="space-y-6">
-                                {reviews.length === 0 ? (
-                                    <div
-                                        className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                                        <p className="text-slate-500 dark:text-slate-400 text-sm">{t('no_reviews')}</p>
-                                    </div>
-                                ) : (
-                                    reviews.map((review) => (
-                                        <div key={review.id}
-                                             className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0 last:pb-0">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div
-                                                        className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-xs">
-                                                        {review.user_name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <div
-                                                            className="font-bold text-slate-900 dark:text-white text-sm">{review.user_name}</div>
-                                                        <RatingStars rating={review.rating} size="sm"/>
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</div>
-                                            </div>
-                                            <p className="text-slate-600 dark:text-slate-300 text-sm mt-2">{review.comment}</p>
-                                            {review.images && (
-                                                <div className="flex gap-2 mt-3">
-                                                    {parseReviewImages(review.images).map((img: string, i: number) => (
-                                                        <div key={i}
-                                                             className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
-                                                            <ResponsiveImage src={getImageUrl(img)} alt="Review"
-                                                                             width={100} height={100}
-                                                                             className="w-full h-full object-cover"/>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
+                        {/*<div className="border-t border-slate-100 dark:border-slate-800 pt-8">*/}
+                        {/*    <Heading size="md" className="font-sans text-slate-900 dark:text-white mb-6">{t('reviews')}</Heading>*/}
+                        {/*    <div className="space-y-6">*/}
+                        {/*        {reviews.length === 0 ? (*/}
+                        {/*            <div*/}
+                        {/*                className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">*/}
+                        {/*                <p className="text-slate-500 dark:text-slate-400 text-sm">{t('no_reviews')}</p>*/}
+                        {/*            </div>*/}
+                        {/*        ) : (*/}
+                        {/*            reviews.map((review) => (*/}
+                        {/*                <div key={review.id}*/}
+                        {/*                     className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0 last:pb-0">*/}
+                        {/*                    <div className="flex items-center justify-between mb-2">*/}
+                        {/*                        <div className="flex items-center gap-2">*/}
+                        {/*                            <div*/}
+                        {/*                                className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-xs">*/}
+                        {/*                                {review.user_name.charAt(0)}*/}
+                        {/*                            </div>*/}
+                        {/*                            <div>*/}
+                        {/*                                <div*/}
+                        {/*                                    className="font-bold text-slate-900 dark:text-white text-sm">{review.user_name}</div>*/}
+                        {/*                                <RatingStars rating={review.rating} size="sm"/>*/}
+                        {/*                            </div>*/}
+                        {/*                        </div>*/}
+                        {/*                        <div*/}
+                        {/*                            className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</div>*/}
+                        {/*                    </div>*/}
+                        {/*                    <p className="text-slate-600 dark:text-slate-300 text-sm mt-2">{review.comment}</p>*/}
+                        {/*                    {review.images && (*/}
+                        {/*                        <div className="flex gap-2 mt-3">*/}
+                        {/*                            {parseReviewImages(review.images).map((img: string, i: number) => (*/}
+                        {/*                                <div key={i}*/}
+                        {/*                                     className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">*/}
+                        {/*                                    <ResponsiveImage src={getImageUrl(img)} alt="Review"*/}
+                        {/*                                                     width={100} height={100}*/}
+                        {/*                                                     className="w-full h-full object-cover"/>*/}
+                        {/*                                </div>*/}
+                        {/*                            ))}*/}
+                        {/*                        </div>*/}
+                        {/*                    )}*/}
+                        {/*                </div>*/}
+                        {/*            ))*/}
+                        {/*        )}*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
 
                         {/* Description Section */}
                         <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">

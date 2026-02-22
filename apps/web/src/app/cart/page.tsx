@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/Input";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { DISTRICTS, DHAKA_METRO_THANAS, DHAKA_SUBURBS } from "@/lib/bd-locations";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DeliveryCharge {
   id: string;
@@ -108,7 +109,12 @@ export default function CartPage() {
             if (s.key === "bkash_number") numbers.bkash = s.value;
             if (s.key === "nagad_number") numbers.nagad = s.value;
             if (s.key === "payment_methods") {
-                setAvailablePaymentMethods(s.value.split(',').map((m: string) => m.trim().toLowerCase()));
+                // Ensure COD is always first if present
+                let methods = s.value.split(',').map((m: string) => m.trim().toLowerCase());
+                if (methods.includes('cod')) {
+                    methods = ['cod', ...methods.filter((m: string) => m !== 'cod')];
+                }
+                setAvailablePaymentMethods(methods);
             }
             if (s.key === "points_redemption_rate") setPointsRedemptionRate(parseFloat(s.value));
             if (s.key === "points_earning_rate") setPointsEarningRate(parseFloat(s.value));
@@ -261,6 +267,12 @@ export default function CartPage() {
         addToast(t("select_delivery_area"), "error");
         return;
     }
+    
+    if (!paymentMethod) {
+        addToast("Please select a payment method", "error");
+        return;
+    }
+
     if ((paymentMethod === "bkash" || paymentMethod === "nagad")) {
         if (!transactionId) {
             addToast(t("enter_transaction_id"), "error");
@@ -708,60 +720,93 @@ export default function CartPage() {
                 <div className="grid grid-cols-3 gap-3">
                     {availablePaymentMethods.map(method => {
                         const methodKey = method.toLowerCase();
+                        const isSelected = paymentMethod === methodKey;
+                        
                         return (
-                            <label key={methodKey} className={`flex flex-col items-center justify-center p-3 rounded-lg border cursor-pointer transition-all ${paymentMethod === methodKey ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                                <input type="radio" name="payment" value={methodKey} checked={paymentMethod === methodKey} onChange={() => setPaymentMethod(methodKey)} className="hidden" />
+                            <motion.label 
+                                key={methodKey} 
+                                className={`flex flex-col items-center justify-center p-3 rounded-lg border cursor-pointer transition-all relative overflow-hidden ${isSelected ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 shadow-md' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
+                                whileTap={{ scale: 0.98 }}
+                                animate={{ 
+                                    borderColor: isSelected ? '#0ea5e9' : 'rgba(226, 232, 240, 1)',
+                                    backgroundColor: isSelected ? 'rgba(14, 165, 233, 0.1)' : 'transparent'
+                                }}
+                            >
+                                <input type="radio" name="payment" value={methodKey} checked={isSelected} onChange={() => setPaymentMethod(methodKey)} className="hidden" />
+                                
+                                {isSelected && (
+                                    <motion.div 
+                                        layoutId="check"
+                                        className="absolute top-2 right-2 text-sky-500"
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                    >
+                                        <CheckCircle2 size={16} fill="currentColor" className="text-white" />
+                                    </motion.div>
+                                )}
+
                                 {methodKey === 'bkash' ? (
-                                    <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-6 w-auto mb-1 object-contain" />
+                                    <img src="https://freelogopng.com/images/all_img/1656234745bkash-app-logo-png.png" alt="Bkash" className="h-8 w-auto mb-2 object-contain" />
                                 ) : methodKey === 'nagad' ? (
-                                    <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-6 w-auto mb-1 object-contain" />
+                                    <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad" className="h-8 w-auto mb-2 object-contain" />
                                 ) : methodKey === 'visa' ? (
                                     <span className="text-xl mb-1 font-bold text-blue-700">VISA</span>
                                 ) : methodKey === 'mastercard' ? (
                                     <span className="text-xl mb-1 font-bold text-red-600">MC</span>
                                 ) : (
-                                    <span className="text-xl mb-1">💵</span>
+                                    <span className="text-2xl mb-2">💵</span>
                                 )}
-                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight capitalize">{method}</span>
-                            </label>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center leading-tight capitalize">
+                                    {methodKey === 'cod' ? 'Cash on Delivery' : method}
+                                </span>
+                            </motion.label>
                         );
                     })}
                 </div>
 
-                {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
-                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 animate-in fade-in mt-4">
-                        <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
-                            <p className="mb-2 font-bold text-slate-900 dark:text-white">How to pay with {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'}:</p>
-                            <ol className="list-decimal list-inside space-y-1 text-xs">
-                                <li>Go to your {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'} App or dial *247# / *167#</li>
-                                <li>Choose "Send Money" / "Payment"</li>
-                                <li>Enter Number: <span className="font-bold text-slate-900 dark:text-white select-all">{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span></li>
-                                <li>Enter Amount: <span className="font-bold text-slate-900 dark:text-white">৳{grandTotal}</span></li>
-                                <li>Enter Reference: <span className="font-bold text-slate-900 dark:text-white">1</span></li>
-                                <li>Enter your PIN to confirm</li>
-                            </ol>
-                        </div>
-                        
-                        <div className="grid gap-4">
-                            <Input 
-                                label="Your Phone Number (Sender)" 
-                                value={paymentPhone} 
-                                onChange={(e) => setPaymentPhone(e.target.value)} 
-                                placeholder="017..." 
-                                required 
-                                className="bg-white"
-                            />
-                            <Input 
-                                label="Transaction ID" 
-                                value={transactionId} 
-                                onChange={(e) => setTransactionId(e.target.value)} 
-                                placeholder="e.g. 8X92..." 
-                                required 
-                                className="bg-white"
-                            />
-                        </div>
-                    </div>
-                )}
+                <AnimatePresence mode="wait">
+                    {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 mt-4">
+                                <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+                                    <p className="mb-2 font-bold text-slate-900 dark:text-white">How to pay with {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'}:</p>
+                                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                                        <li>Go to your {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'} App or dial <span className="font-bold text-sky-600">{paymentMethod === 'bkash' ? '*247#' : '*167#'}</span></li>
+                                        <li>Choose "Send Money"</li>
+                                        <li>Enter Number: <span className="font-bold text-slate-900 dark:text-white select-all bg-yellow-100 dark:bg-yellow-900/30 px-1 rounded">{paymentMethod === 'bkash' ? paymentNumbers.bkash : paymentNumbers.nagad}</span></li>
+                                        <li>Enter Amount: <span className="font-bold text-slate-900 dark:text-white">৳{grandTotal}</span></li>
+                                        <li>Enter Reference: <span className="font-bold text-slate-900 dark:text-white">1</span></li>
+                                        <li>Enter your PIN to confirm</li>
+                                    </ol>
+                                </div>
+                                
+                                <div className="grid gap-4">
+                                    <Input 
+                                        label="Your Phone Number (Sender)" 
+                                        value={paymentPhone} 
+                                        onChange={(e) => setPaymentPhone(e.target.value)} 
+                                        placeholder="017..." 
+                                        required 
+                                        className="bg-white"
+                                    />
+                                    <Input 
+                                        label="Transaction ID" 
+                                        value={transactionId} 
+                                        onChange={(e) => setTransactionId(e.target.value)} 
+                                        placeholder="e.g. 8X92..." 
+                                        required 
+                                        className="bg-white"
+                                    />
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
           </div>

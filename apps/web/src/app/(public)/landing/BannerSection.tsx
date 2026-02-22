@@ -79,6 +79,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
                         onDragEnd={handleDragEnd}
+                        style={{ touchAction: "pan-y" }} // Allow vertical scrolling
                     >
                         {/* Background Image */}
                         <div className="absolute inset-0">
@@ -97,8 +98,8 @@ export function BannerSection({ banners }: BannerSectionProps) {
                         </div>
 
                         {/* Content Overlay */}
-                        <div className="absolute inset-0 flex items-end lg:items-center pb-8 sm:pb-16 lg:pb-0 px-3 sm:px-8 lg:px-16 xl:px-24 z-10">
-                            <div className="max-w-xl space-y-2 sm:space-y-4 lg:space-y-6">
+                        <div className="absolute inset-0 flex items-end lg:items-center pb-8 sm:pb-16 lg:pb-0 px-3 sm:px-8 lg:px-16 xl:px-24 z-10 pointer-events-none">
+                            <div className="max-w-xl space-y-2 sm:space-y-4 lg:space-y-6 pointer-events-auto">
                                 {/* Dynamic Label Badge - Hidden on mobile */}
                                 {currentBanner.label_name && (
                                     <motion.div
