@@ -627,6 +627,39 @@ export class OrdersService {
         updated_by: userId || null,
       });
 
+      // Handle Stock Restoration if status is changed to 'cancelled'
+      if (status === 'cancelled' && currentStatus !== 'cancelled') {
+          const items = await trx('order_items').where({ order_id: id });
+          for (const item of items) {
+              if (item.variant_id) {
+                  await trx('product_variants')
+                      .where({ id: item.variant_id })
+                      .increment('stock', item.quantity);
+                  await trx('products')
+                      .where({ id: item.product_id })
+                      .increment('stock', item.quantity);
+              } else {
+                  await trx('products')
+                      .where({ id: item.product_id })
+                      .increment('stock', item.quantity);
+              }
+
+              await trx('stock_movements').insert({
+                  product_id: item.product_id,
+                  variant_id: item.variant_id,
+                  quantity_change: item.quantity,
+                  type: 'cancellation_restock',
+                  reason: `Order #${order.order_number} Cancelled by Admin`,
+                  order_id: order.id,
+              });
+          }
+
+          // Refund points if any were redeemed
+          if (order.points_redeemed > 0 && order.user_id) {
+              await trx('users').where({ id: order.user_id }).increment('points', order.points_redeemed);
+          }
+      }
+
       if (status === 'delivered' && currentStatus !== 'delivered' && order.points_earned > 0 && order.user_id) {
           console.log(`Awarding ${order.points_earned} points to user ${order.user_id} for order ${order.id}`);
           await trx('users').where({ id: order.user_id }).increment('points', order.points_earned);
@@ -705,4 +738,3 @@ export class OrdersService {
     return { ...order, status: 'cancelled' };
   }
 }
-
