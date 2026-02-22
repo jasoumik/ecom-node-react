@@ -80,11 +80,16 @@ export default function ProductPage() {
 
                     // Fetch related products
                     if (data.category_id) {
-                        fetch(`${API_URL}/products?category=${data.category_id}&limit=4`)
+                        fetch(`${API_URL}/products?category=${data.category_id}&limit=8`)
                             .then(res => res.json())
                             .then(related => {
                                 const list = related.data || related;
-                                setRelatedProducts(list.filter((p: any) => p.id !== data.id).slice(0, 4));
+                                // Ensure strict category matching on client side as well
+                                const filtered = list.filter((p: any) =>
+                                    p.id !== data.id &&
+                                    (String(p.category_id) === String(data.category_id))
+                                );
+                                setRelatedProducts(filtered.slice(0, 4));
                             })
                             .catch(console.error);
                     }
@@ -947,4 +952,3 @@ export default function ProductPage() {
         </div>
     );
 }
-
