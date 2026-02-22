@@ -51,6 +51,7 @@ export type FeaturedProduct = {
   tag?: string;
   rating?: number;
   reviewCount?: number;
+  mother_category_id?: string;
 };
 
 export type Reason = {

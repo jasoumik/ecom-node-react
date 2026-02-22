@@ -129,6 +129,9 @@ export function FeaturedProductsSection({
     ? products.filter((p) => (p as any).mother_category_id === selectedMotherCategory)
     : products;
 
+  // Limit to maximum 10 products per tab
+  const displayProducts = filteredProducts.slice(0, 10);
+
   return (
     <Section variant="blue" className="py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -213,7 +216,7 @@ export function FeaturedProductsSection({
         {/* Products Grid */}
         <div className="relative group">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            {filteredProducts.map((product, index) => {
+            {displayProducts.map((product, index) => {
               const isWishlisted = wishlistItems.some((i) => i.id === product.id);
               const isAnimating = animatingProductId === product.id;
               const isHeartAnimating = heartAnimatingId === product.id;
