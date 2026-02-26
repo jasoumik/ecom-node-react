@@ -11,6 +11,7 @@ export default function AdminMediaPage() {
   const [files, setFiles] = useState<any[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [draggedFile, setDraggedFile] = useState<string | null>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -100,8 +101,23 @@ export default function AdminMediaPage() {
     }
   };
 
-  // Extract base URL from API_URL (remove /api)
-  const BASE_URL = API_URL.replace('/api', '');
+  const handleDrop = async (folderId: string) => {
+    if (!draggedFile) return;
+
+    try {
+      await fetch(`${API_URL}/media/files/${draggedFile}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderId }),
+      });
+      addToast("File moved", "success");
+      fetchMedia(currentFolder);
+    } catch (e) {
+      addToast("Error moving file", "error");
+    } finally {
+      setDraggedFile(null);
+    }
+  };
 
   if (loading) return <FullScreenLoader />;
 
@@ -141,7 +157,12 @@ export default function AdminMediaPage() {
         ) : (
             <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-4">
                 {folders.map(folder => (
-                    <div key={folder.id} className="group relative">
+                    <div 
+                        key={folder.id} 
+                        className="group relative"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDrop(folder.id)}
+                    >
                         <div 
                             onClick={() => setCurrentFolder(folder.id)}
                             className="aspect-square bg-sky-50 dark:bg-slate-800 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-sky-100 dark:hover:bg-slate-700 transition-colors border border-transparent hover:border-sky-200"
@@ -159,10 +180,15 @@ export default function AdminMediaPage() {
                 ))}
                 
                 {files.map(file => (
-                    <div key={file.id} className="group relative">
+                    <div 
+                        key={file.id} 
+                        className="group relative"
+                        draggable
+                        onDragStart={() => setDraggedFile(file.id)}
+                    >
                         <div className="aspect-square bg-slate-50 dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
                             {file.type === 'image' ? (
-                                <img src={`${BASE_URL}${file.url}`} alt={file.name} className="w-full h-full object-cover" />
+                                <img src={`${API_URL}${file.url}`} alt={file.name} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-400">
                                     📄

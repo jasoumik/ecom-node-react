@@ -51,4 +51,9 @@ export class MediaController {
   deleteFile(@Param('id') id: string) {
     return this.mediaService.deleteFile(id);
   }
+
+  @Post('files/:id/move')
+  moveFile(@Param('id') id: string, @Body('folderId') folderId: string) {
+    return this.mediaService.moveFile(id, folderId);
+  }
 }
