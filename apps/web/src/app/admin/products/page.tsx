@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Heading } from "@repo/ui";
 import { API_URL } from "@/lib/config";
@@ -11,37 +11,51 @@ import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
+  
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [limit, setLimit] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const router = useRouter();
   const { addToast } = useToast();
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user || JSON.parse(user).role !== 'admin') {
-        router.push("/login");
-        return;
+  const fetchCategories = async () => {
+    try {
+        const res = await fetch(`${API_URL}/categories`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+            setCategories(data);
+        }
+    } catch (e) {
+        console.error("Failed to fetch categories", e);
     }
-    fetchProducts(1);
-  }, []);
+  };
 
-  const fetchProducts = async (page: number) => {
+  const fetchProducts = useCallback(async (page: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/products?page=${page}&limit=15`);
+      const queryParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+      });
+      
+      if (searchQuery) queryParams.append("search", searchQuery);
+      if (selectedCategory) queryParams.append("category", selectedCategory);
+
+      const res = await fetch(`${API_URL}/products?${queryParams.toString()}`);
       const data = await res.json();
+      
       if (data.data && Array.isArray(data.data)) {
           setProducts(data.data);
-          setFilteredProducts(data.data);
           setMeta(data.meta);
-      } else if (Array.isArray(data)) {
-          setProducts(data);
-          setFilteredProducts(data);
-          setMeta({ page: 1, totalPages: 1 });
       } else {
           setProducts([]);
-          setFilteredProducts([]);
+          setMeta({ page: 1, totalPages: 1 });
       }
     } catch (e) {
       console.error("Failed to fetch products", e);
@@ -49,27 +63,41 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedCategory, limit]);
 
-  const handleSearch = (query: string) => {
-      if (!query) {
-          setFilteredProducts(products);
-          return;
-      }
-      const lower = query.toLowerCase();
-      setFilteredProducts(products.filter(p => 
-          p.name.toLowerCase().includes(lower) || 
-          p.sku?.toLowerCase().includes(lower)
-      ));
-  };
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user || JSON.parse(user).role !== 'admin') {
+        router.push("/login");
+        return;
+    }
+    fetchCategories();
+  }, []);
 
-  const handleDelete = async (id: string) => {
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setCurrentPage(1);
+      fetchProducts(1);
+    }, 300); // Debounce search
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery, selectedCategory, limit, fetchProducts]);
+
+  useEffect(() => {
+      fetchProducts(currentPage);
+  }, [currentPage, fetchProducts]);
+
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row click
     if (!confirm("Are you sure?")) return;
     try {
       const res = await fetch(`${API_URL}/products/${id}`, { method: "DELETE" });
       if (res.ok) {
         addToast("Product deleted", "success");
-        fetchProducts(meta.page);
+        fetchProducts(currentPage);
       } else {
         addToast("Failed to delete product", "error");
       }
@@ -92,31 +120,55 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
-      <FilterBar onSearch={handleSearch} placeholder="Search by name or SKU..." />
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex-1 w-full">
+            <FilterBar onSearch={setSearchQuery} placeholder="Search by name or SKU..." />
+          </div>
+          
+          <div className="flex gap-2 w-full md:w-auto">
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                  <option value="">All Categories</option>
+                  {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+              </select>
+              
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5"
+                  value={limit}
+                  onChange={(e) => setLimit(Number(e.target.value))}
+              >
+                  <option value={20}>20 per page</option>
+                  <option value={50}>50 per page</option>
+                  <option value={100}>100 per page</option>
+              </select>
+          </div>
+      </div>
 
       <Table
-        data={filteredProducts}
+        data={products}
+        onRowClick={(product) => router.push(`/admin/products/${product.id}/edit`)}
         columns={[
           {
             header: "Product",
-            cell: (product) => {
-              let imageUrl = "https://picsum.photos/seed/product-item/700/700";
-              try {
-                  const parsed = JSON.parse(product.images);
-                  if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
-              } catch (e) {}
-              return (
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-100 dark:border-slate-700 shrink-0">
-                        <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                        <div className="font-bold text-slate-900 dark:text-white text-xs">{product.name}</div>
-                        {product.sku && <div className="text-[10px] text-slate-400 font-medium">SKU: {product.sku}</div>}
-                    </div>
+            cell: (product) => (
+                <div>
+                    <div className="font-bold text-slate-900 dark:text-white text-xs">{product.name}</div>
+                    {product.sku && <div className="text-[10px] text-slate-400 font-medium">SKU: {product.sku}</div>}
                 </div>
-              );
-            }
+            )
+          },
+          {
+            header: "Category",
+            cell: (product) => (
+                <div className="text-xs text-slate-600 dark:text-slate-400">
+                    {categories.find(c => c.id === product.category_id)?.name || '-'}
+                </div>
+            )
           },
           {
             header: "Price",
@@ -159,14 +211,14 @@ export default function AdminProductsPage() {
             cell: (product) => (
               <div className="flex justify-end gap-1">
                   <button 
-                  onClick={() => router.push(`/admin/products/${product.id}/edit`)}
+                  onClick={(e) => { e.stopPropagation(); router.push(`/admin/products/${product.id}/edit`); }}
                   className="p-1.5 rounded text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition-colors"
                   title="Edit"
                   >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                   </button>
                   <button 
-                  onClick={() => handleDelete(product.id)}
+                  onClick={(e) => handleDelete(product.id, e)}
                   className="p-1.5 rounded text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                   title="Delete"
                   >
@@ -207,8 +259,8 @@ export default function AdminProductsPage() {
                                 {product.stock} left
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => router.push(`/admin/products/${product.id}/edit`)} className="text-sky-600 text-[10px] font-bold">Edit</button>
-                                <button onClick={() => handleDelete(product.id)} className="text-red-600 text-[10px] font-bold">Delete</button>
+                                <button onClick={(e) => { e.stopPropagation(); router.push(`/admin/products/${product.id}/edit`); }} className="text-sky-600 text-[10px] font-bold">Edit</button>
+                                <button onClick={(e) => handleDelete(product.id, e)} className="text-red-600 text-[10px] font-bold">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -221,8 +273,8 @@ export default function AdminProductsPage() {
       <div className="flex justify-between items-center pt-2">
           <Button 
               variant="outline" 
-              disabled={meta.page === 1}
-              onClick={() => fetchProducts(meta.page - 1)}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => p - 1)}
               className="rounded-lg py-1.5 px-3 text-xs h-auto"
           >
               Previous
@@ -232,8 +284,8 @@ export default function AdminProductsPage() {
           </span>
           <Button 
               variant="outline" 
-              disabled={meta.page === meta.totalPages}
-              onClick={() => fetchProducts(meta.page + 1)}
+              disabled={currentPage === meta.totalPages}
+              onClick={() => setCurrentPage(p => p + 1)}
               className="rounded-lg py-1.5 px-3 text-xs h-auto"
           >
               Next

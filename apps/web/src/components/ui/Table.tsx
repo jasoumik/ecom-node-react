@@ -12,6 +12,7 @@ interface TableProps<T> {
   columns: Column<T>[];
   mobileRenderer?: (item: T) => React.ReactNode;
   emptyMessage?: string;
+  onRowClick?: (item: T) => void;
 }
 
 export function Table<T extends { id: string | number }>({
@@ -19,6 +20,7 @@ export function Table<T extends { id: string | number }>({
   columns,
   mobileRenderer,
   emptyMessage = "No data found",
+  onRowClick,
 }: TableProps<T>) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
@@ -48,7 +50,8 @@ export function Table<T extends { id: string | number }>({
               data.map((item) => (
                 <tr
                   key={item.id}
-                  className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                  onClick={() => onRowClick && onRowClick(item)}
+                  className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
                 >
                   {columns.map((col, index) => (
                     <td key={index} className={`px-6 py-4 ${col.className ?? ""}`}>
@@ -72,7 +75,11 @@ export function Table<T extends { id: string | number }>({
           <div className="px-6 py-12 text-center text-slate-500">{emptyMessage}</div>
         ) : (
           data.map((item) => (
-            <div key={item.id} className="p-4">
+            <div 
+                key={item.id} 
+                className={`p-4 ${onRowClick ? 'cursor-pointer active:bg-slate-50 dark:active:bg-slate-800' : ''}`}
+                onClick={() => onRowClick && onRowClick(item)}
+            >
               {mobileRenderer ? (
                 mobileRenderer(item)
               ) : (
