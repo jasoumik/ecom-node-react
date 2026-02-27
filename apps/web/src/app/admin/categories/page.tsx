@@ -53,7 +53,8 @@ export default function AdminCategoriesPage() {
       setFilteredCategories(categories.filter(c => c.name.toLowerCase().includes(lower)));
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm("Are you sure? This will delete all subcategories and products in this category.")) return;
     try {
       const res = await fetch(`${API_URL}/categories/${id}`, { method: "DELETE" });
@@ -86,6 +87,7 @@ export default function AdminCategoriesPage() {
 
       <Table
         data={filteredCategories}
+        onRowClick={(cat) => router.push(`/admin/categories/${cat.id}/edit`)}
         columns={[
           {
             header: "Name",
@@ -125,14 +127,14 @@ export default function AdminCategoriesPage() {
             cell: (cat) => (
               <div className="flex justify-end gap-1">
                   <button 
-                  onClick={() => router.push(`/admin/categories/${cat.id}/edit`)}
+                  onClick={(e) => { e.stopPropagation(); router.push(`/admin/categories/${cat.id}/edit`); }}
                   className="p-1.5 rounded text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition-colors"
                   title="Edit"
                   >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                   </button>
                   <button 
-                  onClick={() => handleDelete(cat.id)}
+                  onClick={(e) => handleDelete(cat.id, e)}
                   className="p-1.5 rounded text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                   title="Delete"
                   >

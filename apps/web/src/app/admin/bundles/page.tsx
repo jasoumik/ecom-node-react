@@ -5,12 +5,14 @@ import { Heading, Button } from "@repo/ui";
 import { Table } from "@/components/ui/Table";
 import { API_URL } from "@/lib/config";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import { getImageUrl } from "@/lib/utils";
 
 export default function BundlesPage() {
   const [bundles, setBundles] = useState([]);
   const { addToast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     fetchBundles();
@@ -26,7 +28,8 @@ export default function BundlesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm("Are you sure you want to delete this bundle?")) return;
     try {
       const res = await fetch(`${API_URL}/bundles/${id}`, { method: "DELETE" });
@@ -53,6 +56,7 @@ export default function BundlesPage() {
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
         <Table
           data={bundles}
+          onRowClick={(bundle) => router.push(`/admin/bundles/${bundle.id}/edit`)}
           columns={[
             { 
                 header: "Image", 
@@ -81,13 +85,13 @@ export default function BundlesPage() {
               header: "Actions",
               cell: (bundle: any) => (
                 <div className="flex gap-2">
-                  <Link href={`/admin/bundles/${bundle.id}/edit`}>
+                  <Link href={`/admin/bundles/${bundle.id}/edit`} onClick={(e) => e.stopPropagation()}>
                     <Button variant="outline" className="h-8 px-3 text-xs">Edit</Button>
                   </Link>
                   <Button 
                     variant="outline"
                     className="h-8 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
-                    onClick={() => handleDelete(bundle.id)}
+                    onClick={(e) => handleDelete(bundle.id, e)}
                   >
                     Delete
                   </Button>

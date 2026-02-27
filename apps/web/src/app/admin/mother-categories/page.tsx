@@ -62,7 +62,8 @@ export default function MotherCategoriesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm("Are you sure?")) return;
     try {
       const res = await fetch(`${API_URL}/mother-categories/${id}`, { method: "DELETE" });
@@ -116,7 +117,11 @@ export default function MotherCategoriesPage() {
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {motherCategories.map((cat) => (
-              <tr key={cat.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <tr 
+                key={cat.id} 
+                onClick={() => openEditModal(cat)}
+                className="hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors cursor-pointer"
+              >
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{cat.name}</td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{cat.name_bn}</td>
                 <td className="px-6 py-4 text-slate-500">{cat.slug}</td>
@@ -124,13 +129,13 @@ export default function MotherCategoriesPage() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
                     <button 
-                        onClick={() => openEditModal(cat)}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(cat); }}
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 hover:text-sky-600 transition-colors"
                     >
                       <Edit size={16} />
                     </button>
                     <button 
-                        onClick={() => handleDelete(cat.id)}
+                        onClick={(e) => handleDelete(cat.id, e)}
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 hover:text-rose-600 transition-colors"
                     >
                       <Trash2 size={16} />
