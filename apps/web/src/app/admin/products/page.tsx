@@ -12,12 +12,14 @@ import { FilterBar } from "@/components/ui/FilterBar";
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
   const [limit, setLimit] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -36,6 +38,28 @@ export default function AdminProductsPage() {
     }
   };
 
+  const fetchBrands = async () => {
+    try {
+        const res = await fetch(`${API_URL}/brands`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+            setBrands(data);
+        }
+    } catch (e) {
+        console.error("Failed to fetch brands", e);
+    }
+  };
+
+  const flattenCategories = (cats: any[], depth = 0): any[] => {
+    return cats.reduce((acc, cat) => {
+        acc.push({ ...cat, depth });
+        if (cat.children && cat.children.length > 0) {
+            acc.push(...flattenCategories(cat.children, depth + 1));
+        }
+        return acc;
+    }, []);
+  };
+
   const fetchProducts = useCallback(async (page: number) => {
     setLoading(true);
     try {
@@ -46,6 +70,7 @@ export default function AdminProductsPage() {
       
       if (searchQuery) queryParams.append("search", searchQuery);
       if (selectedCategory) queryParams.append("category", selectedCategory);
+      if (selectedBrand) queryParams.append("brand", selectedBrand);
 
       const res = await fetch(`${API_URL}/products?${queryParams.toString()}`);
       const data = await res.json();
@@ -63,7 +88,7 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, limit]);
+  }, [searchQuery, selectedCategory, selectedBrand, limit]);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -72,6 +97,7 @@ export default function AdminProductsPage() {
         return;
     }
     fetchCategories();
+    fetchBrands();
   }, []);
 
   useEffect(() => {
@@ -83,7 +109,7 @@ export default function AdminProductsPage() {
     return () => {
       clearTimeout(handler);
     };
-  }, [searchQuery, selectedCategory, limit, fetchProducts]);
+  }, [searchQuery, selectedCategory, selectedBrand, limit, fetchProducts]);
 
   useEffect(() => {
       fetchProducts(currentPage);
@@ -125,15 +151,28 @@ export default function AdminProductsPage() {
             <FilterBar onSearch={setSearchQuery} placeholder="Search by name or SKU..." />
           </div>
           
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex gap-2 w-full md:w-auto flex-wrap">
               <select 
-                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5"
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5 min-w-[150px]"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
               >
                   <option value="">All Categories</option>
-                  {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  {flattenCategories(categories).map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                          {'\u00A0'.repeat(cat.depth * 4)}{cat.name}
+                      </option>
+                  ))}
+              </select>
+
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5 min-w-[150px]"
+                  value={selectedBrand}
+                  onChange={(e) => setSelectedBrand(e.target.value)}
+              >
+                  <option value="">All Brands</option>
+                  {brands.map(brand => (
+                      <option key={brand.id} value={brand.id}>{brand.name}</option>
                   ))}
               </select>
               
@@ -166,7 +205,16 @@ export default function AdminProductsPage() {
             header: "Category",
             cell: (product) => (
                 <div className="text-xs text-slate-600 dark:text-slate-400">
-                    {categories.find(c => c.id === product.category_id)?.name || '-'}
+                    {categories.find(c => c.id === product.category_id)?.name || 
+                     flattenCategories(categories).find(c => c.id === product.category_id)?.name || '-'}
+                </div>
+            )
+          },
+          {
+            header: "Brand",
+            cell: (product) => (
+                <div className="text-xs text-slate-600 dark:text-slate-400">
+                    {brands.find(b => b.id === product.brand_id)?.name || '-'}
                 </div>
             )
           },
