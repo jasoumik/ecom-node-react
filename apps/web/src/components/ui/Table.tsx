@@ -51,7 +51,11 @@ export function Table<T extends { id: string | number }>({
                 <tr
                   key={item.id}
                   onClick={() => onRowClick && onRowClick(item)}
-                  className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`group transition-colors ${
+                      onRowClick 
+                      ? 'cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/20' 
+                      : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/50'
+                  }`}
                 >
                   {columns.map((col, index) => (
                     <td key={index} className={`px-6 py-4 ${col.className ?? ""}`}>
@@ -77,7 +81,11 @@ export function Table<T extends { id: string | number }>({
           data.map((item) => (
             <div 
                 key={item.id} 
-                className={`p-4 ${onRowClick ? 'cursor-pointer active:bg-slate-50 dark:active:bg-slate-800' : ''}`}
+                className={`p-4 transition-colors ${
+                    onRowClick 
+                    ? 'cursor-pointer active:bg-sky-50 dark:active:bg-sky-900/20' 
+                    : ''
+                }`}
                 onClick={() => onRowClick && onRowClick(item)}
             >
               {mobileRenderer ? (
