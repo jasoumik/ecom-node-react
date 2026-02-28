@@ -10,8 +10,8 @@ import { useToast } from "@/components/ui/Toast";
 import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function BundlesPage() {
-  const [bundles, setBundles] = useState([]);
-  const [filteredBundles, setFilteredBundles] = useState([]);
+  const [bundles, setBundles] = useState<any[]>([]);
+  const [filteredBundles, setFilteredBundles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Filters
@@ -127,7 +127,7 @@ export default function BundlesPage() {
                   <Button 
                     variant="outline"
                     className="h-8 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
-                    onClick={(e) => handleDelete(bundle.id, e)}
+                    onClick={(e: React.MouseEvent) => handleDelete(bundle.id, e)}
                   >
                     Delete
                   </Button>
