@@ -7,9 +7,11 @@ import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { Input } from "@/components/ui/Input";
 import { Edit, Trash2, Plus, X } from "lucide-react";
+import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function MotherCategoriesPage() {
   const [motherCategories, setMotherCategories] = useState<any[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
@@ -24,13 +26,28 @@ export default function MotherCategoriesPage() {
     try {
       const res = await fetch(`${API_URL}/mother-categories`);
       const data = await res.json();
-      setMotherCategories(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setMotherCategories(list);
+      setFilteredCategories(list);
     } catch (error) {
       console.error(error);
       addToast("Failed to fetch mother categories", "error");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (query: string) => {
+      if (!query) {
+          setFilteredCategories(motherCategories);
+          return;
+      }
+      const lower = query.toLowerCase();
+      setFilteredCategories(motherCategories.filter(c => 
+          c.name.toLowerCase().includes(lower) || 
+          c.name_bn?.toLowerCase().includes(lower) ||
+          c.slug.toLowerCase().includes(lower)
+      ));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,6 +121,10 @@ export default function MotherCategoriesPage() {
         </Button>
       </div>
 
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <FilterBar onSearch={handleSearch} placeholder="Search mother categories..." />
+      </div>
+
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium">
@@ -116,7 +137,7 @@ export default function MotherCategoriesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {motherCategories.map((cat) => (
+            {filteredCategories.map((cat) => (
               <tr 
                 key={cat.id} 
                 onClick={() => openEditModal(cat)}

@@ -13,12 +13,21 @@ export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const router = useRouter();
   const { addToast } = useToast();
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+      applyFilters();
+  }, [searchQuery, statusFilter, categories]);
 
   const fetchCategories = async () => {
     try {
@@ -36,7 +45,6 @@ export default function AdminCategoriesPage() {
       
       const flatList = flatten(Array.isArray(data) ? data : []);
       setCategories(flatList);
-      setFilteredCategories(flatList);
     } catch (e) {
       setCategories([]);
     } finally {
@@ -44,13 +52,20 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleSearch = (query: string) => {
-      if (!query) {
-          setFilteredCategories(categories);
-          return;
+  const applyFilters = () => {
+      let result = [...categories];
+
+      if (searchQuery) {
+          const lower = searchQuery.toLowerCase();
+          result = result.filter(c => c.name.toLowerCase().includes(lower));
       }
-      const lower = query.toLowerCase();
-      setFilteredCategories(categories.filter(c => c.name.toLowerCase().includes(lower)));
+
+      if (statusFilter !== 'all') {
+          const isActive = statusFilter === 'active';
+          result = result.filter(c => c.is_active === isActive);
+      }
+
+      setFilteredCategories(result);
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -83,7 +98,22 @@ export default function AdminCategoriesPage() {
         </Button>
       </div>
 
-      <FilterBar onSearch={handleSearch} placeholder="Search categories..." />
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex-1 w-full">
+            <FilterBar onSearch={setSearchQuery} placeholder="Search categories..." />
+          </div>
+          <div className="w-full md:w-auto">
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5 min-w-[150px]"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+              </select>
+          </div>
+      </div>
 
       <Table
         data={filteredCategories}
@@ -93,11 +123,6 @@ export default function AdminCategoriesPage() {
             header: "Name",
             cell: (cat) => (
               <div className="flex items-center gap-3" style={{ paddingLeft: `${cat.level * 20}px` }}>
-                  {cat.image && (
-                      <div className="w-8 h-8 rounded bg-slate-100 overflow-hidden shrink-0">
-                          <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
-                      </div>
-                  )}
                   <div className="font-bold text-slate-900 dark:text-white text-xs">
                       {cat.level > 0 && <span className="text-slate-400 mr-1">↳</span>}
                       {cat.name}

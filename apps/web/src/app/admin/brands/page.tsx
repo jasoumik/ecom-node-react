@@ -13,6 +13,11 @@ export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<any[]>([]);
   const [filteredBrands, setFilteredBrands] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -20,13 +25,16 @@ export default function AdminBrandsPage() {
     fetchBrands();
   }, []);
 
+  useEffect(() => {
+      applyFilters();
+  }, [searchQuery, statusFilter, brands]);
+
   const fetchBrands = async () => {
     try {
       const res = await fetch(`${API_URL}/brands`);
       const data = await res.json();
       const list = Array.isArray(data) ? data : [];
       setBrands(list);
-      setFilteredBrands(list);
     } catch (e) {
       setBrands([]);
     } finally {
@@ -34,15 +42,20 @@ export default function AdminBrandsPage() {
     }
   };
 
-  const handleSearch = (query: string) => {
-      if (!query) {
-          setFilteredBrands(brands);
-          return;
+  const applyFilters = () => {
+      let result = [...brands];
+
+      if (searchQuery) {
+          const lower = searchQuery.toLowerCase();
+          result = result.filter(b => b.name.toLowerCase().includes(lower));
       }
-      const lower = query.toLowerCase();
-      setFilteredBrands(brands.filter(b => 
-          b.name.toLowerCase().includes(lower)
-      ));
+
+      if (statusFilter !== 'all') {
+          const isActive = statusFilter === 'active';
+          result = result.filter(b => b.is_active === isActive);
+      }
+
+      setFilteredBrands(result);
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -75,26 +88,27 @@ export default function AdminBrandsPage() {
         </Button>
       </div>
 
-      <FilterBar onSearch={handleSearch} placeholder="Search brands..." />
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex-1 w-full">
+            <FilterBar onSearch={setSearchQuery} placeholder="Search brands..." />
+          </div>
+          <div className="w-full md:w-auto">
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5 min-w-[150px]"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+              </select>
+          </div>
+      </div>
 
       <Table
         data={filteredBrands}
         onRowClick={(brand) => router.push(`/admin/brands/${brand.id}/edit`)}
         columns={[
-          {
-            header: "Logo",
-            cell: (brand) => (
-              <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700">
-                {brand.logo ? (
-                    <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px] font-bold">
-                        {brand.name.charAt(0)}
-                    </div>
-                )}
-              </div>
-            )
-          },
           {
             header: "Name",
             accessorKey: "name",

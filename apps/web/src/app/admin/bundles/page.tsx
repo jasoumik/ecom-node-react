@@ -7,10 +7,17 @@ import { API_URL } from "@/lib/config";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
-import { getImageUrl } from "@/lib/utils";
+import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function BundlesPage() {
   const [bundles, setBundles] = useState([]);
+  const [filteredBundles, setFilteredBundles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const { addToast } = useToast();
   const router = useRouter();
 
@@ -18,14 +25,38 @@ export default function BundlesPage() {
     fetchBundles();
   }, []);
 
+  useEffect(() => {
+      applyFilters();
+  }, [searchQuery, statusFilter, bundles]);
+
   const fetchBundles = async () => {
     try {
       const res = await fetch(`${API_URL}/bundles`);
       const data = await res.json();
-      setBundles(data);
+      const list = Array.isArray(data) ? data : [];
+      setBundles(list);
     } catch (error) {
       console.error("Failed to fetch bundles", error);
+      setBundles([]);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+      let result = [...bundles];
+
+      if (searchQuery) {
+          const lower = searchQuery.toLowerCase();
+          result = result.filter((b: any) => b.title.toLowerCase().includes(lower));
+      }
+
+      if (statusFilter !== 'all') {
+          const isActive = statusFilter === 'active';
+          result = result.filter((b: any) => b.is_active === isActive);
+      }
+
+      setFilteredBundles(result);
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -53,23 +84,28 @@ export default function BundlesPage() {
         </Link>
       </div>
 
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex-1 w-full">
+            <FilterBar onSearch={setSearchQuery} placeholder="Search bundles..." />
+          </div>
+          <div className="w-full md:w-auto">
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5 min-w-[150px]"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+              </select>
+          </div>
+      </div>
+
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
         <Table
-          data={bundles}
+          data={filteredBundles}
           onRowClick={(bundle) => router.push(`/admin/bundles/${bundle.id}/edit`)}
           columns={[
-            { 
-                header: "Image", 
-                cell: (bundle: any) => (
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                        {bundle.image ? (
-                            <img src={getImageUrl(bundle.image)} alt={bundle.title} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Img</div>
-                        )}
-                    </div>
-                )
-            },
             { header: "Title", accessorKey: "title", className: "font-medium text-slate-900 dark:text-white" },
             { header: "Price", cell: (b: any) => `৳${b.price}`, className: "text-slate-600 dark:text-slate-400" },
             { header: "Items", cell: (b: any) => b.items?.length || 0, className: "text-slate-600 dark:text-slate-400" },

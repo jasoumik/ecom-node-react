@@ -7,10 +7,17 @@ import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { Table } from "@/components/ui/Table";
 import { FullScreenLoader } from "@/components/ui/Loader";
+import { FilterBar } from "@/components/ui/FilterBar";
 
 export default function AdminLabelsPage() {
   const [labels, setLabels] = useState<any[]>([]);
+  const [filteredLabels, setFilteredLabels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -18,16 +25,37 @@ export default function AdminLabelsPage() {
     fetchLabels();
   }, []);
 
+  useEffect(() => {
+      applyFilters();
+  }, [searchQuery, statusFilter, labels]);
+
   const fetchLabels = async () => {
     try {
       const res = await fetch(`${API_URL}/labels?all=true`);
       const data = await res.json();
-      setLabels(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setLabels(list);
     } catch (e) {
       setLabels([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+      let result = [...labels];
+
+      if (searchQuery) {
+          const lower = searchQuery.toLowerCase();
+          result = result.filter(l => l.name.toLowerCase().includes(lower) || l.slug.toLowerCase().includes(lower));
+      }
+
+      if (statusFilter !== 'all') {
+          const isActive = statusFilter === 'active';
+          result = result.filter(l => l.is_active === isActive);
+      }
+
+      setFilteredLabels(result);
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -60,8 +88,25 @@ export default function AdminLabelsPage() {
         </Button>
       </div>
 
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex-1 w-full">
+            <FilterBar onSearch={setSearchQuery} placeholder="Search labels..." />
+          </div>
+          <div className="w-full md:w-auto">
+              <select 
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5 min-w-[150px]"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+              </select>
+          </div>
+      </div>
+
       <Table
-        data={labels}
+        data={filteredLabels}
         onRowClick={(label) => router.push(`/admin/labels/${label.id}/edit`)}
         columns={[
           {
@@ -134,4 +179,3 @@ export default function AdminLabelsPage() {
     </div>
   );
 }
-
