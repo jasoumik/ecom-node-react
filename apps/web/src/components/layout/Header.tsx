@@ -15,8 +15,6 @@ import { getLocalizedField, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import { User } from "lucide-react";
 
-const POPULAR_SEARCHES = ["Diapers", "Wipes", "Lotion", "Toys", "Milk", "Baby Oil", "Shampoo"];
-
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -25,6 +23,7 @@ export function Header() {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -69,6 +68,7 @@ export function Header() {
 
     checkUser();
     fetchCategories();
+    fetchPopularSearches();
     window.addEventListener("storage", checkUser);
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -84,6 +84,34 @@ export function Header() {
           setCategories(Array.isArray(data) ? data : []);
       } catch (e) {
           console.error("Failed to fetch categories");
+      }
+  };
+
+  const fetchPopularSearches = async () => {
+      try {
+          const [brandsRes, catsRes] = await Promise.all([
+              fetch(`${API_URL}/brands?public=true`),
+              fetch(`${API_URL}/categories?public=true`)
+          ]);
+          
+          const brands = await brandsRes.json();
+          const cats = await catsRes.json();
+          
+          const newPopular: string[] = [];
+          
+          // Add some brands
+          if (Array.isArray(brands)) {
+              newPopular.push(...brands.slice(0, 5).map((b: any) => b.name));
+          }
+          
+          // Add some categories
+          if (Array.isArray(cats)) {
+              newPopular.push(...cats.slice(0, 3).map((c: any) => c.name));
+          }
+          
+          setPopularSearches(newPopular.slice(0, 8));
+      } catch (e) {
+          console.error("Failed to fetch popular searches", e);
       }
   };
 
@@ -271,6 +299,7 @@ export function Header() {
                     </div>
                 </div>
                 <Link href="/products" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">{t('shop')}</Link>
+                <Link href="/brands" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">Brands</Link>
             </nav>
 
             {/* Desktop Search Bar */}
@@ -323,7 +352,7 @@ export function Header() {
                               <div>
                                   <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Popular</h4>
                                   <div className="flex flex-wrap gap-2">
-                                      {POPULAR_SEARCHES.map(s => (
+                                      {popularSearches.map(s => (
                                           <button key={s} onClick={() => performSearch(s)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                                               {s}
                                           </button>
@@ -334,7 +363,8 @@ export function Header() {
                       ) : searchQuery.trim().length < 3 ? (
                           <div className="p-4 text-sm text-slate-500">Keep typing to see suggestions...</div>
                       ) : suggestions.length > 0 ? (
-                          <ul>
+                          <>
+                            <ul>
                                 {suggestions.map((product) => (
                                     <li key={product.id}>
                                         <Link 
@@ -353,20 +383,22 @@ export function Header() {
                                     </li>
                                 ))}
                             </ul>
+                            <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+                                <Link
+                                    href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                                    className="block w-full py-2 text-center text-sm font-bold text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                    onClick={() => setShowSuggestions(false)}
+                                >
+                                    View all results for "{searchQuery}"
+                                </Link>
+                            </div>
+                          </>
                       ) : (
                           <div className="p-4 text-sm text-slate-500">No products found for "{searchQuery}".</div>
                       )}
                   </div>
               )}
             </div>
-
-            {/* Desktop Navigation - Right Side (About/Contact hidden) */}
-            {/*
-            <nav className="hidden lg:flex items-center gap-6 mr-4">
-                <Link href="/about" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">{t('about')}</Link>
-                <Link href="/contact" className="text-sm font-bold text-slate-600 hover:text-sky-500 transition-colors dark:text-slate-300 dark:hover:text-sky-400">{t('contact')}</Link>
-            </nav>
-            */}
 
             {/* Right: Actions */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -520,6 +552,11 @@ export function Header() {
                           {t('shop')}
                       </Link>
 
+                      <Link href="/brands" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                          Brands
+                      </Link>
+
                       <Link href="/wishlist" className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                           <div className="flex items-center gap-3">
                               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -588,17 +625,6 @@ export function Header() {
                       </div>
 
                       <div className="border-t border-slate-100 dark:border-slate-800 my-2"></div>
-
-                      {/* About and Contact hidden from mobile menu
-                      <Link href="/about" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                          {t('about')}
-                      </Link>
-                      <Link href="/contact" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                          {t('contact')}
-                      </Link>
-                      */}
                   </nav>
 
                   {/* Bottom Actions */}
@@ -672,7 +698,8 @@ export function Header() {
                   {searchQuery.trim().length < 3 ? (
                       <div className="p-4 text-sm text-slate-500">Keep typing to see suggestions...</div>
                   ) : suggestions.length > 0 ? (
-                      <ul>
+                      <>
+                        <ul>
                             {suggestions.map((product) => (
                                 <li key={product.id}>
                                     <Link 
@@ -691,6 +718,16 @@ export function Header() {
                                 </li>
                             ))}
                         </ul>
+                        <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+                            <Link
+                                href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                                className="block w-full py-2 text-center text-sm font-bold text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                onClick={() => setIsSearchOpen(false)}
+                            >
+                                View all results for "{searchQuery}"
+                            </Link>
+                        </div>
+                      </>
                   ) : (
                       <div className="p-4 text-sm text-slate-500">No products found for "{searchQuery}".</div>
                   )}
@@ -714,7 +751,7 @@ export function Header() {
                   <div>
                       <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Popular</h4>
                       <div className="flex flex-wrap gap-2">
-                          {POPULAR_SEARCHES.map(s => (
+                          {popularSearches.map(s => (
                               <button key={s} onClick={() => performSearch(s)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                                   {s}
                               </button>

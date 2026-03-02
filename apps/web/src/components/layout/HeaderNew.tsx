@@ -27,8 +27,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const POPULAR_SEARCHES = ["Diapers", "Wipes", "Lotion", "Toys", "Milk", "Baby Oil", "Shampoo"];
-
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
@@ -36,6 +34,7 @@ export function Header() {
   const [user, setUser] = useState<any>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -85,6 +84,7 @@ export function Header() {
 
     checkUser();
     fetchCategories();
+    fetchPopularSearches();
     window.addEventListener("storage", checkUser);
     document.addEventListener("mousedown", handleClickOutside);
 
@@ -132,6 +132,34 @@ export function Header() {
     } catch {
       console.error("Failed to fetch categories");
     }
+  };
+
+  const fetchPopularSearches = async () => {
+      try {
+          const [brandsRes, catsRes] = await Promise.all([
+              fetch(`${API_URL}/brands?public=true`),
+              fetch(`${API_URL}/categories?public=true`)
+          ]);
+          
+          const brands = await brandsRes.json();
+          const cats = await catsRes.json();
+          
+          const newPopular: string[] = [];
+          
+          // Add some brands
+          if (Array.isArray(brands)) {
+              newPopular.push(...brands.slice(0, 5).map((b: any) => b.name));
+          }
+          
+          // Add some categories
+          if (Array.isArray(cats)) {
+              newPopular.push(...cats.slice(0, 3).map((c: any) => c.name));
+          }
+          
+          setPopularSearches(newPopular.slice(0, 8));
+      } catch (e) {
+          console.error("Failed to fetch popular searches", e);
+      }
   };
 
   // Debounce search suggestions
@@ -504,10 +532,10 @@ export function Header() {
                 {t("shop")}
               </Link>
               <Link
-                href="/contact"
+                href="/brands"
                 className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
               >
-                {t("contact")}
+                Brands
               </Link>
             </nav>
 
@@ -572,6 +600,15 @@ export function Header() {
                             </div>
                           </Link>
                         ))}
+                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <Link
+                                href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                                className="block w-full py-2 text-center text-sm font-bold text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                onClick={() => setShowSuggestions(false)}
+                            >
+                                View all results for "{searchQuery}"
+                            </Link>
+                        </div>
                       </div>
                     ) : (
                       <div className="p-4 space-y-4">
@@ -597,7 +634,7 @@ export function Header() {
                             <TrendingUp size={12} /> Popular Searches
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {['Diapers', 'Baby Food', 'Stroller', 'Baby Clothes', 'Toys'].map((term) => (
+                            {popularSearches.map((term) => (
                               <button
                                 key={term}
                                 onClick={() => performSearch(term)}
@@ -888,7 +925,7 @@ export function Header() {
                   <TrendingUp size={14} /> Trending
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {POPULAR_SEARCHES.map((term) => (
+                  {popularSearches.map((term) => (
                     <button
                       key={term}
                       onClick={() => performSearch(term)}
@@ -931,6 +968,15 @@ export function Header() {
                         </div>
                       </Link>
                     ))}
+                  </div>
+                  <div className="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <Link
+                          href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                          className="block w-full py-3 text-center text-sm font-bold text-white bg-sky-500 hover:bg-sky-600 rounded-xl transition-colors shadow-sm"
+                          onClick={() => setIsSearchOverlayOpen(false)}
+                      >
+                          View all results for "{searchQuery}"
+                      </Link>
                   </div>
                 </div>
               )}
@@ -1184,11 +1230,11 @@ export function Header() {
                 </Link>
 
                 <Link
-                  href="/contact"
+                  href="/brands"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
                 >
-                  {t("contact")}
+                  Brands
                 </Link>
 
                 <Link
