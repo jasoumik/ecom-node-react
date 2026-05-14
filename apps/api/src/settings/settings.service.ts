@@ -25,6 +25,13 @@ export class SettingsService implements OnModuleInit {
           { key: 'currency_symbol', value: '৳', description: 'Currency symbol' },
           { key: 'bkash_number', value: '01XXXXXXXXX', description: 'Personal bKash number for payments' },
           { key: 'nagad_number', value: '01XXXXXXXXX', description: 'Personal Nagad number for payments' },
+          { key: 'watermark_enabled', value: 'false', description: 'Enable watermark on uploaded images' },
+          { key: 'watermark_type', value: 'text', description: 'Watermark type: text or image' },
+          { key: 'watermark_text', value: 'Your Brand', description: 'Text to display as watermark' },
+          { key: 'watermark_image', value: '', description: 'URL of watermark image (used when type is image)' },
+          { key: 'watermark_opacity', value: '0.5', description: 'Watermark opacity (0.1 to 1.0)' },
+          { key: 'watermark_position', value: 'southeast', description: 'Watermark position: northwest, northeast, southwest, southeast, center' },
+          { key: 'watermark_size', value: '200', description: 'Watermark image width in pixels' },
       ];
 
       for (const setting of defaults) {

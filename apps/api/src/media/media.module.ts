@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { MediaController } from './media.controller';
-import { MulterModule } from '@nestjs/platform-express';
+import { ImageProcessingModule } from '../image-processing/image-processing.module';
 
 @Module({
-  imports: [
-    MulterModule.register({
-      dest: './uploads',
-    }),
-  ],
+  imports: [ImageProcessingModule],
   providers: [MediaService],
   controllers: [MediaController],
 })

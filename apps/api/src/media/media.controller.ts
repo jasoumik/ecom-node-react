@@ -2,12 +2,15 @@ import { Controller, Get, Post, Body, Param, Delete, UseInterceptors, UploadedFi
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
+import { ImageProcessingService } from '../image-processing/image-processing.service';
 
 @Controller('media')
 export class MediaController {
-  constructor(private readonly mediaService: MediaService) {}
+  constructor(
+    private readonly mediaService: MediaService,
+    private readonly imageProcessingService: ImageProcessingService,
+  ) {}
 
   @Get('folders')
   getFolders(@Query('parentId') parentId?: string) {
@@ -30,21 +33,18 @@ export class MediaController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads', // Ensure this directory exists
-      filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-        cb(null, `${randomName}${extname(file.originalname)}`);
-      }
-    })
-  }))
-  uploadFile(
-      @UploadedFile() file: Express.Multer.File, 
-      @Body('folderId') folderId?: string,
-      @Body('context') context?: string
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('folderId') folderId?: string,
+    @Body('context') context?: string,
   ) {
-    return this.mediaService.saveFileRecord(file, folderId, context);
+    const processed = await this.imageProcessingService.processAndSaveImage(file);
+    return this.mediaService.saveFileRecord(
+      { ...file, filename: processed.filename, mimetype: processed.mimetype, size: processed.size },
+      folderId,
+      context,
+    );
   }
 
   @Delete('files/:id')
