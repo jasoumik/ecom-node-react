@@ -1,6 +1,6 @@
 "use client";
 
-import { Section, Heading, ResponsiveImage } from "@repo/ui";
+import { Section, Heading, ResponsiveImage } from "@/components/ui";
 import type { Category } from "./types";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Heading, Button } from "@repo/ui";
+import { Heading, Button } from "@/components/ui";
 import Link from "next/link";
 
 const PAGES = [

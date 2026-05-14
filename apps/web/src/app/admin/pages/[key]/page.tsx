@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Heading, Button } from "@repo/ui";
+import { Heading, Button } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";

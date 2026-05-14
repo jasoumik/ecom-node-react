@@ -10,7 +10,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Phone, Lock, ArrowRight, Mail, Eye, EyeOff } from "lucide-react";
 import { AuthLayout } from "@/components/ui/AuthLayout";
-import { Text } from "@repo/ui";
+import { Text } from "@/components/ui";
 import { Home } from "lucide-react";
 
 export default function LoginPage() {

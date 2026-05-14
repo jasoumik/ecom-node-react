@@ -1,6 +1,6 @@
 "use client";
 
-import { Section, Heading, Text } from "@repo/ui";
+import { Section, Heading, Text } from "@/components/ui";
 import type { Reason } from "./types";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField } from "@/lib/utils";

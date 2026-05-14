@@ -1,7 +1,7 @@
 "use client";
 
 import type { HeroContent } from "./types";
-import { Heading, Text, Button } from "@repo/ui";
+import { Heading, Text, Button } from "@/components/ui";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField } from "@/lib/utils";

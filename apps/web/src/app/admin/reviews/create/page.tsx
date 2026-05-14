@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Heading } from "@repo/ui";
+import { Button, Heading } from "@/components/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
-import { RatingStars } from "@repo/ui";
+import { RatingStars } from "@/components/ui";
 
 export default function CreateReviewPage() {
   const [products, setProducts] = useState<any[]>([]);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Heading, Text, Button, ResponsiveImage, RatingStars, SkeletonCardGrid } from "@repo/ui";
+import { Heading, Text, Button, ResponsiveImage, RatingStars, SkeletonCardGrid } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@repo/ui";
+import { Button } from "@/components/ui";
 import { ThemeToggle } from "@/app/ThemeToggle";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
 import { useState, useEffect, useRef } from "react";

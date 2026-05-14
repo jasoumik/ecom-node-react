@@ -1,6 +1,6 @@
 "use client";
 
-import { Section, Heading, Text, Button } from "@repo/ui";
+import { Section, Heading, Text, Button } from "@/components/ui";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { useSettings } from "@/lib/settings-context";

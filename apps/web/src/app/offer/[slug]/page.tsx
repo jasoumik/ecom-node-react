@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@repo/ui";
+import { Heading, Text, Button, ResponsiveImage, RatingStars } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";

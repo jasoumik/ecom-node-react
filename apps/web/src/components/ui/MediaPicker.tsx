@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@repo/ui";
+import { Button } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { FullScreenLoader } from "./Loader";
 

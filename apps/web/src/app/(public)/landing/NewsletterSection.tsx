@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Section, Heading, Button } from "@repo/ui";
+import { Section, Heading, Button } from "@/components/ui";
 import { useLanguage } from "@/lib/language-context";
 import { useToast } from "@/components/ui/Toast";
 import { motion, AnimatePresence } from "framer-motion";

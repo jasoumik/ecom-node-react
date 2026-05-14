@@ -2,7 +2,7 @@
 
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
-import { Button, Heading, Text } from "@repo/ui";
+import { Button, Heading, Text } from "@/components/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/config";

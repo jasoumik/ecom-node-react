@@ -42,6 +42,17 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Lockfiles
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Turborepo cache
+.turbo/
+
+# Uploaded files
+uploads/
+
 # temp directory
 .temp
 .tmp

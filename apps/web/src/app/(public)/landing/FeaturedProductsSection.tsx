@@ -1,6 +1,6 @@
 "use client";
 
-import { Section, Heading, ResponsiveImage, Button } from "@repo/ui";
+import { Section, Heading, ResponsiveImage, Button } from "@/components/ui";
 import type { FeaturedProduct } from "./types";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";

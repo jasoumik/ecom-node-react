@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Heading } from "@repo/ui";
+import { Button, Heading } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { FullScreenLoader } from "@/components/ui/Loader";

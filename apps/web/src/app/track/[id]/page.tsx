@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Heading, Text, Button } from "@repo/ui";
+import { Heading, Text, Button } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { formatDate } from "@/lib/utils";

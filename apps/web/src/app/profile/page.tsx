@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Button, Heading } from "@repo/ui";
+import { Button, Heading } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { User, Phone, Mail, Camera, Coins, Gift } from "lucide-react";

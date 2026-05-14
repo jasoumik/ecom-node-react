@@ -5,7 +5,10 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api'); // Restored global prefix
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : '*',
+    credentials: true,
+  });
   
   // Ensure uploads directory exists
   const fs = require('fs');

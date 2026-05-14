@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Heading } from "@repo/ui";
+import { Button, Heading } from "@/components/ui";
 import { Input } from "@/components/ui/Input";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";

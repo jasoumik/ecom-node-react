@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Heading } from "@repo/ui";
+import { Heading } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { Table } from "@/components/ui/Table";
 import { FullScreenLoader } from "@/components/ui/Loader";

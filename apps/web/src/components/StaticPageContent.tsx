@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { API_URL } from "@/lib/config";
-import { Heading } from "@repo/ui";
+import { Heading } from "@/components/ui";
 import { FullScreenLoader } from "@/components/ui/Loader";
 
 export function StaticPageContent({ pageKey, title }: { pageKey: string, title: string }) {

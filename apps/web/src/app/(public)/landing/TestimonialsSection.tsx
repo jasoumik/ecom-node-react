@@ -1,6 +1,6 @@
 "use client";
 
-import { Section, Heading, Text, RatingStars } from "@repo/ui";
+import { Section, Heading, Text, RatingStars } from "@/components/ui";
 import type { Testimonial } from "./types";
 import { useLanguage } from "@/lib/language-context";
 import {getLocalizedField} from "@/lib/utils";

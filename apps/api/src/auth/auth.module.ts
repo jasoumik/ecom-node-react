@@ -11,7 +11,7 @@ import { NotificationModule } from '../notification/notification.module';
     NotificationModule,
     JwtModule.register({
       global: true,
-      secret: 'secretKey', // In production, use env var
+      secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '60m' },
     }),
   ],

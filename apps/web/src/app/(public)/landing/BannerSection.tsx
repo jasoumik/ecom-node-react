@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ResponsiveImage, Button } from "@repo/ui";
+import { ResponsiveImage, Button } from "@/components/ui";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import { getLocalizedField, getImageUrl } from "@/lib/utils";

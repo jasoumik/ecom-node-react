@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Section, Heading, ResponsiveImage, Button } from "@repo/ui";
+import { Section, Heading, ResponsiveImage, Button } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";

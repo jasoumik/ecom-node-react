@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Heading, Button } from "@repo/ui";
+import { Heading, Button } from "@/components/ui";
 import { Table } from "@/components/ui/Table";
 import { API_URL } from "@/lib/config";
 import Link from "next/link";

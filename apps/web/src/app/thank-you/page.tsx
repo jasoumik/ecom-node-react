@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button, Heading, Text } from "@repo/ui";
+import { Button, Heading, Text } from "@/components/ui";
 import { useLanguage } from "@/lib/language-context";
 import { API_URL } from "@/lib/config";
 import Link from "next/link";

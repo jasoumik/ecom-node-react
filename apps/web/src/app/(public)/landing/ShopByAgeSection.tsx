@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Section, Heading } from "@repo/ui";
+import { Section, Heading } from "@/components/ui";
 import { useLanguage } from "@/lib/language-context";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Heading, Text } from "@repo/ui";
+import { Heading, Text } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { FullScreenLoader } from "@/components/ui/Loader";
 import { useRouter } from "next/navigation";

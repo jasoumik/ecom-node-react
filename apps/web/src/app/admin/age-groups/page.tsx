@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Section, Heading, Button } from "@repo/ui";
+import { Section, Heading, Button } from "@/components/ui";
 import { API_URL } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { Plus, Pencil, Trash2, Save, X } from "lucide-react";

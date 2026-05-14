@@ -1,4 +1,4 @@
-import { Section } from "@repo/ui";
+import { Section } from "@/components/ui";
 import type { TrustBadge } from "./types";
 
 interface TrustBadgesSectionProps {

@@ -2,7 +2,7 @@
 
 import { useWishlist, type WishlistItem } from "@/lib/wishlist";
 import { useCart } from "@/lib/cart";
-import { Button, Heading, ResponsiveImage } from "@repo/ui";
+import { Button, Heading, ResponsiveImage } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useLanguage } from "@/lib/language-context";
 import Link from "next/link";

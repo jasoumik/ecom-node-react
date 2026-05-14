@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Input } from "./Input";
-import { Button } from "@repo/ui";
+import { Button } from "@/components/ui";
 
 interface FilterBarProps {
   onSearch: (query: string) => void;

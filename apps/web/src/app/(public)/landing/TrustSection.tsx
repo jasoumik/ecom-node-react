@@ -1,6 +1,6 @@
 "use client";
 
-import { Section } from "@repo/ui";
+import { Section } from "@/components/ui";
 import { useLanguage } from "@/lib/language-context";
 import { useSettings } from "@/lib/settings-context";
 import { motion } from "framer-motion";
