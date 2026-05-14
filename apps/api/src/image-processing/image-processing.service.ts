@@ -46,11 +46,13 @@ export class ImageProcessingService {
 
   async processAndSaveImage(file: Express.Multer.File): Promise<{ filename: string; mimetype: string; size: number }> {
     if (!file.mimetype.startsWith('image/')) {
-      // Non-image: write buffer as-is
+      // Non-image: write buffer as-is with a generated filename
+      const ext = file.originalname.includes('.') ? file.originalname.slice(file.originalname.lastIndexOf('.')) : '';
+      const filename = `${randomBytes(16).toString('hex')}${ext}`;
       const dir = join(process.cwd(), 'uploads');
       mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, file.filename), file.buffer);
-      return { filename: file.filename, mimetype: file.mimetype, size: file.size };
+      writeFileSync(join(dir, filename), file.buffer);
+      return { filename, mimetype: file.mimetype, size: file.size };
     }
 
     const config = await this.getWatermarkConfig();
